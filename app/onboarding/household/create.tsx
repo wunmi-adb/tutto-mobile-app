@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 24,
   },
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   footer: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: 12,
     backgroundColor: colors.background,

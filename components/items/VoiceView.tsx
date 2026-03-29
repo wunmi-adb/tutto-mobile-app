@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 8,
   },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 32,
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
   },
   textBlock: {
     alignItems: "center",

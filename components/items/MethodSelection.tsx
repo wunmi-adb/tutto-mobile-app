@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 8,
   },
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
   },

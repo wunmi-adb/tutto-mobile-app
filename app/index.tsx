@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     height: "80%",
   },
   content: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
   },
   heading: {
     fontFamily: fonts.serif,

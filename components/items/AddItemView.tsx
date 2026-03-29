@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 8,
   },
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   animatedContent: { flex: 1, overflow: "hidden" },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 32, paddingTop: 8, paddingBottom: 48 },
+  scrollContent: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 48 },
   nameInput: {
     fontFamily: fonts.serif,
     fontSize: 32,

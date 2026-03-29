@@ -45,7 +45,7 @@ export default function OnboardingTopBar({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 8,
   },
