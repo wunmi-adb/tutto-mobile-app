@@ -1,24 +1,49 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import {
+  DMSans_400Regular,
+  DMSans_400Regular_Italic,
+  DMSans_500Medium,
+  DMSans_500Medium_Italic,
+  DMSans_700Bold,
+  DMSans_700Bold_Italic,
+} from "@expo-google-fonts/dm-sans";
+import {
+  InstrumentSerif_400Regular,
+  InstrumentSerif_400Regular_Italic,
+  useFonts,
+} from "@expo-google-fonts/instrument-serif";
+import { I18nProvider, useI18nController } from "@/i18n";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const [loaded] = useFonts({
+    InstrumentSerif_400Regular,
+    InstrumentSerif_400Regular_Italic,
+    DMSans_400Regular,
+    DMSans_400Regular_Italic,
+    DMSans_500Medium,
+    DMSans_500Medium_Italic,
+    DMSans_700Bold,
+    DMSans_700Bold_Italic,
+  });
+  const i18n = useI18nController();
+
+  useEffect(() => {
+    if (loaded && i18n.ready) {
+      SplashScreen.hideAsync();
+    }
+  }, [i18n.ready, loaded]);
+
+  if (!loaded || !i18n.ready) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <I18nProvider value={i18n}>
+      <StatusBar style="dark" backgroundColor="#ffffff" />
+      <Stack screenOptions={{ headerShown: false }} />
+    </I18nProvider>
   );
 }

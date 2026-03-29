@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "tuttomobileapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
@@ -28,17 +28,29 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "cameraPermission": "tutto needs camera access to scan your pantry items."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "tutto needs microphone access to record voice notes of your items."
+        }
+      ],
+      "expo-notifications",
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,
