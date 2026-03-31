@@ -1,9 +1,12 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProcessingOverlay() {
+  const { t } = useI18n();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -11,9 +14,9 @@ export default function ProcessingOverlay() {
           <ActivityIndicator size="large" color={colors.brand} />
         </View>
         <View style={styles.textBlock}>
-          <Text style={styles.title}>Detecting items…</Text>
+          <Text style={styles.title}>{t("addItems.processing.title")}</Text>
           <Text style={styles.subtitle}>
-            Our AI is scanning for groceries and pantry items
+            {t("addItems.processing.subtitle")}
           </Text>
         </View>
         <View style={styles.dots}>

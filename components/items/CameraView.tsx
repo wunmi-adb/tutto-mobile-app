@@ -1,6 +1,7 @@
 import Button from "@/components/ui/Button";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { CameraView as ExpoCameraView, useCameraPermissions } from "expo-camera";
 import { useRef, useState } from "react";
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export default function CameraView({ storageName, onCapture, onCancel }: Props) {
+  const { t } = useI18n();
   const [facing, setFacing] = useState<"front" | "back">("back");
   const [capturing, setCapturing] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
@@ -38,13 +40,13 @@ export default function CameraView({ storageName, onCapture, onCancel }: Props) 
           <View style={styles.permissionIcon}>
             <Feather name="camera" size={32} color={colors.muted} />
           </View>
-          <Text style={styles.permissionTitle}>Camera access needed</Text>
+          <Text style={styles.permissionTitle}>{t("addItems.camera.permission.title")}</Text>
           <Text style={styles.permissionSubtitle}>
-            Tutto needs your camera to scan and detect pantry items.
+            {t("addItems.camera.permission.subtitle")}
           </Text>
-          <Button title="Allow camera" onPress={requestPermission} style={styles.permissionBtn} />
+          <Button title={t("addItems.camera.permission.cta")} onPress={requestPermission} style={styles.permissionBtn} />
           <TouchableOpacity onPress={onCancel} hitSlop={8}>
-            <Text style={styles.permissionCancel}>Not now</Text>
+            <Text style={styles.permissionCancel}>{t("addItems.camera.permission.cancel")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -67,13 +69,13 @@ export default function CameraView({ storageName, onCapture, onCancel }: Props) 
           <View style={[styles.corner, styles.cornerBR]} />
         </View>
         <Text style={styles.hint}>
-          Point at your {storageName.toLowerCase()} contents
+          {t("addItems.camera.hint", { storageName: storageName.toLowerCase() })}
         </Text>
       </View>
 
       <View style={styles.controls}>
         <TouchableOpacity onPress={onCancel} activeOpacity={0.8} style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>Cancel</Text>
+          <Text style={styles.cancelText}>{t("addItems.camera.cancel")}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleCapture} activeOpacity={capturing ? 1 : 0.9} style={styles.captureBtn} disabled={capturing}>
           <View style={styles.captureInner} />

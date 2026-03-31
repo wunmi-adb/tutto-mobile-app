@@ -1,9 +1,11 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { getLocationLabel } from "@/components/kitchen/data";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { EXPIRING_ITEMS, expiryColor, expiryLabel } from "./data";
+import { EXPIRING_ITEMS, expiryColor, getExpiryLabel } from "./data";
 
 const dotColor = (days: number) => {
   if (days <= 1) return colors.danger;
@@ -13,14 +15,15 @@ const dotColor = (days: number) => {
 
 export default function ExpiringSection() {
   const router = useRouter();
+  const { t } = useI18n();
 
   return (
     <>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>EXPIRING SOON</Text>
+        <Text style={styles.sectionTitle}>{t("kitchen.home.expiring.title")}</Text>
         <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/kitchen")}>
           <View style={styles.viewAllRow}>
-            <Text style={styles.viewAll}>View all</Text>
+            <Text style={styles.viewAll}>{t("kitchen.home.expiring.viewAll")}</Text>
             <Feather name="arrow-right" size={10} color={colors.text} />
           </View>
         </TouchableOpacity>
@@ -29,10 +32,10 @@ export default function ExpiringSection() {
         {EXPIRING_ITEMS.map((item, i) => (
           <View key={i} style={[styles.row, i > 0 && styles.rowBorder]}>
             <View style={[styles.dot, { backgroundColor: dotColor(item.daysLeft) }]} />
-            <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-            <Text style={styles.itemLocation}>{item.location}</Text>
+            <Text style={styles.itemName} numberOfLines={1}>{t(item.nameKey)}</Text>
+            <Text style={styles.itemLocation}>{getLocationLabel(t, item.locationId)}</Text>
             <Text style={[styles.itemExpiry, { color: expiryColor(item.daysLeft, colors) }]}>
-              {expiryLabel(item.daysLeft)}
+              {getExpiryLabel(t, item.daysLeft)}
             </Text>
           </View>
         ))}

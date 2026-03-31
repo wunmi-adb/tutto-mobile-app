@@ -1,5 +1,6 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import {
   getRecordingPermissionsAsync,
@@ -30,6 +31,7 @@ const RECORDING_OPTIONS = { ...RecordingPresets.HIGH_QUALITY, isMeteringEnabled:
 const SILENT_BARS = Array(NUM_BARS).fill(4);
 
 export default function VoiceView({ storageName, onDone, onBack }: Props) {
+  const { t } = useI18n();
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>("loading");
   const recorder = useAudioRecorder(RECORDING_OPTIONS);
   const recorderState = useAudioRecorderState(recorder, 100);
@@ -135,9 +137,9 @@ export default function VoiceView({ storageName, onDone, onBack }: Props) {
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   const getHintText = () => {
-    if (isPaused) return "Recording paused";
-    if (isRecording) return `Tell us what's in your ${storageName.toLowerCase()}…`;
-    return "Tap to start recording";
+    if (isPaused) return t("addItems.voice.hint.paused");
+    if (isRecording) return t("addItems.voice.hint.recording", { storageName: storageName.toLowerCase() });
+    return t("addItems.voice.hint.idle");
   };
 
   if (permissionStatus === "loading") {

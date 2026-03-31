@@ -1,6 +1,7 @@
 import Button from "@/components/ui/Button";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,6 +12,8 @@ type Props = {
 };
 
 export default function PermissionView({ onBack, onRequestPermission }: Props) {
+  const { t } = useI18n();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -22,11 +25,11 @@ export default function PermissionView({ onBack, onRequestPermission }: Props) {
         <View style={styles.icon}>
           <Feather name="mic" size={32} color={colors.muted} />
         </View>
-        <Text style={styles.title}>Microphone access needed</Text>
+        <Text style={styles.title}>{t("addItems.voice.permission.title")}</Text>
         <Text style={styles.subtitle}>
-          Tutto needs your microphone to record voice notes of your items.
+          {t("addItems.voice.permission.subtitle")}
         </Text>
-        <Button title="Allow microphone" onPress={onRequestPermission} style={styles.btn} />
+        <Button title={t("addItems.voice.permission.cta")} onPress={onRequestPermission} style={styles.btn} />
       </View>
     </SafeAreaView>
   );

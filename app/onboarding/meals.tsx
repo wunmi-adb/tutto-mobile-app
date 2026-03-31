@@ -3,6 +3,7 @@ import Button from "@/components/ui/Button";
 import SelectableRow from "@/components/ui/SelectableRow";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -10,19 +11,22 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MEALS = [
-  { id: "breakfast", label: "Breakfast", time: "Morning" },
-  { id: "brunch", label: "Brunch", time: "Late morning" },
-  { id: "lunch", label: "Lunch", time: "Midday" },
-  { id: "snacks", label: "Snacks", time: "Between meals" },
-  { id: "dinner", label: "Dinner", time: "Evening" },
-  { id: "supper", label: "Supper", time: "Late evening" },
-];
+  { id: "breakfast", labelKey: "meals.options.breakfast.label", timeKey: "meals.options.breakfast.time" },
+  { id: "brunch", labelKey: "meals.options.brunch.label", timeKey: "meals.options.brunch.time" },
+  { id: "lunch", labelKey: "meals.options.lunch.label", timeKey: "meals.options.lunch.time" },
+  { id: "snacks", labelKey: "meals.options.snacks.label", timeKey: "meals.options.snacks.time" },
+  { id: "dinner", labelKey: "meals.options.dinner.label", timeKey: "meals.options.dinner.time" },
+  { id: "supper", labelKey: "meals.options.supper.label", timeKey: "meals.options.supper.time" },
+] as const;
+
+type MealId = (typeof MEALS)[number]["id"];
 
 export default function Meals() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string[]>([]);
+  const { t } = useI18n();
+  const [selected, setSelected] = useState<MealId[]>([]);
 
-  const toggle = (id: string) => {
+  const toggle = (id: MealId) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
     );
@@ -44,18 +48,16 @@ export default function Meals() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headingBlock}>
-          <Text style={styles.title}>How does your household eat?</Text>
-          <Text style={styles.subtitle}>
-            {"Select the meals you typically plan for — we'll tailor your weekly plan around them"}
-          </Text>
+          <Text style={styles.title}>{t("meals.title")}</Text>
+          <Text style={styles.subtitle}>{t("meals.subtitle")}</Text>
         </View>
 
         <View style={styles.list}>
           {MEALS.map((meal) => (
             <SelectableRow
               key={meal.id}
-              label={meal.label}
-              sublabel={meal.time}
+              label={t(meal.labelKey)}
+              sublabel={t(meal.timeKey)}
               selected={selected.includes(meal.id)}
               onPress={() => toggle(meal.id)}
             />
@@ -63,7 +65,7 @@ export default function Meals() {
         </View>
 
         <Button
-          title="Continue"
+          title={t("meals.cta")}
           disabled={selected.length === 0}
           onPress={() => router.push("/onboarding/storage")}
           style={styles.button}

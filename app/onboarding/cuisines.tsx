@@ -5,6 +5,7 @@ import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -12,50 +13,52 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const COMMON_CUISINES = [
-  "Italian",
-  "Japanese",
-  "Mexican",
-  "Indian",
-  "Thai",
-  "Chinese",
-  "Korean",
-  "French",
-  "Mediterranean",
-  "Ethiopian",
-  "Vietnamese",
-  "Greek",
-  "Middle Eastern",
-  "American",
-];
+  { id: "italian", key: "cuisines.options.italian" },
+  { id: "japanese", key: "cuisines.options.japanese" },
+  { id: "mexican", key: "cuisines.options.mexican" },
+  { id: "indian", key: "cuisines.options.indian" },
+  { id: "thai", key: "cuisines.options.thai" },
+  { id: "chinese", key: "cuisines.options.chinese" },
+  { id: "korean", key: "cuisines.options.korean" },
+  { id: "french", key: "cuisines.options.french" },
+  { id: "mediterranean", key: "cuisines.options.mediterranean" },
+  { id: "ethiopian", key: "cuisines.options.ethiopian" },
+  { id: "vietnamese", key: "cuisines.options.vietnamese" },
+  { id: "greek", key: "cuisines.options.greek" },
+  { id: "middleEastern", key: "cuisines.options.middleEastern" },
+  { id: "american", key: "cuisines.options.american" },
+] as const;
+
+type CommonCuisineId = (typeof COMMON_CUISINES)[number]["id"];
 
 export default function Cuisines() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string[]>([]);
+  const { t } = useI18n();
+  const [selectedCuisines, setSelectedCuisines] = useState<CommonCuisineId[]>([]);
+  const [customCuisines, setCustomCuisines] = useState<string[]>([]);
 
-  const isSelected = (name: string) =>
-    selected.some((c) => c.toLowerCase() === name.toLowerCase());
+  const isSelected = (id: CommonCuisineId) => selectedCuisines.includes(id);
 
-  const toggleChip = (name: string) => {
-    if (isSelected(name)) {
-      setSelected(selected.filter((c) => c.toLowerCase() !== name.toLowerCase()));
+  const toggleChip = (id: CommonCuisineId) => {
+    if (isSelected(id)) {
+      setSelectedCuisines(selectedCuisines.filter((value) => value !== id));
     } else {
-      setSelected([...selected, name]);
+      setSelectedCuisines([...selectedCuisines, id]);
     }
   };
 
   const addCustom = (value: string) => {
-    if (!isSelected(value)) {
-      setSelected((prev) => [...prev, value]);
+    const exists = customCuisines.some((cuisine) => cuisine.toLowerCase() === value.toLowerCase());
+
+    if (!exists) {
+      setCustomCuisines((prev) => [...prev, value]);
     }
   };
 
   const removeCustom = (chip: string) => {
-    setSelected(selected.filter((c) => c !== chip));
+    setCustomCuisines(customCuisines.filter((cuisine) => cuisine !== chip));
   };
-
-  const customChips = selected.filter(
-    (c) => !COMMON_CUISINES.some((a) => a.toLowerCase() === c.toLowerCase())
-  );
+  const canContinue = selectedCuisines.length > 0 || customCuisines.length > 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -67,7 +70,7 @@ export default function Cuisines() {
         }
         rightAccessory={
           <TouchableOpacity onPress={() => router.push("/onboarding/meals")} activeOpacity={0.7}>
-            <Text style={styles.skip}>Skip</Text>
+            <Text style={styles.skip}>{t("cuisines.skip")}</Text>
           </TouchableOpacity>
         }
       />
@@ -79,37 +82,36 @@ export default function Cuisines() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-        <View style={styles.headingBlock}>
-          <Text style={styles.title}>What do you love to eat?</Text>
-          <Text style={styles.subtitle}>
-            Tell us your favourite cuisines so we can inspire your next meal
-          </Text>
-        </View>
+          <View style={styles.headingBlock}>
+            <Text style={styles.title}>{t("cuisines.title")}</Text>
+            <Text style={styles.subtitle}>{t("cuisines.subtitle")}</Text>
+          </View>
 
-        <View style={styles.chipGrid}>
-          {COMMON_CUISINES.map((name) => (
-            <Chip
-              key={name}
-              label={name}
-              selected={isSelected(name)}
-              onPress={() => toggleChip(name)}
-            />
-          ))}
-        </View>
+          <View style={styles.chipGrid}>
+            {COMMON_CUISINES.map((cuisine) => (
+              <Chip
+                key={cuisine.id}
+                label={t(cuisine.key)}
+                selected={isSelected(cuisine.id)}
+                onPress={() => toggleChip(cuisine.id)}
+              />
+            ))}
+          </View>
 
-        <ChipInput
-          label="ADD CUSTOM"
-          chips={customChips}
-          onAdd={addCustom}
-          onRemove={removeCustom}
-        />
+          <ChipInput
+            label={t("cuisines.addCustom")}
+            chips={customCuisines}
+            onAdd={addCustom}
+            onRemove={removeCustom}
+            placeholder={t("cuisines.customPlaceholder")}
+          />
 
-        <Button
-          title="Continue"
-          disabled={selected.length === 0}
-          onPress={() => router.push("/onboarding/meals")}
-          style={styles.button}
-        />
+          <Button
+            title={t("cuisines.cta")}
+            disabled={!canContinue}
+            onPress={() => router.push("/onboarding/meals")}
+            style={styles.button}
+          />
         </ScrollView>
       </KeyboardAvoidingContainer>
     </SafeAreaView>

@@ -2,6 +2,7 @@ import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
 import Button from "@/components/ui/Button";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
@@ -9,8 +10,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnboardingComplete() {
   const router = useRouter();
+  const { t } = useI18n();
   const { location } = useLocalSearchParams<{ location: string }>();
-  const storageName = location ?? "Fridge";
+  const storageName = location ?? t("addItems.defaultStorage");
 
   return (
     <SafeAreaView style={styles.container}>
@@ -20,21 +22,21 @@ export default function OnboardingComplete() {
           <Feather name="check" size={40} color={colors.success} />
         </View>
 
-        <Text style={styles.title}>Your {storageName} is all set!</Text>
+        <Text style={styles.title}>{t("complete.title", { storageName })}</Text>
         <Text style={styles.subtitle}>
-          Great start! You can keep adding locations and items, or jump straight into your pantry.
+          {t("complete.subtitle")}
         </Text>
 
         <View style={styles.actions}>
           <Button
             variant="secondary"
-            title="Add another location"
+            title={t("complete.addLocation")}
             leftIcon={<Feather name="plus" size={16} color={colors.text} />}
             style={styles.btn}
             onPress={() => router.replace("/onboarding/storage")}
           />
           <Button
-            title="Go to your kitchen"
+            title={t("complete.goToKitchen")}
             rightIcon={<Feather name="arrow-right" size={16} color={colors.background} />}
             style={styles.btn}
             onPress={() => router.replace("/kitchen")}

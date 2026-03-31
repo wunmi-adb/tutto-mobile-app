@@ -1,18 +1,20 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { getGreeting } from "./data";
+import { getGreetingKey } from "@/components/kitchen/data";
 
 export default function HomeHeader() {
   const router = useRouter();
+  const { t } = useI18n();
 
   return (
     <View style={styles.pageHeader}>
       <View>
-        <Text style={styles.greeting}>{getGreeting()} 👋</Text>
-        <Text style={styles.greetingSubtitle}>{"Here's your kitchen at a glance"}</Text>
+        <Text style={styles.greeting}>{t(getGreetingKey())} 👋</Text>
+        <Text style={styles.greetingSubtitle}>{t("kitchen.home.header.subtitle")}</Text>
       </View>
       <TouchableOpacity
         style={styles.iconBtn}

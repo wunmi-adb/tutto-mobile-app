@@ -1,7 +1,18 @@
+import {
+  formatDayLabel,
+  getMealTypeLabel,
+  getRecipeIngredients,
+  getRecipeName,
+  getRecipeSteps,
+  RECIPE_DEFINITIONS,
+  type MealTypeId,
+  type RecipeId,
+} from "@/components/kitchen/data";
 import Input from "@/components/ui/Input";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import {
@@ -15,9 +26,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type MealRecipe = {
+type CustomMealRecipe = {
+  kind: "custom";
   name: string;
-  time: string;
+  timeMinutes: number;
   servings: number;
   calories: number;
   protein: string;
@@ -27,148 +39,68 @@ type MealRecipe = {
   steps: string[];
 };
 
+type MealRecipe =
+  | { kind: "preset"; recipeId: RecipeId }
+  | CustomMealRecipe;
+
 type MealSlot = {
   id: string;
-  type: string;
+  type: MealTypeId;
   recipe: MealRecipe | null;
 };
 
 type DayPlan = {
-  day: string;
-  date: number;
-  month: string;
+  date: string;
   meals: MealSlot[];
 };
 
-const RECIPE_POOL: Record<string, MealRecipe[]> = {
-  Breakfast: [
-    {
-      name: "Avocado & Eggs on Toast",
-      time: "15 min",
-      servings: 2,
-      calories: 380,
-      protein: "18g",
-      carbs: "32g",
-      fat: "22g",
-      ingredients: ["2 eggs", "1 avocado", "2 slices sourdough", "Chilli flakes", "Lemon juice", "Salt & pepper"],
-      steps: [
-        "Toast the sourdough until golden.",
-        "Mash avocado with lemon juice, salt and pepper.",
-        "Fry or poach eggs to your liking.",
-        "Spread avocado on toast, top with eggs and chilli flakes.",
-      ],
-    },
-    {
-      name: "Oat Porridge with Berries",
-      time: "10 min",
-      servings: 2,
-      calories: 290,
-      protein: "10g",
-      carbs: "48g",
-      fat: "6g",
-      ingredients: ["80g rolled oats", "300ml milk", "Honey", "Mixed berries", "Cinnamon"],
-      steps: [
-        "Combine oats and milk in a saucepan.",
-        "Cook on medium heat, stirring for 5 minutes.",
-        "Serve topped with berries, honey and cinnamon.",
-      ],
-    },
-  ],
-  Lunch: [
-    {
-      name: "Jollof Rice with Chicken",
-      time: "45 min",
-      servings: 4,
-      calories: 520,
-      protein: "32g",
-      carbs: "58g",
-      fat: "16g",
-      ingredients: ["2 cups rice", "400g tin tomatoes", "4 chicken thighs", "1 onion", "Scotch bonnet", "Thyme", "Bay leaves", "Stock cube"],
-      steps: [
-        "Season and brown chicken thighs. Set aside.",
-        "Blend tomatoes, onion and scotch bonnet.",
-        "Fry the blended mix until reduced.",
-        "Add rice, stock and spices. Cook covered on low heat for 30 min.",
-        "Serve rice with chicken on top.",
-      ],
-    },
-    {
-      name: "Mediterranean Wrap",
-      time: "10 min",
-      servings: 1,
-      calories: 420,
-      protein: "22g",
-      carbs: "40g",
-      fat: "18g",
-      ingredients: ["1 tortilla wrap", "Hummus", "Feta cheese", "Cucumber", "Tomato", "Mixed leaves", "Olives"],
-      steps: [
-        "Spread hummus over the wrap.",
-        "Layer cucumber, tomato, olives, feta and leaves.",
-        "Roll tightly and slice in half.",
-      ],
-    },
-  ],
-  Dinner: [
-    {
-      name: "Spaghetti Bolognese",
-      time: "35 min",
-      servings: 4,
-      calories: 580,
-      protein: "28g",
-      carbs: "62g",
-      fat: "22g",
-      ingredients: ["400g spaghetti", "500g beef mince", "400g tin tomatoes", "1 onion", "2 garlic cloves", "Carrot", "Celery", "Oregano", "Parmesan"],
-      steps: [
-        "Brown mince in a large pan. Drain excess fat.",
-        "Saute diced onion, carrot, celery and garlic.",
-        "Add tinned tomatoes, oregano and simmer 20 min.",
-        "Cook spaghetti according to packet. Drain.",
-        "Serve sauce over spaghetti with grated parmesan.",
-      ],
-    },
-    {
-      name: "Grilled Salmon & Greens",
-      time: "20 min",
-      servings: 2,
-      calories: 450,
-      protein: "38g",
-      carbs: "12g",
-      fat: "28g",
-      ingredients: ["2 salmon fillets", "Broccoli", "Asparagus", "Lemon", "Olive oil", "Garlic", "Salt & pepper"],
-      steps: [
-        "Season salmon with olive oil, garlic, lemon, salt and pepper.",
-        "Grill salmon skin-side down for 6-8 min.",
-        "Steam broccoli and asparagus until tender.",
-        "Plate greens, top with salmon and a lemon wedge.",
-      ],
-    },
-  ],
+const RECIPE_POOLS: Record<MealTypeId, RecipeId[]> = {
+  breakfast: ["avocadoEggsToast", "oatPorridgeBerries"],
+  brunch: [],
+  lunch: ["jollofRiceChicken", "mediterraneanWrap"],
+  snack: [],
+  dinner: ["spaghettiBolognese", "grilledSalmonGreens"],
+  supper: [],
 };
 
-const pickRandom = (type: string): MealRecipe => {
-  const pool = RECIPE_POOL[type] || RECIPE_POOL.Dinner;
-  return pool[Math.floor(Math.random() * pool.length)];
+const ADDABLE_MEAL_TYPES: MealTypeId[] = [
+  "breakfast",
+  "brunch",
+  "lunch",
+  "snack",
+  "dinner",
+  "supper",
+];
+
+const pickRandomRecipe = (type: MealTypeId): MealRecipe | null => {
+  const pool = RECIPE_POOLS[type];
+
+  if (!pool.length) {
+    return null;
+  }
+
+  return {
+    kind: "preset",
+    recipeId: pool[Math.floor(Math.random() * pool.length)],
+  };
 };
 
 const generateWeek = (): DayPlan[] => {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const today = new Date();
   const dayOfWeek = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
 
-  return days.map((day, i) => {
+  return Array.from({ length: 7 }, (_, index) => {
     const currentDate = new Date(monday);
-    currentDate.setDate(monday.getDate() + i);
+    currentDate.setDate(monday.getDate() + index);
+
     return {
-      day,
-      date: currentDate.getDate(),
-      month: months[currentDate.getMonth()],
+      date: currentDate.toISOString(),
       meals: [
-        { id: `${i}-b`, type: "Breakfast", recipe: pickRandom("Breakfast") },
-        { id: `${i}-l`, type: "Lunch", recipe: pickRandom("Lunch") },
-        { id: `${i}-d`, type: "Dinner", recipe: pickRandom("Dinner") },
+        { id: `${index}-b`, type: "breakfast", recipe: pickRandomRecipe("breakfast") },
+        { id: `${index}-l`, type: "lunch", recipe: pickRandomRecipe("lunch") },
+        { id: `${index}-d`, type: "dinner", recipe: pickRandomRecipe("dinner") },
       ],
     };
   });
@@ -180,9 +112,26 @@ function RecipeDetail({
   onBack,
 }: {
   recipe: MealRecipe;
-  mealType: string;
+  mealType: MealTypeId;
   onBack: () => void;
 }) {
+  const { t } = useI18n();
+
+  const recipeDetails =
+    recipe.kind === "preset"
+      ? {
+          name: getRecipeName(t, recipe.recipeId),
+          timeMinutes: RECIPE_DEFINITIONS[recipe.recipeId].timeMinutes,
+          servings: RECIPE_DEFINITIONS[recipe.recipeId].servings,
+          calories: RECIPE_DEFINITIONS[recipe.recipeId].calories,
+          protein: RECIPE_DEFINITIONS[recipe.recipeId].protein,
+          carbs: RECIPE_DEFINITIONS[recipe.recipeId].carbs,
+          fat: RECIPE_DEFINITIONS[recipe.recipeId].fat,
+          ingredients: getRecipeIngredients(t, recipe.recipeId),
+          steps: getRecipeSteps(t, recipe.recipeId),
+        }
+      : recipe;
+
   return (
     <Modal visible animationType="slide" onRequestClose={onBack}>
       <SafeAreaView style={styles.detailContainer}>
@@ -191,32 +140,32 @@ function RecipeDetail({
             <TouchableOpacity style={styles.iconBtn} activeOpacity={0.75} onPress={onBack}>
               <Feather name="arrow-left" size={16} color={colors.text} />
             </TouchableOpacity>
-            <Text style={styles.detailEyebrow}>{mealType}</Text>
+            <Text style={styles.detailEyebrow}>{getMealTypeLabel(t, mealType)}</Text>
             <View style={styles.detailSpacer} />
           </View>
 
-          <Text style={styles.detailTitle}>{recipe.name}</Text>
+          <Text style={styles.detailTitle}>{recipeDetails.name}</Text>
 
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
               <Feather name="clock" size={14} color={colors.muted} />
-              <Text style={styles.metaText}>{recipe.time}</Text>
+              <Text style={styles.metaText}>{t("kitchen.common.minutes", { count: recipeDetails.timeMinutes })}</Text>
             </View>
             <View style={styles.metaItem}>
               <Feather name="users" size={14} color={colors.muted} />
-              <Text style={styles.metaText}>{recipe.servings} servings</Text>
+              <Text style={styles.metaText}>{t("kitchen.common.servings", { count: recipeDetails.servings })}</Text>
             </View>
             <View style={styles.metaItem}>
               <Feather name="zap" size={14} color={colors.muted} />
-              <Text style={styles.metaText}>{recipe.calories} cal</Text>
+              <Text style={styles.metaText}>{t("kitchen.common.calories", { count: recipeDetails.calories })}</Text>
             </View>
           </View>
 
           <View style={styles.nutritionRow}>
             {[
-              { label: "Protein", value: recipe.protein },
-              { label: "Carbs", value: recipe.carbs },
-              { label: "Fat", value: recipe.fat },
+              { label: t("kitchen.nutrition.protein"), value: recipeDetails.protein },
+              { label: t("kitchen.nutrition.carbs"), value: recipeDetails.carbs },
+              { label: t("kitchen.nutrition.fat"), value: recipeDetails.fat },
             ].map((item) => (
               <View key={item.label} style={styles.nutritionCard}>
                 <Text style={styles.nutritionValue}>{item.value}</Text>
@@ -225,9 +174,9 @@ function RecipeDetail({
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>INGREDIENTS</Text>
+          <Text style={styles.sectionTitle}>{t("kitchen.common.ingredients")}</Text>
           <View style={styles.ingredientsList}>
-            {recipe.ingredients.map((ingredient, index) => (
+            {recipeDetails.ingredients.map((ingredient, index) => (
               <View key={`${ingredient}-${index}`} style={styles.ingredientRow}>
                 <View style={styles.bullet} />
                 <Text style={styles.bodyText}>{ingredient}</Text>
@@ -235,9 +184,9 @@ function RecipeDetail({
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>INSTRUCTIONS</Text>
+          <Text style={styles.sectionTitle}>{t("kitchen.common.instructions")}</Text>
           <View style={styles.stepsList}>
-            {recipe.steps.map((step, index) => (
+            {recipeDetails.steps.map((step, index) => (
               <View key={`${step}-${index}`} style={styles.stepRow}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>{index + 1}</Text>
@@ -256,50 +205,53 @@ function AddMealModal({
   onAdd,
   onClose,
 }: {
-  onAdd: (name: string, type: string) => void;
+  onAdd: (name: string, type: MealTypeId) => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const [name, setName] = useState("");
-  const mealTypes = ["Breakfast", "Brunch", "Lunch", "Snack", "Dinner", "Supper"];
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedType, setSelectedType] = useState<MealTypeId | null>(null);
 
-  const canAdd = name.trim().length > 0 && selectedType.length > 0;
+  const canAdd = name.trim().length > 0 && selectedType !== null;
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
         <KeyboardAvoidingContainer style={styles.sheetKeyboard}>
-          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+          <Pressable style={styles.sheet} onPress={(event) => event.stopPropagation()}>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Add a meal</Text>
+              <Text style={styles.sheetTitle}>{t("kitchen.plan.modal.title")}</Text>
               <TouchableOpacity activeOpacity={0.75} onPress={onClose}>
                 <Feather name="x" size={18} color={colors.muted} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.fieldLabel}>MEAL TYPE</Text>
+            <Text style={styles.fieldLabel}>{t("kitchen.plan.modal.mealTypeLabel")}</Text>
             <View style={styles.typeGrid}>
-              {mealTypes.map((type) => {
-                const active = selectedType === type;
+              {ADDABLE_MEAL_TYPES.map((mealType) => {
+                const active = selectedType === mealType;
+
                 return (
                   <TouchableOpacity
-                    key={type}
+                    key={mealType}
                     style={[styles.typeChip, active && styles.typeChipActive]}
                     activeOpacity={0.75}
-                    onPress={() => setSelectedType(type)}
+                    onPress={() => setSelectedType(mealType)}
                   >
-                    <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>{type}</Text>
+                    <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>
+                      {getMealTypeLabel(t, mealType)}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <Text style={styles.fieldLabel}>MEAL NAME</Text>
-            <Text style={styles.helpText}>Just type the name and we&apos;ll generate the recipe for you.</Text>
+            <Text style={styles.fieldLabel}>{t("kitchen.plan.modal.mealNameLabel")}</Text>
+            <Text style={styles.helpText}>{t("kitchen.plan.modal.help")}</Text>
             <Input
               value={name}
               onChangeText={setName}
-              placeholder="e.g. Chicken stir-fry"
+              placeholder={t("kitchen.plan.modal.placeholder")}
               containerStyle={styles.inputWrap}
             />
 
@@ -308,11 +260,14 @@ function AddMealModal({
               disabled={!canAdd}
               activeOpacity={0.82}
               onPress={() => {
-                if (!canAdd) return;
+                if (!canAdd || !selectedType) {
+                  return;
+                }
+
                 onAdd(name.trim(), selectedType);
               }}
             >
-              <Text style={styles.addButtonText}>Add meal</Text>
+              <Text style={styles.addButtonText}>{t("kitchen.plan.modal.cta")}</Text>
             </TouchableOpacity>
           </Pressable>
         </KeyboardAvoidingContainer>
@@ -332,30 +287,49 @@ function MealCard({
   onRandomise: () => void;
   onRemove: () => void;
 }) {
-  if (!slot.recipe) return null;
+  const { t } = useI18n();
+
+  if (!slot.recipe) {
+    return null;
+  }
+
+  const recipeName =
+    slot.recipe.kind === "preset" ? getRecipeName(t, slot.recipe.recipeId) : slot.recipe.name;
+  const timeMinutes =
+    slot.recipe.kind === "preset"
+      ? RECIPE_DEFINITIONS[slot.recipe.recipeId].timeMinutes
+      : slot.recipe.timeMinutes;
+  const calories =
+    slot.recipe.kind === "preset"
+      ? RECIPE_DEFINITIONS[slot.recipe.recipeId].calories
+      : slot.recipe.calories;
 
   return (
     <View style={styles.mealCard}>
       <TouchableOpacity style={styles.mealMain} activeOpacity={0.75} onPress={onView}>
         <View style={styles.mealCopy}>
-          <Text style={styles.mealType}>{slot.type}</Text>
-          <Text style={styles.mealName}>{slot.recipe.name}</Text>
+          <Text style={styles.mealType}>{getMealTypeLabel(t, slot.type)}</Text>
+          <Text style={styles.mealName}>{recipeName}</Text>
           <View style={styles.mealMetaRow}>
-            <Text style={styles.mealMeta}>{slot.recipe.time}</Text>
-            <Text style={styles.mealMeta}>{slot.recipe.calories} cal</Text>
+            <Text style={styles.mealMeta}>{t("kitchen.common.minutes", { count: timeMinutes })}</Text>
+            <Text style={styles.mealMeta}>{t("kitchen.common.calories", { count: calories })}</Text>
           </View>
         </View>
         <Feather name="chevron-right" size={14} color={colors.muted + "66"} />
       </TouchableOpacity>
 
       <View style={styles.mealActions}>
-        <TouchableOpacity style={[styles.mealAction, styles.mealActionDivider]} activeOpacity={0.75} onPress={onRandomise}>
+        <TouchableOpacity
+          style={[styles.mealAction, styles.mealActionDivider]}
+          activeOpacity={0.75}
+          onPress={onRandomise}
+        >
           <Feather name="shuffle" size={12} color={colors.muted} />
-          <Text style={styles.mealActionText}>Shuffle</Text>
+          <Text style={styles.mealActionText}>{t("kitchen.plan.shuffle")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.mealAction} activeOpacity={0.75} onPress={onRemove}>
           <Feather name="x" size={12} color={colors.muted} />
-          <Text style={styles.mealActionText}>Remove</Text>
+          <Text style={styles.mealActionText}>{t("kitchen.plan.remove")}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -363,85 +337,102 @@ function MealCard({
 }
 
 export default function PlanTab() {
+  const { language, t } = useI18n();
   const [week, setWeek] = useState<DayPlan[]>(() => generateWeek());
   const todayIdx = (() => {
-    const d = new Date().getDay();
-    return (d + 6) % 7;
+    const day = new Date().getDay();
+    return (day + 6) % 7;
   })();
   const [selectedDay, setSelectedDay] = useState(todayIdx);
-  const [viewingRecipe, setViewingRecipe] = useState<{ recipe: MealRecipe; type: string } | null>(null);
+  const [viewingRecipe, setViewingRecipe] = useState<{ recipe: MealRecipe; type: MealTypeId } | null>(null);
   const [addingMealForDay, setAddingMealForDay] = useState<number | null>(null);
 
   const currentDay = week[selectedDay];
 
   const updateMeal = (dayIdx: number, mealId: string, updates: Partial<MealSlot>) => {
     setWeek((prev) =>
-      prev.map((day, i) =>
-        i === dayIdx
+      prev.map((day, index) =>
+        index === dayIdx
           ? { ...day, meals: day.meals.map((meal) => (meal.id === mealId ? { ...meal, ...updates } : meal)) }
-          : day
-      )
+          : day,
+      ),
     );
   };
 
   const removeMeal = (dayIdx: number, mealId: string) => {
     setWeek((prev) =>
-      prev.map((day, i) =>
-        i === dayIdx ? { ...day, meals: day.meals.filter((meal) => meal.id !== mealId) } : day
-      )
+      prev.map((day, index) =>
+        index === dayIdx ? { ...day, meals: day.meals.filter((meal) => meal.id !== mealId) } : day,
+      ),
     );
   };
 
-  const addMeal = (dayIdx: number, name: string, type: string) => {
+  const addMeal = (dayIdx: number, name: string, type: MealTypeId) => {
     const newMeal: MealSlot = {
       id: `${dayIdx}-custom-${Date.now()}`,
       type,
       recipe: {
+        kind: "custom",
         name,
-        time: "30 min",
+        timeMinutes: 30,
         servings: 2,
         calories: 400,
         protein: "20g",
         carbs: "45g",
         fat: "15g",
-        ingredients: ["Recipe will be generated..."],
-        steps: ["Recipe instructions will be generated based on the meal name."],
+        ingredients: [t("kitchen.plan.generated.ingredientsPlaceholder")],
+        steps: [t("kitchen.plan.generated.stepsPlaceholder")],
       },
     };
 
     setWeek((prev) =>
-      prev.map((day, i) => (i === dayIdx ? { ...day, meals: [...day.meals, newMeal] } : day))
+      prev.map((day, index) => (index === dayIdx ? { ...day, meals: [...day.meals, newMeal] } : day)),
     );
     setAddingMealForDay(null);
   };
 
-  const randomiseMeal = (dayIdx: number, mealId: string, type: string) => {
-    updateMeal(dayIdx, mealId, { recipe: pickRandom(type) });
+  const randomiseMeal = (dayIdx: number, mealId: string, type: MealTypeId) => {
+    const nextRecipe = pickRandomRecipe(type);
+
+    if (!nextRecipe) {
+      return;
+    }
+
+    updateMeal(dayIdx, mealId, { recipe: nextRecipe });
   };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.pageHeader}>
-          <Text style={styles.pageTitle}>Meal Plan</Text>
-          <Text style={styles.pageSubtitle}>Plan your week ahead</Text>
+          <Text style={styles.pageTitle}>{t("kitchen.plan.title")}</Text>
+          <Text style={styles.pageSubtitle}>{t("kitchen.plan.subtitle")}</Text>
         </View>
 
         <View style={styles.dayStripWrap}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayStrip}>
             {week.map((day, index) => {
+              const currentDate = new Date(day.date);
               const isToday = index === todayIdx;
               const isSelected = index === selectedDay;
 
               return (
                 <TouchableOpacity
-                  key={`${day.day}-${day.date}`}
+                  key={day.date}
                   style={[styles.dayChip, isSelected ? styles.dayChipActive : styles.dayChipInactive]}
                   activeOpacity={0.8}
                   onPress={() => setSelectedDay(index)}
                 >
-                  <Text style={[styles.dayChipLabel, isSelected && styles.dayChipLabelActive]}>{day.day}</Text>
-                  <Text style={[styles.dayChipDate, isSelected && styles.dayChipDateActive]}>{day.date}</Text>
+                  <Text style={[styles.dayChipLabel, isSelected && styles.dayChipLabelActive]}>
+                    {formatDayLabel(language, currentDate)}
+                  </Text>
+                  <Text style={[styles.dayChipDate, isSelected && styles.dayChipDateActive]}>
+                    {currentDate.getDate()}
+                  </Text>
                   {isToday ? <View style={[styles.todayDot, isSelected && styles.todayDotActive]} /> : null}
                 </TouchableOpacity>
               );
@@ -460,9 +451,13 @@ export default function PlanTab() {
             />
           ))}
 
-          <TouchableOpacity style={styles.addMealGhost} activeOpacity={0.82} onPress={() => setAddingMealForDay(selectedDay)}>
+          <TouchableOpacity
+            style={styles.addMealGhost}
+            activeOpacity={0.82}
+            onPress={() => setAddingMealForDay(selectedDay)}
+          >
             <Feather name="plus" size={14} color={colors.muted} />
-            <Text style={styles.addMealGhostText}>Add a meal</Text>
+            <Text style={styles.addMealGhostText}>{t("kitchen.plan.addMeal")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -1,44 +1,45 @@
+import { LIBRARY_RECIPE_KEYS } from "@/components/kitchen/data";
 import { KitchenScreenHeader, SectionEyebrow } from "@/components/kitchen/shared";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const RECIPE_CARDS = [
-  "Weeknight Pasta",
-  "Chicken Stir-fry",
-  "Lentil Curry",
-  "Salmon Rice Bowl",
-];
-
 export default function LibraryTab() {
+  const { t } = useI18n();
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <KitchenScreenHeader
-          title="Recipe Library"
-          subtitle="Saved recipes and meal ideas"
+          title={t("kitchen.library.title")}
+          subtitle={t("kitchen.library.subtitle")}
         />
 
         <View style={styles.searchBox}>
           <Feather name="search" size={16} color={colors.muted} />
           <TextInput
-            placeholder="Search saved recipes"
+            placeholder={t("kitchen.library.searchPlaceholder")}
             placeholderTextColor={colors.muted}
             style={styles.searchInput}
           />
         </View>
 
-        <SectionEyebrow>CURATED FOR YOU</SectionEyebrow>
+        <SectionEyebrow>{t("kitchen.library.curatedTitle")}</SectionEyebrow>
         <View style={styles.grid}>
-          {RECIPE_CARDS.map((title, index) => (
-            <View key={title} style={[styles.card, index % 2 === 0 ? styles.cardWarm : styles.cardSoft]}>
+          {LIBRARY_RECIPE_KEYS.map((titleKey, index) => (
+            <View key={titleKey} style={[styles.card, index % 2 === 0 ? styles.cardWarm : styles.cardSoft]}>
               <View style={styles.cardIllustration}>
                 <Feather name="book-open" size={24} color={colors.muted} />
               </View>
-              <Text style={styles.cardTitle}>{title}</Text>
-              <Text style={styles.cardMeta}>Ready to explore</Text>
+              <Text style={styles.cardTitle}>{t(titleKey)}</Text>
+              <Text style={styles.cardMeta}>{t("kitchen.library.cardMeta")}</Text>
             </View>
           ))}
         </View>

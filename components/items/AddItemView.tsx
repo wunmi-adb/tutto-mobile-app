@@ -2,6 +2,7 @@ import Button from "@/components/ui/Button";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import {
@@ -43,6 +44,7 @@ export default function AddItemView({
   onFinish,
   onBack,
 }: Props) {
+  const { t } = useI18n();
   const [idx, setIdx] = useState(initialIndex);
   const [completed, setCompleted] = useState(new Set(initialCompleted));
 
@@ -180,7 +182,11 @@ export default function AddItemView({
             style={styles.nameInput}
             value={itemName}
             onChangeText={setItemName}
-            placeholder={isIngredient ? "Item name" : "Meal name"}
+            placeholder={
+              isIngredient
+                ? t("addItems.detail.namePlaceholder.ingredient")
+                : t("addItems.detail.namePlaceholder.cooked")
+            }
             placeholderTextColor={colors.muted + "66"}
             autoCapitalize="words"
             returnKeyType="done"
@@ -190,15 +196,17 @@ export default function AddItemView({
 
           {/* Type toggle */}
           <View style={styles.typeToggle}>
-            {(["ingredient", "cooked"] as ItemType[]).map((t) => (
+            {(["ingredient", "cooked"] as ItemType[]).map((typeOption) => (
               <TouchableOpacity
-                key={t}
-                style={[styles.typeBtn, itemType === t && styles.typeBtnActive]}
+                key={typeOption}
+                style={[styles.typeBtn, itemType === typeOption && styles.typeBtnActive]}
                 activeOpacity={0.7}
-                onPress={() => setItemType(t)}
+                onPress={() => setItemType(typeOption)}
               >
-                <Text style={[styles.typeBtnText, itemType === t && styles.typeBtnTextActive]}>
-                  {t === "ingredient" ? "Ingredient" : "Cooked meal"}
+                <Text style={[styles.typeBtnText, itemType === typeOption && styles.typeBtnTextActive]}>
+                  {typeOption === "ingredient"
+                    ? t("addItems.detail.type.ingredient")
+                    : t("addItems.detail.type.cooked")}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -213,8 +221,8 @@ export default function AddItemView({
                 onPress={() => setCountAsUnits((v) => !v)}
               >
                 <View style={styles.toggleLabel}>
-                  <Text style={styles.toggleText}>Count as individual units</Text>
-                  <Text style={styles.toggleHint}> (eggs, tins)</Text>
+                  <Text style={styles.toggleText}>{t("addItems.detail.countAsUnits")}</Text>
+                  <Text style={styles.toggleHint}>{t("addItems.detail.countAsUnitsHint")}</Text>
                 </View>
                 <Switch
                   value={countAsUnits}
@@ -227,10 +235,10 @@ export default function AddItemView({
               {!countAsUnits && (
                 <TouchableOpacity
                   style={[styles.toggleRow, styles.toggleRowBorder]}
-                  activeOpacity={0.7}
-                  onPress={() => setTrackUseWithin((v) => !v)}
-                >
-                  <Text style={styles.toggleText}>Track use-within after opening</Text>
+                activeOpacity={0.7}
+                onPress={() => setTrackUseWithin((v) => !v)}
+              >
+                  <Text style={styles.toggleText}>{t("addItems.detail.trackUseWithin")}</Text>
                   <Switch
                     value={trackUseWithin}
                     onValueChange={setTrackUseWithin}
@@ -260,7 +268,7 @@ export default function AddItemView({
 
               <TouchableOpacity style={styles.addBatch} activeOpacity={0.7} onPress={addBatch}>
                 <Feather name="plus" size={14} color={colors.muted} />
-                <Text style={styles.addBatchText}>Add another batch</Text>
+                <Text style={styles.addBatchText}>{t("addItems.detail.addBatch")}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -286,13 +294,13 @@ export default function AddItemView({
 
               <TouchableOpacity style={styles.addBatch} activeOpacity={0.7} onPress={addBatch}>
                 <Feather name="plus" size={14} color={colors.muted} />
-                <Text style={styles.addBatchText}>Add another portion</Text>
+                <Text style={styles.addBatchText}>{t("addItems.detail.addPortion")}</Text>
               </TouchableOpacity>
             </View>
           )}
 
           <Button
-            title={isLast ? "Save & finish" : "Save & next"}
+            title={isLast ? t("addItems.detail.saveFinish") : t("addItems.detail.saveNext")}
             disabled={!itemName.trim()}
             onPress={handleSave}
           />

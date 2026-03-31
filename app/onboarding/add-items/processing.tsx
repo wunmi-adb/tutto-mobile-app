@@ -1,4 +1,5 @@
 import ProcessingOverlay from "@/components/items/ProcessingOverlay";
+import { useI18n } from "@/i18n";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 
@@ -13,20 +14,22 @@ const MOCK_ITEMS = [
 
 export default function Processing() {
   const router = useRouter();
+  const { t } = useI18n();
   const { location } = useLocalSearchParams<{ location: string }>();
+  const defaultStorage = t("addItems.defaultStorage");
 
   useEffect(() => {
     const timer = setTimeout(() => {
       router.replace({
         pathname: "/onboarding/add-items/review",
         params: {
-          location: location ?? "Fridge",
+          location: location ?? defaultStorage,
           items: JSON.stringify(MOCK_ITEMS),
         },
       });
     }, 2500);
     return () => clearTimeout(timer);
-  }, [location, router]);
+  }, [defaultStorage, location, router]);
 
   return <ProcessingOverlay />;
 }

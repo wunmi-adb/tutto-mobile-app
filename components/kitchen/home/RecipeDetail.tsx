@@ -1,16 +1,29 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import {
+  getMealTypeLabel,
+  getRecipeIngredients,
+  getRecipeName,
+  getRecipeSteps,
+  RECIPE_DEFINITIONS,
+  type RecipeId,
+} from "@/components/kitchen/data";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { NextMealInfo } from "./data";
 
 interface Props {
-  meal: NextMealInfo;
+  mealId: RecipeId;
   onClose: () => void;
 }
 
-export default function RecipeDetail({ meal, onClose }: Props) {
+export default function RecipeDetail({ mealId, onClose }: Props) {
+  const { t } = useI18n();
+  const meal = RECIPE_DEFINITIONS[mealId];
+  const ingredients = getRecipeIngredients(t, mealId);
+  const steps = getRecipeSteps(t, mealId);
+
   return (
     <Modal animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={styles.container} edges={["top"]}>
@@ -19,29 +32,29 @@ export default function RecipeDetail({ meal, onClose }: Props) {
             <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={onClose}>
               <Feather name="arrow-left" size={16} color={colors.text} />
             </TouchableOpacity>
-            <Text style={styles.mealType}>{meal.type.toUpperCase()}</Text>
+            <Text style={styles.mealType}>{getMealTypeLabel(t, meal.mealType).toUpperCase()}</Text>
             <View style={styles.backBtn} />
           </View>
 
-          <Text style={styles.title}>{meal.name}</Text>
+          <Text style={styles.title}>{getRecipeName(t, mealId)}</Text>
 
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
               <Feather name="clock" size={14} color={colors.muted} />
-              <Text style={styles.metaText}>{meal.time}</Text>
+              <Text style={styles.metaText}>{t("kitchen.common.minutes", { count: meal.timeMinutes })}</Text>
             </View>
             <View style={styles.metaItem}>
               <Feather name="users" size={14} color={colors.muted} />
-              <Text style={styles.metaText}>{meal.servings} servings</Text>
+              <Text style={styles.metaText}>{t("kitchen.common.servings", { count: meal.servings })}</Text>
             </View>
             <View style={styles.metaItem}>
               <Feather name="zap" size={14} color={colors.muted} />
-              <Text style={styles.metaText}>{meal.calories} cal</Text>
+              <Text style={styles.metaText}>{t("kitchen.common.calories", { count: meal.calories })}</Text>
             </View>
           </View>
 
           <View style={styles.macroRow}>
-            {[{ label: "Protein", value: meal.protein }, { label: "Carbs", value: meal.carbs }, { label: "Fat", value: meal.fat }].map((m) => (
+            {[{ label: t("kitchen.nutrition.protein"), value: meal.protein }, { label: t("kitchen.nutrition.carbs"), value: meal.carbs }, { label: t("kitchen.nutrition.fat"), value: meal.fat }].map((m) => (
               <View key={m.label} style={styles.macroCard}>
                 <Text style={styles.macroValue}>{m.value}</Text>
                 <Text style={styles.macroLabel}>{m.label.toUpperCase()}</Text>
@@ -49,16 +62,16 @@ export default function RecipeDetail({ meal, onClose }: Props) {
             ))}
           </View>
 
-          <Text style={styles.sectionHeading}>INGREDIENTS</Text>
-          {meal.ingredients.map((ing, i) => (
+          <Text style={styles.sectionHeading}>{t("kitchen.common.ingredients")}</Text>
+          {ingredients.map((ing, i) => (
             <View key={i} style={styles.ingredientRow}>
               <View style={styles.dot} />
               <Text style={styles.ingredientText}>{ing}</Text>
             </View>
           ))}
 
-          <Text style={[styles.sectionHeading, { marginTop: 24 }]}>INSTRUCTIONS</Text>
-          {meal.steps.map((step, i) => (
+          <Text style={[styles.sectionHeading, { marginTop: 24 }]}>{t("kitchen.common.instructions")}</Text>
+          {steps.map((step, i) => (
             <View key={i} style={styles.stepRow}>
               <View style={styles.stepNum}>
                 <Text style={styles.stepNumText}>{i + 1}</Text>

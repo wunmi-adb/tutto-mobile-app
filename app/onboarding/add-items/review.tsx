@@ -1,10 +1,12 @@
 import ReviewItemsView, { DetectedItem } from "@/components/items/ReviewItemsView";
+import { useI18n } from "@/i18n";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function ReviewItems() {
   const router = useRouter();
+  const { t } = useI18n();
   const { location, items } = useLocalSearchParams<{ location: string; items: string }>();
-  const storageName = location ?? "Fridge";
+  const storageName = location ?? t("addItems.defaultStorage");
 
   const parsedItems: DetectedItem[] = (() => {
     try {

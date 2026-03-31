@@ -1,12 +1,21 @@
 import ManualEntryView from "@/components/items/ManualEntryView";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function Manual() {
   const router = useRouter();
+  const { location } = useLocalSearchParams<{ location: string }>();
 
   return (
     <ManualEntryView
-      onComplete={() => router.push("/onboarding/add-items/review")}
+      onComplete={(items) =>
+        router.push({
+          pathname: "/onboarding/add-items/review",
+          params: {
+            location,
+            items: JSON.stringify(items),
+          },
+        })
+      }
       onBack={() => router.back()}
     />
   );

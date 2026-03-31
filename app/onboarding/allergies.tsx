@@ -5,6 +5,7 @@ import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -12,50 +13,52 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const COMMON_ALLERGIES = [
-  "Peanuts",
-  "Tree nuts",
-  "Milk",
-  "Eggs",
-  "Wheat",
-  "Soy",
-  "Fish",
-  "Shellfish",
-  "Sesame",
-  "Gluten",
-  "Corn",
-  "Mustard",
-  "Celery",
-  "Lupin",
-];
+  { id: "peanuts", key: "allergies.options.peanuts" },
+  { id: "treeNuts", key: "allergies.options.treeNuts" },
+  { id: "milk", key: "allergies.options.milk" },
+  { id: "eggs", key: "allergies.options.eggs" },
+  { id: "wheat", key: "allergies.options.wheat" },
+  { id: "soy", key: "allergies.options.soy" },
+  { id: "fish", key: "allergies.options.fish" },
+  { id: "shellfish", key: "allergies.options.shellfish" },
+  { id: "sesame", key: "allergies.options.sesame" },
+  { id: "gluten", key: "allergies.options.gluten" },
+  { id: "corn", key: "allergies.options.corn" },
+  { id: "mustard", key: "allergies.options.mustard" },
+  { id: "celery", key: "allergies.options.celery" },
+  { id: "lupin", key: "allergies.options.lupin" },
+] as const;
+
+type CommonAllergyId = (typeof COMMON_ALLERGIES)[number]["id"];
 
 export default function Allergies() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string[]>([]);
+  const { t } = useI18n();
+  const [selectedAllergies, setSelectedAllergies] = useState<CommonAllergyId[]>([]);
+  const [customAllergies, setCustomAllergies] = useState<string[]>([]);
 
-  const isSelected = (name: string) =>
-    selected.some((c) => c.toLowerCase() === name.toLowerCase());
+  const isSelected = (id: CommonAllergyId) => selectedAllergies.includes(id);
 
-  const toggleChip = (name: string) => {
-    if (isSelected(name)) {
-      setSelected(selected.filter((c) => c.toLowerCase() !== name.toLowerCase()));
+  const toggleChip = (id: CommonAllergyId) => {
+    if (isSelected(id)) {
+      setSelectedAllergies(selectedAllergies.filter((value) => value !== id));
     } else {
-      setSelected([...selected, name]);
+      setSelectedAllergies([...selectedAllergies, id]);
     }
   };
 
   const addCustom = (value: string) => {
-    if (!isSelected(value)) {
-      setSelected((prev) => [...prev, value]);
+    const exists = customAllergies.some((allergy) => allergy.toLowerCase() === value.toLowerCase());
+
+    if (!exists) {
+      setCustomAllergies((prev) => [...prev, value]);
     }
   };
 
   const removeCustom = (chip: string) => {
-    setSelected(selected.filter((c) => c !== chip));
+    setCustomAllergies(customAllergies.filter((allergy) => allergy !== chip));
   };
-
-  const customChips = selected.filter(
-    (c) => !COMMON_ALLERGIES.some((a) => a.toLowerCase() === c.toLowerCase())
-  );
+  const canContinue = selectedAllergies.length > 0 || customAllergies.length > 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -67,7 +70,7 @@ export default function Allergies() {
         }
         rightAccessory={
           <TouchableOpacity onPress={() => router.push("/onboarding/cuisines")} activeOpacity={0.7}>
-            <Text style={styles.skip}>Skip</Text>
+            <Text style={styles.skip}>{t("allergies.skip")}</Text>
           </TouchableOpacity>
         }
       />
@@ -79,37 +82,36 @@ export default function Allergies() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-        <View style={styles.headingBlock}>
-          <Text style={styles.title}>Any allergies?</Text>
-          <Text style={styles.subtitle}>
-            {"We'll flag unsafe items and keep your household protected"}
-          </Text>
-        </View>
+          <View style={styles.headingBlock}>
+            <Text style={styles.title}>{t("allergies.title")}</Text>
+            <Text style={styles.subtitle}>{t("allergies.subtitle")}</Text>
+          </View>
 
-        <View style={styles.chipGrid}>
-          {COMMON_ALLERGIES.map((name) => (
-            <Chip
-              key={name}
-              label={name}
-              selected={isSelected(name)}
-              onPress={() => toggleChip(name)}
-            />
-          ))}
-        </View>
+          <View style={styles.chipGrid}>
+            {COMMON_ALLERGIES.map((allergy) => (
+              <Chip
+                key={allergy.id}
+                label={t(allergy.key)}
+                selected={isSelected(allergy.id)}
+                onPress={() => toggleChip(allergy.id)}
+              />
+            ))}
+          </View>
 
-        <ChipInput
-          label="ADD CUSTOM"
-          chips={customChips}
-          onAdd={addCustom}
-          onRemove={removeCustom}
-        />
+          <ChipInput
+            label={t("allergies.addCustom")}
+            chips={customAllergies}
+            onAdd={addCustom}
+            onRemove={removeCustom}
+            placeholder={t("allergies.customPlaceholder")}
+          />
 
-        <Button
-          title="Continue"
-          disabled={selected.length === 0}
-          onPress={() => router.push("/onboarding/cuisines")}
-          style={styles.button}
-        />
+          <Button
+            title={t("allergies.cta")}
+            disabled={!canContinue}
+            onPress={() => router.push("/onboarding/cuisines")}
+            style={styles.button}
+          />
         </ScrollView>
       </KeyboardAvoidingContainer>
     </SafeAreaView>

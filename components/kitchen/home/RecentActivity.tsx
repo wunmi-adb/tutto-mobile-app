@@ -1,24 +1,28 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { CATEGORY_IMAGES } from "@/components/kitchen/home/categoryIcons";
+import { getActivityText, getRelativeTimeLabel } from "@/components/kitchen/data";
+import { useI18n } from "@/i18n";
 import { Image, StyleSheet, Text, View } from "react-native";
-import { getCategoryImage } from "./categoryIcons";
 import { RECENT_ACTIVITY } from "./data";
 
 export default function RecentActivity() {
+  const { t } = useI18n();
+
   return (
     <>
-      <Text style={styles.sectionTitle}>RECENT ACTIVITY</Text>
+      <Text style={styles.sectionTitle}>{t("kitchen.home.activity.title")}</Text>
       {RECENT_ACTIVITY.map((activity, i) => (
         <View key={activity.id} style={styles.activityRow}>
           <View style={styles.activityLeft}>
             <View style={styles.activityDot}>
-              <Image source={getCategoryImage(activity.text)} style={styles.activityImage} resizeMode="contain" />
+              <Image source={CATEGORY_IMAGES[activity.category]} style={styles.activityImage} resizeMode="contain" />
             </View>
             {i < RECENT_ACTIVITY.length - 1 && <View style={styles.activityLine} />}
           </View>
           <View style={styles.activityContent}>
-            <Text style={styles.activityText}>{activity.text}</Text>
-            <Text style={styles.activityTime}>{activity.time}</Text>
+            <Text style={styles.activityText}>{getActivityText(t, activity)}</Text>
+            <Text style={styles.activityTime}>{getRelativeTimeLabel(t, activity.time)}</Text>
           </View>
         </View>
       ))}

@@ -3,6 +3,7 @@ import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export default function ManualEntryView({ onComplete, onBack }: Props) {
+  const { t } = useI18n();
   const [items, setItems] = useState<string[]>([]);
 
   const addItem = (value: string) => {
@@ -41,16 +43,16 @@ export default function ManualEntryView({ onComplete, onBack }: Props) {
           showsVerticalScrollIndicator={false}
         >
         <View style={styles.headingBlock}>
-          <Text style={styles.title}>{"Add items manually"}</Text>
-          <Text style={styles.subtitle}>Type each item and press Return to add</Text>
+          <Text style={styles.title}>{t("addItems.manual.title")}</Text>
+          <Text style={styles.subtitle}>{t("addItems.manual.subtitle")}</Text>
         </View>
 
         <ChipInput
-          label="Items"
+          label={t("addItems.manual.inputLabel")}
           chips={items}
           onAdd={addItem}
           onRemove={(chip) => setItems((prev) => prev.filter((i) => i !== chip))}
-          placeholder="e.g. Milk, Eggs, Bread…"
+          placeholder={t("addItems.manual.inputPlaceholder")}
           multiline
           minHeight={120}
         />
@@ -58,8 +60,13 @@ export default function ManualEntryView({ onComplete, onBack }: Props) {
         <Button
           title={
             items.length > 0
-              ? `Review ${items.length} item${items.length === 1 ? "" : "s"}`
-              : "Review items"
+              ? t(
+                  items.length === 1
+                    ? "addItems.manual.reviewCta.singular"
+                    : "addItems.manual.reviewCta.plural",
+                  { count: items.length },
+                )
+              : t("addItems.manual.reviewCta.empty")
           }
           disabled={items.length === 0}
           onPress={() => onComplete(items.map((name) => ({ name })))}

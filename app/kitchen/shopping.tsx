@@ -1,31 +1,123 @@
+import {
+  getLocationLabel,
+  getRecipeName,
+  getShoppingCategoryLabel,
+  type KitchenLocationId,
+  type RecipeId,
+  type ShoppingCategoryId,
+} from "@/components/kitchen/data";
 import { KitchenScreenHeader, SectionEyebrow } from "@/components/kitchen/shared";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
+import type { TranslationKey } from "@/i18n/messages";
 import { Feather } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type ShoppingReason =
+  | { kind: "recipe"; recipeId: RecipeId }
+  | { kind: "runningLow"; locationId: Exclude<KitchenLocationId, "all" | "other"> }
+  | { kind: "almostEmpty"; locationId: Exclude<KitchenLocationId, "all" | "other"> };
+
 type ShoppingItem = {
   id: string;
-  name: string;
-  category: string;
+  name?: string;
+  nameKey?: TranslationKey;
+  category: ShoppingCategoryId;
   suggested: boolean;
-  reason?: string;
+  reason?: ShoppingReason;
   bought: boolean;
 };
 
 const INITIAL_ITEMS: ShoppingItem[] = [
-  { id: "1", name: "Avocado", category: "Fresh", suggested: true, reason: "For Avocado & Eggs on Toast", bought: false },
-  { id: "2", name: "Sourdough bread", category: "Bakery", suggested: true, reason: "For Avocado & Eggs on Toast", bought: false },
-  { id: "3", name: "Beef mince (500g)", category: "Meat", suggested: true, reason: "For Spaghetti Bolognese", bought: false },
-  { id: "4", name: "Milk (semi-skimmed)", category: "Dairy", suggested: true, reason: "Running low in Fridge", bought: false },
-  { id: "5", name: "Paprika", category: "Spices", suggested: true, reason: "Almost empty in Spice Rack", bought: false },
+  {
+    id: "1",
+    nameKey: "kitchen.items.avocado",
+    category: "fresh",
+    suggested: true,
+    reason: { kind: "recipe", recipeId: "avocadoEggsToast" },
+    bought: false,
+  },
+  {
+    id: "2",
+    nameKey: "kitchen.items.sourdoughBread",
+    category: "bakery",
+    suggested: true,
+    reason: { kind: "recipe", recipeId: "avocadoEggsToast" },
+    bought: false,
+  },
+  {
+    id: "3",
+    nameKey: "kitchen.items.beefMince500g",
+    category: "meat",
+    suggested: true,
+    reason: { kind: "recipe", recipeId: "spaghettiBolognese" },
+    bought: false,
+  },
+  {
+    id: "4",
+    nameKey: "kitchen.items.milkSemiSkimmed",
+    category: "dairy",
+    suggested: true,
+    reason: { kind: "runningLow", locationId: "fridge" },
+    bought: false,
+  },
+  {
+    id: "5",
+    nameKey: "kitchen.items.paprika",
+    category: "spices",
+    suggested: true,
+    reason: { kind: "almostEmpty", locationId: "spiceRack" },
+    bought: false,
+  },
 ];
 
-const CATEGORY_ORDER = ["Fresh", "Meat", "Dairy", "Bakery", "Dry goods", "Spices", "Other"];
+const CATEGORY_ORDER: ShoppingCategoryId[] = [
+  "fresh",
+  "meat",
+  "dairy",
+  "bakery",
+  "dryGoods",
+  "spices",
+  "other",
+];
+
+function getItemName(t: ReturnType<typeof useI18n>["t"], item: ShoppingItem) {
+  if (item.name) {
+    return item.name;
+  }
+
+  return item.nameKey ? t(item.nameKey) : "";
+}
+
+function getReasonLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  reason: ShoppingReason | undefined,
+) {
+  if (!reason) {
+    return "";
+  }
+
+  switch (reason.kind) {
+    case "recipe":
+      return t("kitchen.shopping.reason.forRecipe", {
+        recipe: getRecipeName(t, reason.recipeId),
+      });
+    case "runningLow":
+      return t("kitchen.shopping.reason.runningLow", {
+        location: getLocationLabel(t, reason.locationId),
+      });
+    case "almostEmpty":
+      return t("kitchen.shopping.reason.almostEmpty", {
+        location: getLocationLabel(t, reason.locationId),
+      });
+  }
+}
 
 export default function ShoppingTab() {
+  const { t } = useI18n();
   const [items, setItems] = useState(INITIAL_ITEMS);
   const [showAdding, setShowAdding] = useState(false);
   const [newItemName, setNewItemName] = useState("");
@@ -40,7 +132,7 @@ export default function ShoppingTab() {
         category,
         items: unboughtItems.filter((item) => item.category === category),
       })).filter((group) => group.items.length > 0),
-    [unboughtItems]
+    [unboughtItems],
   );
 
   const toggleBought = (id: string) => {
@@ -53,10 +145,14 @@ export default function ShoppingTab() {
 
   const addItem = () => {
     const trimmed = newItemName.trim();
-    if (!trimmed) return;
+
+    if (!trimmed) {
+      return;
+    }
+
     setItems((prev) => [
       ...prev,
-      { id: `custom-${Date.now()}`, name: trimmed, category: "Other", suggested: false, bought: false },
+      { id: `custom-${Date.now()}`, name: trimmed, category: "other", suggested: false, bought: false },
     ]);
     setNewItemName("");
     setShowAdding(false);
@@ -64,10 +160,14 @@ export default function ShoppingTab() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <KitchenScreenHeader
-          title="Shopping List"
-          subtitle={`${unboughtItems.length} items to buy`}
+          title={t("kitchen.shopping.title")}
+          subtitle={t("kitchen.shopping.subtitle", { count: unboughtItems.length })}
           rightAction={
             <TouchableOpacity style={styles.addBtn} activeOpacity={0.75} onPress={() => setShowAdding(true)}>
               <Feather name="plus" size={16} color={colors.background} />
@@ -80,15 +180,22 @@ export default function ShoppingTab() {
             <TextInput
               value={newItemName}
               onChangeText={setNewItemName}
-              placeholder="Add an item..."
+              placeholder={t("kitchen.shopping.addPlaceholder")}
               placeholderTextColor={colors.muted}
               style={styles.addInput}
               autoFocus
             />
             <TouchableOpacity style={styles.addConfirm} activeOpacity={0.75} onPress={addItem}>
-              <Text style={styles.addConfirmText}>Add</Text>
+              <Text style={styles.addConfirmText}>{t("kitchen.shopping.addButton")}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.closeBtn} activeOpacity={0.75} onPress={() => { setShowAdding(false); setNewItemName(""); }}>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              activeOpacity={0.75}
+              onPress={() => {
+                setShowAdding(false);
+                setNewItemName("");
+              }}
+            >
               <Feather name="x" size={18} color={colors.muted} />
             </TouchableOpacity>
           </View>
@@ -97,21 +204,23 @@ export default function ShoppingTab() {
         {groupedItems.length === 0 && !showAdding ? (
           <View style={styles.emptyState}>
             <Feather name="shopping-cart" size={36} color={colors.border} />
-            <Text style={styles.emptyTitle}>All done!</Text>
-            <Text style={styles.emptySubtitle}>Your shopping list is empty.</Text>
+            <Text style={styles.emptyTitle}>{t("kitchen.shopping.empty.title")}</Text>
+            <Text style={styles.emptySubtitle}>{t("kitchen.shopping.empty.subtitle")}</Text>
           </View>
         ) : (
           <View style={styles.groupList}>
             {groupedItems.map((group) => (
               <View key={group.category}>
-                <SectionEyebrow>{group.category}</SectionEyebrow>
+                <SectionEyebrow>{getShoppingCategoryLabel(t, group.category)}</SectionEyebrow>
                 <View style={styles.groupCard}>
                   {group.items.map((item, index) => (
                     <View key={item.id} style={[styles.itemRow, index > 0 && styles.itemRowBorder]}>
                       <TouchableOpacity style={styles.checkCircle} activeOpacity={0.75} onPress={() => toggleBought(item.id)} />
                       <View style={styles.itemCopy}>
-                        <Text style={styles.itemName}>{item.name}</Text>
-                        {item.suggested && item.reason ? <Text style={styles.itemReason}>{item.reason}</Text> : null}
+                        <Text style={styles.itemName}>{getItemName(t, item)}</Text>
+                        {item.suggested && item.reason ? (
+                          <Text style={styles.itemReason}>{getReasonLabel(t, item.reason)}</Text>
+                        ) : null}
                       </View>
                       {!item.suggested ? (
                         <TouchableOpacity activeOpacity={0.75} onPress={() => removeItem(item.id)}>
@@ -128,18 +237,28 @@ export default function ShoppingTab() {
 
         {boughtItems.length > 0 ? (
           <View style={styles.boughtSection}>
-            <TouchableOpacity style={styles.boughtToggle} activeOpacity={0.75} onPress={() => setShowBought((value) => !value)}>
-              <Text style={styles.boughtToggleText}>Bought ({boughtItems.length})</Text>
+            <TouchableOpacity
+              style={styles.boughtToggle}
+              activeOpacity={0.75}
+              onPress={() => setShowBought((value) => !value)}
+            >
+              <Text style={styles.boughtToggleText}>
+                {t("kitchen.shopping.boughtToggle", { count: boughtItems.length })}
+              </Text>
               <Feather name={showBought ? "chevron-up" : "chevron-down"} size={14} color={colors.muted} />
             </TouchableOpacity>
             {showBought ? (
               <View style={styles.groupCard}>
                 {boughtItems.map((item, index) => (
                   <View key={item.id} style={[styles.itemRow, index > 0 && styles.itemRowBorder]}>
-                    <TouchableOpacity style={styles.checkCircleFilled} activeOpacity={0.75} onPress={() => toggleBought(item.id)}>
+                    <TouchableOpacity
+                      style={styles.checkCircleFilled}
+                      activeOpacity={0.75}
+                      onPress={() => toggleBought(item.id)}
+                    >
                       <Feather name="check" size={11} color={colors.background} />
                     </TouchableOpacity>
-                    <Text style={styles.boughtItem}>{item.name}</Text>
+                    <Text style={styles.boughtItem}>{getItemName(t, item)}</Text>
                     <TouchableOpacity activeOpacity={0.75} onPress={() => removeItem(item.id)}>
                       <Feather name="x" size={14} color={colors.muted} />
                     </TouchableOpacity>

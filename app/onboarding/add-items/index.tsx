@@ -1,10 +1,12 @@
 import MethodSelection from "@/components/items/MethodSelection";
+import { useI18n } from "@/i18n";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function AddItemsIndex() {
   const router = useRouter();
+  const { t } = useI18n();
   const { location } = useLocalSearchParams<{ location: string }>();
-  const storageName = location ?? "Fridge";
+  const storageName = location ?? t("addItems.defaultStorage");
 
   return (
     <MethodSelection
@@ -17,7 +19,7 @@ export default function AddItemsIndex() {
         router.push({ pathname: "/onboarding/add-items/voice", params: { location: storageName } })
       }
       onSelectManual={() =>
-        router.push({ pathname: "/onboarding/add-items/manual" })
+        router.push({ pathname: "/onboarding/add-items/manual", params: { location: storageName } })
       }
     />
   );

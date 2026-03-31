@@ -1,12 +1,28 @@
+import {
+  formatDateLabel,
+  getLocationLabel,
+  KITCHEN_FILL_KEYS,
+  type KitchenLocationId,
+} from "@/components/kitchen/data";
 import { KitchenScreenHeader, SectionEyebrow } from "@/components/kitchen/shared";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
+import type { TranslationKey } from "@/i18n/messages";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type FillLevel = "full" | "threeQuarter" | "half" | "quarter" | "nearlyEmpty";
+const FILL_META = {
+  full: { labelKey: KITCHEN_FILL_KEYS.full, percent: 100 },
+  threeQuarter: { labelKey: KITCHEN_FILL_KEYS.almostFull, percent: 75 },
+  half: { labelKey: KITCHEN_FILL_KEYS.halfLeft, percent: 50 },
+  quarter: { labelKey: KITCHEN_FILL_KEYS.runningLow, percent: 25 },
+  nearlyEmpty: { labelKey: KITCHEN_FILL_KEYS.almostEmpty, percent: 8 },
+} as const;
+
+type FillLevel = keyof typeof FILL_META;
 
 type PantryBatch = {
   id: number;
@@ -19,27 +35,19 @@ type PantryBatch = {
 
 type PantryItem = {
   id: string;
-  name: string;
+  nameKey: TranslationKey;
   type: "ingredient" | "cooked";
-  location: string;
+  locationId: Exclude<KitchenLocationId, "all" | "other" | "pantry">;
   countAsUnits: boolean;
   batches: PantryBatch[];
-};
-
-const FILL_META: Record<FillLevel, { label: string; percent: number }> = {
-  full: { label: "Full", percent: 100 },
-  threeQuarter: { label: "Almost full", percent: 75 },
-  half: { label: "Half left", percent: 50 },
-  quarter: { label: "Running low", percent: 25 },
-  nearlyEmpty: { label: "Almost empty", percent: 8 },
 };
 
 const ITEMS: PantryItem[] = [
   {
     id: "1",
-    name: "Semi-skimmed Milk",
+    nameKey: "kitchen.items.semiSkimmedMilk",
     type: "ingredient",
-    location: "Fridge",
+    locationId: "fridge",
     countAsUnits: false,
     batches: [
       { id: 1, qty: 1, fillLevel: "half", sealed: false, bestBefore: "2026-04-01" },
@@ -48,25 +56,25 @@ const ITEMS: PantryItem[] = [
   },
   {
     id: "2",
-    name: "Eggs",
+    nameKey: "kitchen.items.eggs",
     type: "ingredient",
-    location: "Fridge",
+    locationId: "fridge",
     countAsUnits: true,
     batches: [{ id: 3, qty: 8, fillLevel: "full", sealed: true, bestBefore: "2026-04-05" }],
   },
   {
     id: "3",
-    name: "Chicken Breast",
+    nameKey: "kitchen.items.chickenBreast",
     type: "ingredient",
-    location: "Freezer",
+    locationId: "freezer",
     countAsUnits: false,
     batches: [{ id: 4, qty: 1, fillLevel: "full", sealed: true, bestBefore: "2026-06-15" }],
   },
   {
     id: "4",
-    name: "Jollof Rice",
+    nameKey: "kitchen.items.jollofRice",
     type: "cooked",
-    location: "Fridge",
+    locationId: "fridge",
     countAsUnits: false,
     batches: [
       { id: 5, qty: 1, fillLevel: "threeQuarter", sealed: false, bestBefore: "2026-03-30", dateMade: "2026-03-26" },
@@ -74,28 +82,19 @@ const ITEMS: PantryItem[] = [
   },
   {
     id: "5",
-    name: "Paprika",
+    nameKey: "kitchen.items.paprika",
     type: "ingredient",
-    location: "Spice Rack",
+    locationId: "spiceRack",
     countAsUnits: false,
     batches: [{ id: 6, qty: 1, fillLevel: "nearlyEmpty", sealed: false, bestBefore: "2026-12-01" }],
   },
 ];
 
-const LOCATIONS = ["All", ...Array.from(new Set(ITEMS.map((item) => item.location)))];
+const LOCATIONS: KitchenLocationId[] = ["all", "fridge", "freezer", "spiceRack"];
 
 const daysUntil = (dateStr: string) => {
   const diff = new Date(dateStr).getTime() - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
-};
-
-const expiryLabel = (dateStr: string) => {
-  const days = daysUntil(dateStr);
-  if (days < 0) return "Expired";
-  if (days === 0) return "Expires today";
-  if (days === 1) return "Expires tomorrow";
-  if (days <= 7) return `${days} days left`;
-  return `Exp. ${new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
 };
 
 const expiryColor = (dateStr: string) => {
@@ -106,29 +105,48 @@ const expiryColor = (dateStr: string) => {
 };
 
 function PantryCard({ item }: { item: PantryItem }) {
+  const { language, t } = useI18n();
   const [expanded, setExpanded] = useState(false);
+
   const earliestExpiry = [...item.batches].sort((a, b) => a.bestBefore.localeCompare(b.bestBefore))[0]?.bestBefore;
   const summary = item.countAsUnits
-    ? `${item.batches.reduce((sum, batch) => sum + batch.qty, 0)} units`
+    ? t("kitchen.common.units", { count: item.batches.reduce((sum, batch) => sum + batch.qty, 0) })
     : item.batches.length === 1
-      ? FILL_META[item.batches[0].fillLevel].label
-      : `${item.batches.length} batches`;
+      ? t(FILL_META[item.batches[0].fillLevel].labelKey)
+      : t("kitchen.pantry.batches", { count: item.batches.length });
+
+  const getExpiryLabel = (dateStr: string) => {
+    const days = daysUntil(dateStr);
+
+    if (days < 0) return t("kitchen.expiry.expired");
+    if (days === 0) return t("kitchen.expiry.expiresToday");
+    if (days === 1) return t("kitchen.expiry.expiresTomorrow");
+    if (days <= 7) return t("kitchen.expiry.daysLeftLong", { count: days });
+
+    return t("kitchen.expiry.short", {
+      date: formatDateLabel(language, new Date(dateStr), { day: "numeric", month: "short" }),
+    });
+  };
 
   return (
     <View style={styles.itemCard}>
-      <TouchableOpacity style={styles.itemButton} activeOpacity={0.75} onPress={() => setExpanded((value) => !value)}>
+      <TouchableOpacity
+        style={styles.itemButton}
+        activeOpacity={0.75}
+        onPress={() => setExpanded((value) => !value)}
+      >
         <View style={styles.itemText}>
           <View style={styles.itemTitleRow}>
-            <Text style={styles.itemName}>{item.name}</Text>
+            <Text style={styles.itemName}>{t(item.nameKey)}</Text>
             {item.type === "cooked" ? (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>Cooked</Text>
+                <Text style={styles.badgeText}>{t("kitchen.pantry.cookedBadge")}</Text>
               </View>
             ) : null}
           </View>
           <Text style={styles.itemMeta}>
             {summary}
-            {earliestExpiry ? `  ·  ${expiryLabel(earliestExpiry)}` : ""}
+            {earliestExpiry ? `  ·  ${getExpiryLabel(earliestExpiry)}` : ""}
           </Text>
         </View>
         <Feather name={expanded ? "chevron-down" : "chevron-right"} size={16} color={colors.muted} />
@@ -139,43 +157,60 @@ function PantryCard({ item }: { item: PantryItem }) {
           {item.batches.map((batch, index) => (
             <View key={batch.id} style={[styles.batchBlock, index > 0 && styles.batchDivider]}>
               {item.batches.length > 1 ? (
-                <Text style={styles.batchLabel}>{item.type === "cooked" ? `Portion ${index + 1}` : `Batch ${index + 1}`}</Text>
+                <Text style={styles.batchLabel}>
+                  {item.type === "cooked"
+                    ? t("addItems.batch.label.portion", { index: index + 1 })
+                    : t("addItems.batch.label.batch", { index: index + 1 })}
+                </Text>
               ) : null}
+
               {item.countAsUnits ? (
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailKey}>Quantity</Text>
+                  <Text style={styles.detailKey}>{t("addItems.batch.field.quantity")}</Text>
                   <Text style={styles.detailValue}>{batch.qty}</Text>
                 </View>
               ) : (
                 <>
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailKey}>{batch.sealed ? "Sealed" : "Opened"}</Text>
-                    <Text style={styles.detailValue}>{FILL_META[batch.fillLevel].label}</Text>
+                    <Text style={styles.detailKey}>
+                      {t(batch.sealed ? "addItems.batch.state.sealed" : "addItems.batch.state.opened")}
+                    </Text>
+                    <Text style={styles.detailValue}>{t(FILL_META[batch.fillLevel].labelKey)}</Text>
                   </View>
                   <View style={styles.fillTrack}>
                     <View style={[styles.fillBar, { width: `${FILL_META[batch.fillLevel].percent}%` }]} />
                   </View>
                 </>
               )}
+
               <View style={styles.detailRow}>
-                <Text style={styles.detailKey}>Best before</Text>
+                <Text style={styles.detailKey}>{t("addItems.batch.field.bestBefore")}</Text>
                 <Text style={[styles.detailValue, { color: expiryColor(batch.bestBefore) }]}>
-                  {new Date(batch.bestBefore).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  {formatDateLabel(language, new Date(batch.bestBefore), {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </Text>
               </View>
+
               {batch.dateMade ? (
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailKey}>Date made</Text>
+                  <Text style={styles.detailKey}>{t("addItems.batch.field.dateMade")}</Text>
                   <Text style={styles.detailValue}>
-                    {new Date(batch.dateMade).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    {formatDateLabel(language, new Date(batch.dateMade), {
+                      day: "numeric",
+                      month: "short",
+                    })}
                   </Text>
                 </View>
               ) : null}
             </View>
           ))}
+
           <TouchableOpacity style={styles.editButton} activeOpacity={0.75}>
             <Feather name="edit-2" size={12} color={colors.muted} />
-            <Text style={styles.editButtonText}>Edit item</Text>
+            <Text style={styles.editButtonText}>{t("kitchen.pantry.editItem")}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -184,21 +219,27 @@ function PantryCard({ item }: { item: PantryItem }) {
 }
 
 export default function PantryTab() {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("All");
+  const [selectedLocation, setSelectedLocation] = useState<KitchenLocationId>("all");
 
   const filteredItems = ITEMS.filter((item) => {
-    const matchesLocation = selectedLocation === "All" || item.location === selectedLocation;
-    const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase());
+    const matchesLocation = selectedLocation === "all" || item.locationId === selectedLocation;
+    const matchesQuery = t(item.nameKey).toLowerCase().includes(query.toLowerCase());
+
     return matchesLocation && matchesQuery;
   });
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <KitchenScreenHeader
-          title="Pantry"
-          subtitle={`${filteredItems.length} items across your kitchen`}
+          title={t("kitchen.tabs.pantry")}
+          subtitle={t("kitchen.pantry.subtitle", { count: filteredItems.length })}
           rightAction={
             <TouchableOpacity style={styles.addBtn} activeOpacity={0.75}>
               <Feather name="plus" size={16} color={colors.background} />
@@ -211,29 +252,32 @@ export default function PantryTab() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search ingredients, meals, or batches"
+            placeholder={t("kitchen.pantry.searchPlaceholder")}
             placeholderTextColor={colors.muted}
             style={styles.searchInput}
           />
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {LOCATIONS.map((location) => {
-            const active = location === selectedLocation;
+          {LOCATIONS.map((locationId) => {
+            const active = locationId === selectedLocation;
+
             return (
               <TouchableOpacity
-                key={location}
+                key={locationId}
                 style={[styles.filterChip, active && styles.filterChipActive]}
                 activeOpacity={0.75}
-                onPress={() => setSelectedLocation(location)}
+                onPress={() => setSelectedLocation(locationId)}
               >
-                <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>{location}</Text>
+                <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
+                  {getLocationLabel(t, locationId)}
+                </Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
-        <SectionEyebrow>INVENTORY</SectionEyebrow>
+        <SectionEyebrow>{t("kitchen.pantry.inventory")}</SectionEyebrow>
         <View style={styles.list}>
           {filteredItems.map((item) => (
             <PantryCard key={item.id} item={item} />

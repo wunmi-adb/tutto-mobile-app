@@ -5,6 +5,7 @@ import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer
 import SelectableRow from "@/components/ui/SelectableRow";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -12,21 +13,23 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const LOCATIONS = [
-  { id: "fridge", label: "Fridge" },
-  { id: "freezer", label: "Freezer" },
-  { id: "pantry", label: "Pantry" },
-  { id: "spice-rack", label: "Spice Rack" },
-];
+  { id: "fridge", key: "storage.options.fridge" },
+  { id: "freezer", key: "storage.options.freezer" },
+  { id: "pantry", key: "storage.options.pantry" },
+  { id: "spice-rack", key: "storage.options.spiceRack" },
+] as const;
+
+type LocationId = (typeof LOCATIONS)[number]["id"];
 
 export default function Storage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string | null>(null);
+  const { t } = useI18n();
+  const [selected, setSelected] = useState<LocationId | "custom" | null>(null);
   const [customName, setCustomName] = useState("");
 
-  const handleSelect = (id: string) => {
+  const handleSelect = (id: LocationId) => {
     setSelected(id);
-    const loc = LOCATIONS.find((l) => l.id === id);
-    if (loc) setCustomName(loc.label);
+    setCustomName("");
   };
 
   const handleSelectCustom = () => {
@@ -54,24 +57,22 @@ export default function Storage() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.headingBlock}>
-            <Text style={styles.title}>Pick a storage location</Text>
-            <Text style={styles.subtitle}>
-              Choose one to start with — you can add more anytime
-            </Text>
+            <Text style={styles.title}>{t("storage.title")}</Text>
+            <Text style={styles.subtitle}>{t("storage.subtitle")}</Text>
           </View>
 
           <View style={styles.list}>
             {LOCATIONS.map((loc) => (
               <SelectableRow
                 key={loc.id}
-                label={loc.label}
+                label={t(loc.key)}
                 selected={selected === loc.id}
                 onPress={() => handleSelect(loc.id)}
                 variant="radio"
               />
             ))}
             <SelectableRow
-              label="Somewhere else"
+              label={t("storage.options.custom")}
               selected={selected === "custom"}
               onPress={handleSelectCustom}
               variant="radio"
@@ -81,23 +82,25 @@ export default function Storage() {
 
           {selected === "custom" && (
             <Input
-              label="NAME YOUR LOCATION"
+              label={t("storage.customLabel")}
               value={customName}
               onChangeText={setCustomName}
-              placeholder="e.g. Garage Shelf, Basement"
+              placeholder={t("storage.customPlaceholder")}
               autoFocus
               containerStyle={styles.customInput}
             />
           )}
 
           <Button
-            title="Stock this location"
+            title={t("storage.cta")}
             disabled={!canContinue}
             onPress={() => {
               const locationName =
                 selected === "custom"
                   ? customName
-                  : LOCATIONS.find((l) => l.id === selected)?.label ?? "Fridge";
+                  : selected
+                    ? t(LOCATIONS.find((l) => l.id === selected)?.key ?? "storage.options.fridge")
+                    : t("storage.options.fridge");
               router.push({ pathname: "/onboarding/add-items", params: { location: locationName } });
             }}
             style={styles.button}

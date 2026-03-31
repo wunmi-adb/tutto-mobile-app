@@ -1,26 +1,33 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { NextMealInfo } from "./data";
+import {
+  getRecipeName,
+  RECIPE_DEFINITIONS,
+  type RecipeId,
+} from "@/components/kitchen/data";
 
 interface Props {
-  meal: NextMealInfo;
+  mealId: RecipeId;
   onShuffle: () => void;
   onViewRecipe: () => void;
 }
 
-export default function MealCard({ meal, onShuffle, onViewRecipe }: Props) {
+export default function MealCard({ mealId, onShuffle, onViewRecipe }: Props) {
   const router = useRouter();
+  const { t } = useI18n();
+  const meal = RECIPE_DEFINITIONS[mealId];
 
   return (
     <>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{"TONIGHT'S DINNER"}</Text>
+        <Text style={styles.sectionTitle}>{t("kitchen.home.meal.title")}</Text>
         <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/kitchen")}>
           <View style={styles.viewAllRow}>
-            <Text style={styles.viewAll}>Meal plan</Text>
+            <Text style={styles.viewAll}>{t("kitchen.home.meal.planLink")}</Text>
             <Feather name="arrow-right" size={10} color={colors.text} />
           </View>
         </TouchableOpacity>
@@ -28,14 +35,14 @@ export default function MealCard({ meal, onShuffle, onViewRecipe }: Props) {
       <View style={styles.mealCard}>
         <TouchableOpacity style={styles.mealCardBody} activeOpacity={0.7} onPress={onViewRecipe}>
           <View style={styles.mealCardLeft}>
-            <Text style={styles.mealName}>{meal.name}</Text>
+            <Text style={styles.mealName}>{getRecipeName(t, mealId)}</Text>
             <View style={styles.mealMeta}>
               <Feather name="clock" size={11} color={colors.muted} />
-              <Text style={styles.mealMetaText}>{meal.time}</Text>
+              <Text style={styles.mealMetaText}>{t("kitchen.common.minutes", { count: meal.timeMinutes })}</Text>
               <Feather name="zap" size={11} color={colors.muted} />
-              <Text style={styles.mealMetaText}>{meal.calories} cal</Text>
+              <Text style={styles.mealMetaText}>{t("kitchen.common.calories", { count: meal.calories })}</Text>
               <Feather name="users" size={11} color={colors.muted} />
-              <Text style={styles.mealMetaText}>{meal.servings} servings</Text>
+              <Text style={styles.mealMetaText}>{t("kitchen.common.servings", { count: meal.servings })}</Text>
             </View>
             <View style={styles.macroPills}>
               {[{ l: "P", v: meal.protein }, { l: "C", v: meal.carbs }, { l: "F", v: meal.fat }].map((m) => (
@@ -51,11 +58,11 @@ export default function MealCard({ meal, onShuffle, onViewRecipe }: Props) {
         <View style={styles.mealActions}>
           <TouchableOpacity style={[styles.mealAction, styles.mealActionBorder]} activeOpacity={0.7} onPress={onShuffle}>
             <Feather name="shuffle" size={13} color={colors.muted} />
-            <Text style={styles.mealActionText}>Change</Text>
+            <Text style={styles.mealActionText}>{t("kitchen.home.meal.change")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.mealAction, styles.mealActionBorder]} activeOpacity={0.7} onPress={onViewRecipe}>
             <Feather name="eye" size={13} color={colors.muted} />
-            <Text style={[styles.mealActionText]}>View recipe</Text>
+            <Text style={[styles.mealActionText]}>{t("kitchen.home.meal.viewRecipe")}</Text>
           </TouchableOpacity>
         
         </View>

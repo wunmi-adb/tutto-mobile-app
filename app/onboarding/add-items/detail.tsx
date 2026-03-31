@@ -1,8 +1,10 @@
 import AddItemView from "@/components/items/AddItemView";
+import { useI18n } from "@/i18n";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function Detail() {
   const router = useRouter();
+  const { t } = useI18n();
   const { location, items, currentIndex, completedIndices } =
     useLocalSearchParams<{
       location: string;
@@ -11,7 +13,7 @@ export default function Detail() {
       completedIndices: string;
     }>();
 
-  const storageName = location ?? "Fridge";
+  const storageName = location ?? t("addItems.defaultStorage");
 
   const parsedItems: { name: string }[] = (() => {
     try { return items ? JSON.parse(items) : []; } catch { return []; }

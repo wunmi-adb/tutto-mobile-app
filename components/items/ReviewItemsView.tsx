@@ -2,6 +2,7 @@ import Button from "@/components/ui/Button";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import {
@@ -29,6 +30,7 @@ export default function ReviewItemsView({
   onContinue,
   onBack,
 }: Props) {
+  const { t } = useI18n();
   const [items, setItems] = useState<DetectedItem[]>(initialItems);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -87,9 +89,9 @@ export default function ReviewItemsView({
         </View>
 
         <View style={styles.headingBlock}>
-          <Text style={styles.title}>Review your items</Text>
+          <Text style={styles.title}>{t("addItems.review.title")}</Text>
           <Text style={styles.subtitle}>
-            Remove anything that doesn&apos;t look right, or edit to fix names
+            {t("addItems.review.subtitle")}
           </Text>
         </View>
 
@@ -153,7 +155,7 @@ export default function ReviewItemsView({
                         activeOpacity={0.8}
                         onPress={() => handleDeletePress(index)}
                       >
-                        <Text style={styles.removeBtnText}>Remove</Text>
+                        <Text style={styles.removeBtnText}>{t("addItems.review.remove")}</Text>
                       </TouchableOpacity>
                     </View>
                   ) : (
@@ -172,7 +174,7 @@ export default function ReviewItemsView({
 
           {items.length === 0 && (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No items left — go back to add more</Text>
+              <Text style={styles.emptyText}>{t("addItems.review.empty")}</Text>
             </View>
           )}
         </View>
@@ -180,8 +182,13 @@ export default function ReviewItemsView({
         <Button
           title={
             items.length > 0
-              ? `Continue with ${items.length} ${items.length === 1 ? "item" : "items"}`
-              : "Continue"
+              ? t(
+                  items.length === 1
+                    ? "addItems.review.continue.singular"
+                    : "addItems.review.continue.plural",
+                  { count: items.length },
+                )
+              : t("addItems.review.continue.empty")
           }
           disabled={items.length === 0}
           onPress={() => onContinue(items)}

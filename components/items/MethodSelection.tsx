@@ -1,5 +1,6 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +20,8 @@ export default function MethodSelection({
   onSelectVoice,
   onSelectManual,
 }: Props) {
+  const { t } = useI18n();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -33,10 +36,8 @@ export default function MethodSelection({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headingBlock}>
-          <Text style={styles.title}>{`Stock your ${storageName}`}</Text>
-          <Text style={styles.subtitle}>
-            {"Choose how you'd like to add your first items"}
-          </Text>
+          <Text style={styles.title}>{t("addItems.method.title", { storageName })}</Text>
+          <Text style={styles.subtitle}>{t("addItems.method.subtitle")}</Text>
         </View>
 
         <View style={styles.list}>
@@ -45,8 +46,8 @@ export default function MethodSelection({
               <Feather name="camera" size={22} color={colors.brand} />
             </View>
             <View style={styles.text}>
-              <Text style={styles.label}>Take a photo</Text>
-              <Text style={styles.sublabel}>Snap your shelf — AI detects the items</Text>
+              <Text style={styles.label}>{t("addItems.method.camera.title")}</Text>
+              <Text style={styles.sublabel}>{t("addItems.method.camera.subtitle")}</Text>
             </View>
           </TouchableOpacity>
 
@@ -55,8 +56,8 @@ export default function MethodSelection({
               <Feather name="mic" size={22} color={colors.brand} />
             </View>
             <View style={styles.text}>
-              <Text style={styles.label}>Voice note</Text>
-              <Text style={styles.sublabel}>{"Read out your items — we'll transcribe them"}</Text>
+              <Text style={styles.label}>{t("addItems.method.voice.title")}</Text>
+              <Text style={styles.sublabel}>{t("addItems.method.voice.subtitle")}</Text>
             </View>
           </TouchableOpacity>
 
@@ -65,8 +66,8 @@ export default function MethodSelection({
               <Feather name="edit-2" size={22} color={colors.muted} />
             </View>
             <View style={styles.text}>
-              <Text style={styles.label}>Type it in</Text>
-              <Text style={styles.sublabel}>Add items one by one manually</Text>
+              <Text style={styles.label}>{t("addItems.method.manual.title")}</Text>
+              <Text style={styles.sublabel}>{t("addItems.method.manual.subtitle")}</Text>
             </View>
           </TouchableOpacity>
         </View>

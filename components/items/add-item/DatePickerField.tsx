@@ -1,5 +1,6 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Feather } from "@expo/vector-icons";
 import { useRef, useState } from "react";
@@ -25,11 +26,13 @@ function toDate(value: string): Date {
   return new Date(y, m - 1, d);
 }
 
-function formatDisplay(value: string): string {
+function formatDisplay(value: string, language: string): string {
   if (!value) return "";
-  const [y, m, d] = value.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${parseInt(d)} ${months[parseInt(m, 10) - 1]} ${y}`;
+  return new Intl.DateTimeFormat(language, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(toDate(value));
 }
 
 function toISODate(date: Date): string {
@@ -40,6 +43,7 @@ function toISODate(date: Date): string {
 }
 
 export default function DatePickerField({ label, value, onChange }: Props) {
+  const { language, t } = useI18n();
   const [modalVisible, setModalVisible] = useState(false);
   const [androidOpen, setAndroidOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(() => toDate(value));
@@ -87,7 +91,7 @@ export default function DatePickerField({ label, value, onChange }: Props) {
         >
           <Feather name="calendar" size={15} color={colors.muted} />
           <Text style={[styles.value, !value && styles.placeholder]}>
-            {value ? formatDisplay(value) : `Select ${label.toLowerCase()}`}
+            {value ? formatDisplay(value, language) : t("addItems.datePicker.select", { label: label.toLowerCase() })}
           </Text>
         </TouchableOpacity>
       </View>
@@ -124,11 +128,11 @@ export default function DatePickerField({ label, value, onChange }: Props) {
             <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetAnim }] }]}>
               <View style={styles.sheetHeader}>
                 <TouchableOpacity onPress={() => closeSheet("clear")}>
-                  <Text style={styles.sheetAction}>Clear</Text>
+                  <Text style={styles.sheetAction}>{t("addItems.datePicker.clear")}</Text>
                 </TouchableOpacity>
                 <Text style={styles.sheetTitle}>{label}</Text>
                 <TouchableOpacity onPress={() => closeSheet("done")}>
-                  <Text style={[styles.sheetAction, styles.sheetDone]}>Done</Text>
+                  <Text style={[styles.sheetAction, styles.sheetDone]}>{t("addItems.datePicker.done")}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.pickerWrapper}>

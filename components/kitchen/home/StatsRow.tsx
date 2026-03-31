@@ -3,31 +3,33 @@ import PantryIllustration from "@/assets/images/icon-pantry.png";
 import ShoppingIllustration from "@/assets/images/icon-shopping.png";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const STATS = [
-  { label: "PANTRY", value: "24", tab: "pantry", image: PantryIllustration },
-  { label: "MEALS", value: "7", tab: "plan", image: MealsIllustration },
-  { label: "TO BUY", value: "5", tab: "shopping", image: ShoppingIllustration },
+  { labelKey: "kitchen.home.stats.pantry", value: "24", tab: "pantry", image: PantryIllustration },
+  { labelKey: "kitchen.home.stats.meals", value: "7", tab: "plan", image: MealsIllustration },
+  { labelKey: "kitchen.home.stats.toBuy", value: "5", tab: "shopping", image: ShoppingIllustration },
 ];
 
 export default function StatsRow() {
   const router = useRouter();
+  const { t } = useI18n();
 
   return (
     <View style={styles.statsRow}>
       {STATS.map((stat) => (
         <TouchableOpacity
-          key={stat.label}
+          key={stat.labelKey}
           style={styles.statCard}
           activeOpacity={0.97}
           onPress={() => router.push(`/kitchen/${stat.tab}`)}
         >
           <Image source={stat.image} style={styles.statImage} resizeMode="contain" />
           <Text style={styles.statValue}>{stat.value}</Text>
-          <Text style={styles.statLabel}>{stat.label}</Text>
+          <Text style={styles.statLabel}>{t(stat.labelKey)}</Text>
           <Feather name="arrow-right" size={12} color={colors.muted + "80"} style={styles.statArrow} />
         </TouchableOpacity>
       ))}

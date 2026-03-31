@@ -1,11 +1,12 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import DatePickerField from "./DatePickerField";
 import FillGauge from "./FillGauge";
 import QtyStepper from "./QtyStepper";
-import { Batch, FILL_OPTIONS, FillLevel, USE_WITHIN } from "./types";
+import { Batch, FillLevel, USE_WITHIN } from "./types";
 
 type Props = {
   batch: Batch;
@@ -32,16 +33,33 @@ export default function BatchCard({
   onRemove,
   onUpdate,
 }: Props) {
+  const { t } = useI18n();
+
+  const fillLabels: Record<FillLevel, string> = {
+    full: t("addItems.batch.fill.full"),
+    "three-quarter": t("addItems.batch.fill.threeQuarter"),
+    half: t("addItems.batch.fill.half"),
+    quarter: t("addItems.batch.fill.quarter"),
+    "nearly-empty": t("addItems.batch.fill.nearlyEmpty"),
+  };
+
   const label = isIngredient
-    ? totalBatches > 1 ? `Batch ${batchIndex + 1}` : "Details"
-    : totalBatches > 1 ? `Portion ${batchIndex + 1}` : "Details";
+    ? totalBatches > 1
+      ? t("addItems.batch.label.batch", { index: batchIndex + 1 })
+      : t("addItems.batch.label.details")
+    : totalBatches > 1
+      ? t("addItems.batch.label.portion", { index: batchIndex + 1 })
+      : t("addItems.batch.label.details");
 
   const summary = isIngredient
     ? countAsUnits
-      ? `× ${batch.qty}`
-      : `${FILL_OPTIONS.find((o) => o.key === batch.fillLevel)?.label} · ${batch.sealed ? "Sealed" : "Opened"}`
+      ? t("addItems.batch.summary.quantity", { qty: batch.qty })
+      : t("addItems.batch.summary.fill", {
+          fill: fillLabels[batch.fillLevel],
+          state: batch.sealed ? t("addItems.batch.state.sealed") : t("addItems.batch.state.opened"),
+        })
     : batch.dateMade
-    ? `Made ${batch.dateMade}`
+      ? t("addItems.batch.summary.made", { date: batch.dateMade })
     : "";
 
   return (
@@ -81,11 +99,11 @@ export default function BatchCard({
             countAsUnits ? (
               <>
                 <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Quantity</Text>
+                  <Text style={styles.fieldLabel}>{t("addItems.batch.field.quantity")}</Text>
                   <QtyStepper value={batch.qty} onChange={(n) => onUpdate({ qty: n })} />
                 </View>
                 <DatePickerField
-                  label="Best before"
+                  label={t("addItems.batch.field.bestBefore")}
                   value={batch.bestBefore}
                   onChange={(v) => onUpdate({ bestBefore: v })}
                 />
@@ -109,7 +127,7 @@ export default function BatchCard({
                         }
                       >
                         <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
-                          {s === "sealed" ? "Sealed" : "Opened"}
+                          {s === "sealed" ? t("addItems.batch.state.sealed") : t("addItems.batch.state.opened")}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -119,7 +137,7 @@ export default function BatchCard({
                 {/* Fill gauge — only when opened */}
                 {!batch.sealed && (
                   <View style={styles.field}>
-                    <Text style={styles.fieldLabel}>How much is left?</Text>
+                    <Text style={styles.fieldLabel}>{t("addItems.batch.field.amountLeft")}</Text>
                     <FillGauge
                       level={batch.fillLevel}
                       onChange={(l) => onUpdate({ fillLevel: l })}
@@ -130,7 +148,7 @@ export default function BatchCard({
                 {/* Use-within or best before */}
                 {trackUseWithin && !batch.sealed ? (
                   <View style={styles.field}>
-                    <Text style={styles.fieldLabel}>Use within</Text>
+                    <Text style={styles.fieldLabel}>{t("addItems.batch.field.useWithin")}</Text>
                     <View style={styles.chipRow}>
                       {USE_WITHIN.map((opt) => {
                         const active = batch.useWithinDays === opt.days;
@@ -142,7 +160,7 @@ export default function BatchCard({
                             onPress={() => onUpdate({ useWithinDays: opt.days })}
                           >
                             <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                              {opt.label}
+                              {t(opt.key)}
                             </Text>
                           </TouchableOpacity>
                         );
@@ -151,7 +169,7 @@ export default function BatchCard({
                   </View>
                 ) : (
                   <DatePickerField
-                    label="Best before"
+                    label={t("addItems.batch.field.bestBefore")}
                     value={batch.bestBefore}
                     onChange={(v) => onUpdate({ bestBefore: v })}
                   />
@@ -161,19 +179,19 @@ export default function BatchCard({
           ) : (
             <>
               <DatePickerField
-                label="Date made"
+                label={t("addItems.batch.field.dateMade")}
                 value={batch.dateMade}
                 onChange={(v) => onUpdate({ dateMade: v })}
               />
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>How much is left?</Text>
+                <Text style={styles.fieldLabel}>{t("addItems.batch.field.amountLeft")}</Text>
                 <FillGauge
                   level={batch.fillLevel}
                   onChange={(l) => onUpdate({ fillLevel: l })}
                 />
               </View>
               <DatePickerField
-                label="Best before"
+                label={t("addItems.batch.field.bestBefore")}
                 value={batch.bestBefore}
                 onChange={(v) => onUpdate({ bestBefore: v })}
               />

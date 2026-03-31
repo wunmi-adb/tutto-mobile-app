@@ -5,6 +5,7 @@ import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -12,48 +13,50 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const COMMON_DIETS = [
-  "Vegetarian",
-  "Vegan",
-  "Pescatarian",
-  "Keto",
-  "Gluten-free",
-  "Dairy-free",
-  "Halal",
-  "Kosher",
-  "Paleo",
-  "Low-carb",
-  "Whole30",
-  "Mediterranean",
-];
+  { id: "vegetarian", key: "dietary.options.vegetarian" },
+  { id: "vegan", key: "dietary.options.vegan" },
+  { id: "pescatarian", key: "dietary.options.pescatarian" },
+  { id: "keto", key: "dietary.options.keto" },
+  { id: "glutenFree", key: "dietary.options.glutenFree" },
+  { id: "dairyFree", key: "dietary.options.dairyFree" },
+  { id: "halal", key: "dietary.options.halal" },
+  { id: "kosher", key: "dietary.options.kosher" },
+  { id: "paleo", key: "dietary.options.paleo" },
+  { id: "lowCarb", key: "dietary.options.lowCarb" },
+  { id: "whole30", key: "dietary.options.whole30" },
+  { id: "mediterranean", key: "dietary.options.mediterranean" },
+] as const;
+
+type CommonDietId = (typeof COMMON_DIETS)[number]["id"];
 
 export default function Dietary() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string[]>([]);
+  const { t } = useI18n();
+  const [selectedDiets, setSelectedDiets] = useState<CommonDietId[]>([]);
+  const [customDiets, setCustomDiets] = useState<string[]>([]);
 
-  const isSelected = (name: string) =>
-    selected.some((c) => c.toLowerCase() === name.toLowerCase());
+  const isSelected = (id: CommonDietId) => selectedDiets.includes(id);
 
-  const toggleChip = (name: string) => {
-    if (isSelected(name)) {
-      setSelected(selected.filter((c) => c.toLowerCase() !== name.toLowerCase()));
+  const toggleChip = (id: CommonDietId) => {
+    if (isSelected(id)) {
+      setSelectedDiets(selectedDiets.filter((value) => value !== id));
     } else {
-      setSelected([...selected, name]);
+      setSelectedDiets([...selectedDiets, id]);
     }
   };
 
   const addCustom = (value: string) => {
-    if (!isSelected(value)) {
-      setSelected((prev) => [...prev, value]);
+    const exists = customDiets.some((diet) => diet.toLowerCase() === value.toLowerCase());
+
+    if (!exists) {
+      setCustomDiets((prev) => [...prev, value]);
     }
   };
 
   const removeCustom = (chip: string) => {
-    setSelected(selected.filter((c) => c !== chip));
+    setCustomDiets(customDiets.filter((diet) => diet !== chip));
   };
-
-  const customChips = selected.filter(
-    (c) => !COMMON_DIETS.some((d) => d.toLowerCase() === c.toLowerCase())
-  );
+  const canContinue = selectedDiets.length > 0 || customDiets.length > 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -65,7 +68,7 @@ export default function Dietary() {
         }
         rightAccessory={
           <TouchableOpacity onPress={() => router.push("/onboarding/allergies")} activeOpacity={0.7}>
-            <Text style={styles.skip}>Skip</Text>
+            <Text style={styles.skip}>{t("dietary.skip")}</Text>
           </TouchableOpacity>
         }
       />
@@ -77,35 +80,36 @@ export default function Dietary() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-        <View style={styles.headingBlock}>
-          <Text style={styles.title}>Any dietary needs?</Text>
-          <Text style={styles.subtitle}>Tap to select, or add your own below</Text>
-        </View>
+          <View style={styles.headingBlock}>
+            <Text style={styles.title}>{t("dietary.title")}</Text>
+            <Text style={styles.subtitle}>{t("dietary.subtitle")}</Text>
+          </View>
 
-        <View style={styles.chipGrid}>
-          {COMMON_DIETS.map((name) => (
-            <Chip
-              key={name}
-              label={name}
-              selected={isSelected(name)}
-              onPress={() => toggleChip(name)}
-            />
-          ))}
-        </View>
+          <View style={styles.chipGrid}>
+            {COMMON_DIETS.map((diet) => (
+              <Chip
+                key={diet.id}
+                label={t(diet.key)}
+                selected={isSelected(diet.id)}
+                onPress={() => toggleChip(diet.id)}
+              />
+            ))}
+          </View>
 
-        <ChipInput
-          label="ADD CUSTOM"
-          chips={customChips}
-          onAdd={addCustom}
-          onRemove={removeCustom}
-        />
+          <ChipInput
+            label={t("dietary.addCustom")}
+            chips={customDiets}
+            onAdd={addCustom}
+            onRemove={removeCustom}
+            placeholder={t("dietary.customPlaceholder")}
+          />
 
-        <Button
-          title="Continue"
-          disabled={selected.length === 0}
-          onPress={() => router.push("/onboarding/allergies")}
-          style={styles.button}
-        />
+          <Button
+            title={t("dietary.cta")}
+            disabled={!canContinue}
+            onPress={() => router.push("/onboarding/allergies")}
+            style={styles.button}
+          />
         </ScrollView>
       </KeyboardAvoidingContainer>
     </SafeAreaView>

@@ -1,11 +1,13 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function KitchenLayout() {
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
 
   return (
     <Tabs
@@ -32,14 +34,14 @@ export default function KitchenLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Kitchen",
+          title: t("kitchen.tabs.home"),
           tabBarIcon: ({ color }) => <Feather name="home" size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="pantry"
         options={{
-          title: "Pantry",
+          title: t("kitchen.tabs.pantry"),
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="food-outline" size={20} color={color} />
           ),
@@ -48,21 +50,21 @@ export default function KitchenLayout() {
       <Tabs.Screen
         name="library"
         options={{
-          title: "Recipe",
+          title: t("kitchen.tabs.library"),
           tabBarIcon: ({ color }) => <Feather name="book-open" size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="plan"
         options={{
-          title: "Plan",
+          title: t("kitchen.tabs.plan"),
           tabBarIcon: ({ color }) => <Feather name="calendar" size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="shopping"
         options={{
-          title: "Shopping",
+          title: t("kitchen.tabs.shopping"),
           tabBarIcon: ({ color }) => <Feather name="shopping-cart" size={20} color={color} />,
         }}
       />

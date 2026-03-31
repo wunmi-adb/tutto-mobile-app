@@ -1,5 +1,6 @@
 import Button from "@/components/ui/Button";
 import { colors } from "@/constants/colors";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
@@ -20,8 +21,10 @@ export default function RecordingControls({
   onPause,
   onResume,
 }: Props) {
+  const { t } = useI18n();
+
   if (!isRecording) {
-    return <Button title="Start recording" onPress={onStart} style={styles.btn} />;
+    return <Button title={t("addItems.voice.controls.start")} onPress={onStart} style={styles.btn} />;
   }
 
   return (
@@ -33,7 +36,7 @@ export default function RecordingControls({
       >
         <Feather name={isPaused ? "play" : "pause"} size={20} color={colors.text} />
       </TouchableOpacity>
-      <Button title="Done recording" onPress={onStop} style={styles.doneBtn} />
+      <Button title={t("addItems.voice.controls.done")} onPress={onStop} style={styles.doneBtn} />
     </View>
   );
 }

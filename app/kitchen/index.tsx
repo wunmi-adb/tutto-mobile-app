@@ -4,19 +4,19 @@ import MealCard from "@/components/kitchen/home/MealCard";
 import RecentActivity from "@/components/kitchen/home/RecentActivity";
 import RecipeDetail from "@/components/kitchen/home/RecipeDetail";
 import StatsRow from "@/components/kitchen/home/StatsRow";
-import { NEXT_MEALS, NextMealInfo } from "@/components/kitchen/home/data";
+import { HOME_MEAL_IDS, type RecipeId } from "@/components/kitchen/data";
 import { colors } from "@/constants/colors";
 import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeTab() {
-  const [nextMeal, setNextMeal] = useState<NextMealInfo>(NEXT_MEALS[0]);
+  const [nextMealId, setNextMealId] = useState<RecipeId>(HOME_MEAL_IDS[0]);
   const [viewingRecipe, setViewingRecipe] = useState(false);
 
   const shuffleMeal = () => {
-    const others = NEXT_MEALS.filter((m) => m.name !== nextMeal.name);
-    setNextMeal(others[Math.floor(Math.random() * others.length)]);
+    const otherMealIds = HOME_MEAL_IDS.filter((mealId) => mealId !== nextMealId);
+    setNextMealId(otherMealIds[Math.floor(Math.random() * otherMealIds.length)]);
   };
 
   return (
@@ -29,12 +29,12 @@ export default function HomeTab() {
         <HomeHeader />
         <StatsRow />
         <ExpiringSection />
-        <MealCard meal={nextMeal} onShuffle={shuffleMeal} onViewRecipe={() => setViewingRecipe(true)} />
+        <MealCard mealId={nextMealId} onShuffle={shuffleMeal} onViewRecipe={() => setViewingRecipe(true)} />
         <RecentActivity />
       </ScrollView>
 
       {viewingRecipe && (
-        <RecipeDetail meal={nextMeal} onClose={() => setViewingRecipe(false)} />
+        <RecipeDetail mealId={nextMealId} onClose={() => setViewingRecipe(false)} />
       )}
     </SafeAreaView>
   );
