@@ -5,7 +5,7 @@ import { StyleSheet } from "react-native";
 
 type Props = {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   label: string;
   value: string;
   placeholder: string;
@@ -53,4 +53,3 @@ const styles = StyleSheet.create({
     minHeight: 140,
   },
 });
-

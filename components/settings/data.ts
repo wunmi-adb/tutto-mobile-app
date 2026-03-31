@@ -42,10 +42,12 @@ export const CUISINE_OPTIONS = [
 ];
 
 export const MEAL_SLOT_OPTIONS = [
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Snacks",
+  { value: "Breakfast", label: "Breakfast", sublabel: "Morning" },
+  { value: "Brunch", label: "Brunch", sublabel: "Late morning" },
+  { value: "Lunch", label: "Lunch", sublabel: "Midday" },
+  { value: "Snacks", label: "Snacks", sublabel: "Between meals" },
+  { value: "Dinner", label: "Dinner", sublabel: "Evening" },
+  { value: "Supper", label: "Supper", sublabel: "Late evening" },
 ];
 
 export const LANGUAGE_OPTIONS = [
@@ -56,4 +58,3 @@ export const LANGUAGE_OPTIONS = [
   { code: "ja", label: "Japanese" },
   { code: "tr", label: "Turkish" },
 ];
-
