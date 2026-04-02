@@ -1,4 +1,5 @@
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
+import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
@@ -6,10 +7,9 @@ import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
-import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const COMMON_APPLIANCES = [
@@ -65,13 +65,7 @@ export default function Appliances() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar
-        leftAccessory={
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={16} color={colors.text} />
-          </TouchableOpacity>
-        }
-      />
+      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
 
       <KeyboardAvoidingContainer style={styles.keyboard}>
         <ScrollView

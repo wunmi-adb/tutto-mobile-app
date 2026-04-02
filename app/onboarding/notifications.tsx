@@ -1,14 +1,15 @@
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
+import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
+import HapticPressable from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
-import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Linking, Platform, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type NotificationStatusKey =
@@ -82,13 +83,7 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar
-        leftAccessory={
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={16} color={colors.text} />
-          </TouchableOpacity>
-        }
-      />
+      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
 
         <View style={styles.content}>
         <View style={styles.illustrationWrap}>
@@ -115,13 +110,13 @@ export default function NotificationsScreen() {
         />
         {statusMessageKey ? <Text style={styles.statusMessage}>{t(statusMessageKey)}</Text> : null}
         {statusMessageKey ? (
-          <TouchableOpacity onPress={handleOpenSettings} activeOpacity={0.7} style={styles.settingsButton}>
+          <HapticPressable onPress={handleOpenSettings} pressedOpacity={0.7} style={styles.settingsButton}>
             <Text style={styles.settingsText}>{t("notifications.openSettings")}</Text>
-          </TouchableOpacity>
+          </HapticPressable>
         ) : null}
-        <TouchableOpacity onPress={handleContinue} activeOpacity={0.7} style={styles.laterButton}>
+        <HapticPressable onPress={handleContinue} pressedOpacity={0.7} style={styles.laterButton}>
           <Text style={styles.laterText}>{t("notifications.later")}</Text>
-        </TouchableOpacity>
+        </HapticPressable>
       </View>
     </SafeAreaView>
   );
@@ -131,15 +126,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
   },
   content: {
     flex: 1,

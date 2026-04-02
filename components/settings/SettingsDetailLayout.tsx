@@ -1,8 +1,8 @@
+import BackButton from "@/components/ui/BackButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
-import { Feather } from "@expo/vector-icons";
 import { ReactNode } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   title: string;
@@ -27,9 +27,7 @@ export default function SettingsDetailLayout({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Pressable style={styles.backButton} onPress={onBack}>
-          <Feather name="arrow-left" size={16} color={colors.text} />
-        </Pressable>
+        <BackButton style={styles.backButton} onPress={onBack} />
 
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
@@ -60,10 +58,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
     marginBottom: 24,
   },
   header: {
@@ -92,4 +86,3 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
   },
 });
-

@@ -1,4 +1,5 @@
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
+import HapticPressable from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
@@ -6,7 +7,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HouseholdChoose() {
@@ -27,13 +28,7 @@ export default function HouseholdChoose() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar
-        leftAccessory={
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={16} color={colors.text} />
-          </TouchableOpacity>
-        }
-      />
+      <OnboardingTopBar />
 
       <View style={styles.content}>
         <View style={styles.headingBlock}>
@@ -42,10 +37,11 @@ export default function HouseholdChoose() {
         </View>
 
         <View style={styles.cards}>
-          <TouchableOpacity
+          <HapticPressable
             style={styles.card}
             onPress={() => router.push("/onboarding/household/create")}
-            activeOpacity={0.98}
+            pressedOpacity={0.98}
+            hapticType="light"
           >
             <View style={[styles.cardIcon, { backgroundColor: colors.brand }]}>
               <Feather name="plus" size={22} color={colors.background} />
@@ -56,12 +52,13 @@ export default function HouseholdChoose() {
                 {t("household.choose.createDescription")}
               </Text>
             </View>
-          </TouchableOpacity>
+          </HapticPressable>
 
-          <TouchableOpacity
+          <HapticPressable
             style={styles.card}
             onPress={() => router.push("/onboarding/household/join")}
-            activeOpacity={0.98}
+            pressedOpacity={0.98}
+            hapticType="light"
           >
             <View style={[styles.cardIcon, styles.cardIconBordered]}>
               <Feather name="users" size={22} color={colors.text} />
@@ -72,7 +69,7 @@ export default function HouseholdChoose() {
                 {t("household.choose.joinDescription")}
               </Text>
             </View>
-          </TouchableOpacity>
+          </HapticPressable>
         </View>
       </View>
     </SafeAreaView>
@@ -83,15 +80,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
   },
   content: {
     flex: 1,

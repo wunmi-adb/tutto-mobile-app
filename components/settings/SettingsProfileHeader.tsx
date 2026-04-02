@@ -1,7 +1,7 @@
+import BackButton from "@/components/ui/BackButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
-import { Feather } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
   name: string;
@@ -19,9 +19,7 @@ export default function SettingsProfileHeader({ name, email, onBack }: Props) {
 
   return (
     <View>
-      <Pressable style={styles.backButton} onPress={onBack}>
-        <Feather name="arrow-left" size={16} color={colors.text} />
-      </Pressable>
+      <BackButton style={styles.backButton} onPress={onBack} />
 
       <View style={styles.profileRow}>
         <View style={styles.avatar}>
@@ -41,10 +39,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
     marginBottom: 28,
   },
   profileRow: {
@@ -80,4 +74,3 @@ const styles = StyleSheet.create({
     color: colors.muted,
   },
 });
-

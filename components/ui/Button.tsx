@@ -1,28 +1,43 @@
+import HapticPressable, { HapticFeedbackType } from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { ReactNode } from "react";
-import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from "react-native";
+import { PressableProps, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 
-type Props = TouchableOpacityProps & {
+type Props = Omit<PressableProps, "children" | "style"> & {
   title: string;
   variant?: "primary" | "secondary";
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  hapticType?: HapticFeedbackType;
 };
 
-export default function Button({ title, disabled, style, variant = "primary", leftIcon, rightIcon, ...props }: Props) {
+export default function Button({
+  title,
+  disabled,
+  style,
+  variant = "primary",
+  leftIcon,
+  rightIcon,
+  hapticType,
+  ...props
+}: Props) {
   const isSecondary = variant === "secondary";
+
   return (
-    <TouchableOpacity
+    <HapticPressable
       style={[styles.btn, isSecondary && styles.btnSecondary, disabled && styles.disabled, style]}
       disabled={disabled}
-      activeOpacity={0.85}
+      pressedOpacity={0.85}
+      hapticType={hapticType ?? (isSecondary ? "selection" : "medium")}
+      accessibilityRole="button"
       {...props}
     >
       {leftIcon && <View>{leftIcon}</View>}
       <Text style={[styles.text, isSecondary && styles.textSecondary]}>{title}</Text>
       {rightIcon && <View>{rightIcon}</View>}
-    </TouchableOpacity>
+    </HapticPressable>
   );
 }
 

@@ -1,5 +1,7 @@
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
+import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
+import HapticPressable from "@/components/ui/HapticPressable";
 import Input from "@/components/ui/Input";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
@@ -8,7 +10,7 @@ import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HouseholdCreate() {
@@ -19,7 +21,7 @@ export default function HouseholdCreate() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar />
+      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
 
       <KeyboardAvoidingContainer style={styles.content}>
         <ScrollView
@@ -46,21 +48,23 @@ export default function HouseholdCreate() {
             <View>
               <Text style={styles.label}>{t("household.create.peopleLabel")}</Text>
               <View style={styles.stepper}>
-                <TouchableOpacity
+                <HapticPressable
                   style={styles.stepperBtn}
                   onPress={() => setMemberCount(Math.max(1, memberCount - 1))}
-                  activeOpacity={0.7}
+                  pressedOpacity={0.7}
+                  hapticType="light"
                 >
                   <Feather name="minus" size={16} color={colors.text} />
-                </TouchableOpacity>
+                </HapticPressable>
                 <Text style={styles.stepperValue}>{memberCount}</Text>
-                <TouchableOpacity
+                <HapticPressable
                   style={styles.stepperBtn}
                   onPress={() => setMemberCount(Math.min(12, memberCount + 1))}
-                  activeOpacity={0.7}
+                  pressedOpacity={0.7}
+                  hapticType="light"
                 >
                   <Feather name="plus" size={16} color={colors.text} />
-                </TouchableOpacity>
+                </HapticPressable>
               </View>
             </View>
           </View>

@@ -1,15 +1,16 @@
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
+import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
+import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
-import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const COMMON_ALLERGIES = [
@@ -63,15 +64,9 @@ export default function Allergies() {
   return (
     <SafeAreaView style={styles.container}>
       <OnboardingTopBar
-        leftAccessory={
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={16} color={colors.text} />
-          </TouchableOpacity>
-        }
+        leftAccessory={<BackButton onPress={() => router.back()} />}
         rightAccessory={
-          <TouchableOpacity onPress={() => router.push("/onboarding/cuisines")} activeOpacity={0.7}>
-            <Text style={styles.skip}>{t("allergies.skip")}</Text>
-          </TouchableOpacity>
+          <SkipButton label={t("allergies.skip")} onPress={() => router.push("/onboarding/cuisines")} />
         }
       />
 
@@ -125,20 +120,6 @@ const styles = StyleSheet.create({
   },
   keyboard: {
     flex: 1,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  skip: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 14,
-    color: colors.muted,
   },
   scroll: {
     flex: 1,
