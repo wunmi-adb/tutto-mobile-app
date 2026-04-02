@@ -2,6 +2,7 @@ import Button from "@/components/ui/Button";
 import ChipInput from "@/components/ui/ChipInput";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import SettingsDetailLayout from "./SettingsDetailLayout";
 import { StyleSheet, Text } from "react-native";
 
@@ -30,12 +31,14 @@ export default function SettingsChipEditor({
   hint,
   minHeight,
 }: Props) {
+  const { t } = useI18n();
+
   return (
     <SettingsDetailLayout
       title={title}
       subtitle={subtitle}
       onBack={onBack}
-      footer={<Button title="Done" onPress={onBack} />}
+      footer={<Button title={t("settings.common.done")} onPress={onBack} />}
     >
       <ChipInput
         label={label}

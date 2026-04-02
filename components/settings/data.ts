@@ -42,12 +42,12 @@ export const CUISINE_OPTIONS = [
 ];
 
 export const MEAL_SLOT_OPTIONS = [
-  { value: "Breakfast", label: "Breakfast", sublabel: "Morning" },
-  { value: "Brunch", label: "Brunch", sublabel: "Late morning" },
-  { value: "Lunch", label: "Lunch", sublabel: "Midday" },
-  { value: "Snacks", label: "Snacks", sublabel: "Between meals" },
-  { value: "Dinner", label: "Dinner", sublabel: "Evening" },
-  { value: "Supper", label: "Supper", sublabel: "Late evening" },
+  { valueKey: "meals.options.breakfast.label", sublabelKey: "meals.options.breakfast.time" },
+  { valueKey: "meals.options.brunch.label", sublabelKey: "meals.options.brunch.time" },
+  { valueKey: "meals.options.lunch.label", sublabelKey: "meals.options.lunch.time" },
+  { valueKey: "meals.options.snacks.label", sublabelKey: "meals.options.snacks.time" },
+  { valueKey: "meals.options.dinner.label", sublabelKey: "meals.options.dinner.time" },
+  { valueKey: "meals.options.supper.label", sublabelKey: "meals.options.supper.time" },
 ];
 
 export const LANGUAGE_OPTIONS = [

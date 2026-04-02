@@ -1,3 +1,5 @@
+import { I18nProvider, useI18nController } from "@/i18n";
+import { AppProviders } from "@/providers/AppProviders";
 import {
   DMSans_400Regular,
   DMSans_400Regular_Italic,
@@ -11,7 +13,6 @@ import {
   InstrumentSerif_400Regular_Italic,
   useFonts,
 } from "@expo-google-fonts/instrument-serif";
-import { I18nProvider, useI18nController } from "@/i18n";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -42,8 +43,10 @@ export default function RootLayout() {
 
   return (
     <I18nProvider value={i18n}>
-      <StatusBar style="dark" backgroundColor="#ffffff" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <AppProviders>
+        <StatusBar style="dark" backgroundColor="#ffffff" />
+        <Stack screenOptions={{ headerShown: false }} />
+      </AppProviders>
     </I18nProvider>
   );
 }

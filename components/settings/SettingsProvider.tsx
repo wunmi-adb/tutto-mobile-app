@@ -1,3 +1,4 @@
+import { useI18n } from "@/i18n";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 
 type SettingsContextValue = {
@@ -29,17 +30,34 @@ type SettingsContextValue = {
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [profileName, setProfileName] = useState("Oluwole");
   const [email, setEmail] = useState("oluwole@email.com");
-  const [kitchenName, setKitchenName] = useState("The Okafor Family");
+  const [kitchenName, setKitchenName] = useState(() => t("settings.defaults.kitchenName"));
   const [inviteCode] = useState("OKFR-2847");
-  const [appliances, setAppliances] = useState(["Oven", "Microwave", "Air fryer", "Blender"]);
-  const [dietary, setDietary] = useState(["Halal"]);
-  const [allergies, setAllergies] = useState(["Tree nuts"]);
-  const [dislikes, setDislikes] = useState(["Liver", "Blue cheese"]);
-  const [cuisines, setCuisines] = useState(["Nigerian", "Italian", "Indian"]);
-  const [mealSlots, setMealSlots] = useState(["Breakfast", "Lunch", "Dinner"]);
+  const [appliances, setAppliances] = useState(() => [
+    t("appliances.options.oven"),
+    t("appliances.options.microwave"),
+    t("appliances.options.airFryer"),
+    t("appliances.options.blender"),
+  ]);
+  const [dietary, setDietary] = useState(() => [t("dietary.options.halal")]);
+  const [allergies, setAllergies] = useState(() => [t("allergies.options.treeNuts")]);
+  const [dislikes, setDislikes] = useState(() => [
+    t("settings.defaults.dislikes.liver"),
+    t("settings.defaults.dislikes.blueCheese"),
+  ]);
+  const [cuisines, setCuisines] = useState(() => [
+    t("settings.defaults.cuisines.nigerian"),
+    t("cuisines.options.italian"),
+    t("cuisines.options.indian"),
+  ]);
+  const [mealSlots, setMealSlots] = useState(() => [
+    t("meals.options.breakfast.label"),
+    t("meals.options.lunch.label"),
+    t("meals.options.dinner.label"),
+  ]);
   const [anythingElse, setAnythingElse] = useState("");
 
   useEffect(() => {

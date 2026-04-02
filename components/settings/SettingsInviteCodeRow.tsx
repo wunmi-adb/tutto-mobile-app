@@ -1,5 +1,6 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -10,15 +11,17 @@ type Props = {
 };
 
 export default function SettingsInviteCodeRow({ code, copied, onCopy }: Props) {
+  const { t } = useI18n();
+
   return (
     <View style={styles.row}>
       <View style={styles.left}>
         <Feather name="users" size={18} color={colors.muted} />
-        <Text style={styles.label}>Invite code</Text>
+        <Text style={styles.label}>{t("settings.inviteCode.label")}</Text>
       </View>
 
       <Pressable style={styles.codeButton} onPress={onCopy}>
-        <Text style={styles.code}>{copied ? "Copied" : code}</Text>
+        <Text style={styles.code}>{copied ? t("settings.common.copied") : code}</Text>
         <Feather name="copy" size={14} color={copied ? colors.brand : colors.muted} />
       </Pressable>
     </View>
@@ -57,4 +60,3 @@ const styles = StyleSheet.create({
     color: colors.muted,
   },
 });
-

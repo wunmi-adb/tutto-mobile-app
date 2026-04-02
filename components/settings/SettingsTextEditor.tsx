@@ -1,5 +1,6 @@
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { useI18n } from "@/i18n";
 import SettingsDetailLayout from "./SettingsDetailLayout";
 import { StyleSheet } from "react-native";
 
@@ -24,12 +25,14 @@ export default function SettingsTextEditor({
   onBack,
   multiline = false,
 }: Props) {
+  const { t } = useI18n();
+
   return (
     <SettingsDetailLayout
       title={title}
       subtitle={subtitle}
       onBack={onBack}
-      footer={<Button title="Save" onPress={onBack} />}
+      footer={<Button title={t("settings.common.save")} onPress={onBack} />}
     >
       <Input
         label={label}

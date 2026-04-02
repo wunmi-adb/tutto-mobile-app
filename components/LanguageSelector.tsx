@@ -1,6 +1,9 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { APP_LANGUAGE_TO_LOCALE, AppLanguage } from "@/i18n/config";
+import { updateCurrentUserLocale } from "@/lib/users/profile";
+import { useAuth } from "@/providers/AuthProvider";
 import { Feather } from "@expo/vector-icons";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
@@ -20,7 +23,9 @@ const DISMISS_VELOCITY = 1.1;
 
 export default function LanguageSelector() {
   const { language, languages, setLanguage, t } = useI18n();
+  const { isAuthenticated, session } = useAuth();
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const insets = useSafeAreaInsets();
 
   const sheetAnim = useRef(new Animated.Value(SHEET_CLOSED_Y)).current;
@@ -124,6 +129,37 @@ export default function LanguageSelector() {
     [backdropAnim, closeSheet, sheetAnim],
   );
 
+  const handleSelectLanguage = useCallback(
+    async (nextLanguage: AppLanguage) => {
+      if (isSaving) {
+        return;
+      }
+
+      if (nextLanguage === language) {
+        closeSheet();
+        return;
+      }
+
+      await setLanguage(nextLanguage);
+      closeSheet();
+
+      if (!isAuthenticated || !session?.access_token) {
+        return;
+      }
+
+      setIsSaving(true);
+
+      try {
+        await updateCurrentUserLocale(session.access_token, APP_LANGUAGE_TO_LOCALE[nextLanguage]);
+      } catch (error) {
+        console.warn("Failed to update user locale.", error);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [closeSheet, isAuthenticated, isSaving, language, session?.access_token, setLanguage],
+  );
+
   return (
     <View style={styles.container}>
       <Pressable style={styles.button} onPress={openSheet}>
@@ -165,10 +201,11 @@ export default function LanguageSelector() {
                         styles.langRow,
                         active && styles.langRowActive,
                         pressed && styles.langRowPressed,
+                        isSaving && styles.langRowDisabled,
                       ]}
+                      disabled={isSaving}
                       onPress={() => {
-                        void setLanguage(lang.code);
-                        closeSheet();
+                        void handleSelectLanguage(lang.code);
                       }}
                     >
                       <Text style={[styles.langLabel, active && styles.langLabelActive]}>
@@ -270,6 +307,9 @@ const styles = StyleSheet.create({
   },
   langRowPressed: {
     opacity: 0.82,
+  },
+  langRowDisabled: {
+    opacity: 0.45,
   },
   langLabel: {
     fontFamily: fonts.sans,

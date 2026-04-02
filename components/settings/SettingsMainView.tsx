@@ -5,6 +5,7 @@ import SettingsSection from "@/components/settings/SettingsSection";
 import SettingsSubscriptionCard from "@/components/settings/SettingsSubscriptionCard";
 import { SettingsView } from "@/components/settings/types";
 import { colors } from "@/constants/colors";
+import { useI18n } from "@/i18n";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView, ScrollView, StyleSheet } from "react-native";
 
@@ -45,6 +46,8 @@ export default function SettingsMainView({
   onCopyInviteCode,
   onOpenView,
 }: Props) {
+  const { t } = useI18n();
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -55,10 +58,10 @@ export default function SettingsMainView({
         <SettingsProfileHeader name={profileName} email={email} onBack={onBack} />
         <SettingsSubscriptionCard />
 
-        <SettingsSection title="Kitchen">
+        <SettingsSection title={t("settings.main.sections.kitchen")}>
           <SettingsRow
             icon={<Feather name="home" size={18} color={colors.muted} />}
-            label="Kitchen name"
+            label={t("settings.main.kitchenName")}
             value={kitchenName}
             onPress={() => onOpenView("kitchen-name")}
           />
@@ -69,63 +72,63 @@ export default function SettingsMainView({
           />
           <SettingsRow
             icon={<MaterialCommunityIcons name="silverware-fork-knife" size={18} color={colors.muted} />}
-            label="Appliances"
+            label={t("settings.main.appliances")}
             value={appliancesSummary}
             onPress={() => onOpenView("appliances")}
           />
           <SettingsRow
             icon={<MaterialCommunityIcons name="leaf" size={18} color={colors.muted} />}
-            label="Dietary preferences"
+            label={t("settings.main.dietary")}
             value={dietarySummary}
             onPress={() => onOpenView("dietary")}
           />
           <SettingsRow
             icon={<MaterialCommunityIcons name="shield-alert-outline" size={18} color={colors.muted} />}
-            label="Allergies"
+            label={t("settings.main.allergies")}
             value={allergiesSummary}
             onPress={() => onOpenView("allergies")}
           />
           <SettingsRow
             icon={<Feather name="thumbs-down" size={18} color={colors.muted} />}
-            label="Dislikes"
+            label={t("settings.main.dislikes")}
             value={dislikesSummary}
             onPress={() => onOpenView("dislikes")}
           />
           <SettingsRow
             icon={<Feather name="globe" size={18} color={colors.muted} />}
-            label="Cuisines"
+            label={t("settings.main.cuisines")}
             value={cuisinesSummary}
             onPress={() => onOpenView("cuisines")}
           />
           <SettingsRow
             icon={<Feather name="clock" size={18} color={colors.muted} />}
-            label="Meal slots"
+            label={t("settings.main.mealSlots")}
             value={mealSlotsSummary}
             onPress={() => onOpenView("meal-slots")}
           />
           <SettingsRow
             icon={<Feather name="message-square" size={18} color={colors.muted} />}
-            label="Anything else?"
+            label={t("settings.main.anythingElse")}
             value={anythingElseSummary}
             onPress={() => onOpenView("anything-else")}
           />
         </SettingsSection>
 
-        <SettingsSection title="General">
+        <SettingsSection title={t("settings.main.sections.general")}>
           <SettingsRow
             icon={<Feather name="globe" size={18} color={colors.muted} />}
-            label="Language"
+            label={t("settings.main.language")}
             value={languageLabel}
             onPress={() => onOpenView("language")}
           />
           <SettingsRow
             icon={<Feather name="user" size={18} color={colors.muted} />}
-            label="Account"
+            label={t("settings.main.account")}
             onPress={() => onOpenView("account")}
           />
           <SettingsRow
             icon={<Feather name="help-circle" size={18} color={colors.muted} />}
-            label="Support & feedback"
+            label={t("settings.main.support")}
             onPress={() => onOpenView("support")}
           />
         </SettingsSection>

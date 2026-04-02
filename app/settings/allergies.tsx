@@ -1,19 +1,21 @@
 import { useSettingsState } from "@/components/settings/SettingsProvider";
 import SettingsChipEditor from "@/components/settings/SettingsChipEditor";
+import { useI18n } from "@/i18n";
 import { useRouter } from "expo-router";
 
 export default function SettingsAllergiesScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const { allergies, setAllergies } = useSettingsState();
 
   return (
     <SettingsChipEditor
-      title="Allergies"
-      subtitle="List allergies so Tutto can help your household avoid unsafe ingredients."
-      label="Allergies"
+      title={t("settings.allergies.title")}
+      subtitle={t("settings.allergies.subtitle")}
+      label={t("settings.allergies.label")}
       chips={allergies}
-      placeholder="Type an allergy, press comma to add"
-      hint="e.g. Peanuts, Shellfish, Eggs, Soy, Lactose"
+      placeholder={t("settings.allergies.placeholder")}
+      hint={t("settings.allergies.hint")}
       onAdd={(value) =>
         setAllergies((prev) =>
           prev.some((item) => item.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value],

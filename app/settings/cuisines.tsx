@@ -1,19 +1,21 @@
 import { useSettingsState } from "@/components/settings/SettingsProvider";
 import SettingsChipEditor from "@/components/settings/SettingsChipEditor";
+import { useI18n } from "@/i18n";
 import { useRouter } from "expo-router";
 
 export default function SettingsCuisinesScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const { cuisines, setCuisines } = useSettingsState();
 
   return (
     <SettingsChipEditor
-      title="Cuisines"
-      subtitle="Share the cuisines your household enjoys so recommendations feel more personal."
-      label="Cuisines"
+      title={t("settings.cuisines.title")}
+      subtitle={t("settings.cuisines.subtitle")}
+      label={t("settings.cuisines.label")}
       chips={cuisines}
-      placeholder="Type a cuisine, press comma to add"
-      hint="e.g. Italian, Japanese, Mexican, Indian, Thai, Ethiopian"
+      placeholder={t("settings.cuisines.placeholder")}
+      hint={t("settings.cuisines.hint")}
       onAdd={(value) =>
         setCuisines((prev) =>
           prev.some((item) => item.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value],

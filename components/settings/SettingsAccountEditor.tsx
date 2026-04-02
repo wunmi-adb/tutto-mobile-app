@@ -1,5 +1,6 @@
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { useI18n } from "@/i18n";
 import SettingsDetailLayout from "./SettingsDetailLayout";
 import { StyleSheet, View } from "react-native";
 
@@ -18,22 +19,29 @@ export default function SettingsAccountEditor({
   onChangeEmail,
   onBack,
 }: Props) {
+  const { t } = useI18n();
+
   return (
     <SettingsDetailLayout
-      title="Account"
-      subtitle="Update the details tied to your kitchen profile."
+      title={t("settings.account.title")}
+      subtitle={t("settings.account.subtitle")}
       onBack={onBack}
-      footer={<Button title="Save" onPress={onBack} />}
+      footer={<Button title={t("settings.common.save")} onPress={onBack} />}
     >
       <View style={styles.fields}>
-        <Input label="Display name" value={name} onChangeText={onChangeName} placeholder="Your name" />
         <Input
-          label="Email"
+          label={t("settings.account.nameLabel")}
+          value={name}
+          onChangeText={onChangeName}
+          placeholder={t("settings.account.namePlaceholder")}
+        />
+        <Input
+          label={t("settings.account.emailLabel")}
           value={email}
           onChangeText={onChangeEmail}
           keyboardType="email-address"
           autoCapitalize="none"
-          placeholder="you@example.com"
+          placeholder={t("settings.account.emailPlaceholder")}
         />
       </View>
     </SettingsDetailLayout>

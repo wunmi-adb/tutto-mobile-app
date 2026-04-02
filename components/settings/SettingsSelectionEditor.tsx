@@ -1,5 +1,6 @@
 import Button from "@/components/ui/Button";
 import SelectableRow from "@/components/ui/SelectableRow";
+import { useI18n } from "@/i18n";
 import { StyleSheet, View } from "react-native";
 import SettingsDetailLayout from "./SettingsDetailLayout";
 
@@ -32,12 +33,14 @@ export default function SettingsSelectionEditor({
   variant = "checkbox",
   ctaLabel = "Done",
 }: Props) {
+  const { t } = useI18n();
+
   return (
     <SettingsDetailLayout
       title={title}
       subtitle={subtitle}
       onBack={onBack}
-      footer={<Button title={ctaLabel} onPress={onBack} />}
+      footer={<Button title={ctaLabel === "Save" ? t("settings.common.save") : t("settings.common.done")} onPress={onBack} />}
     >
       <View style={styles.list}>
         {options.map((option) => {

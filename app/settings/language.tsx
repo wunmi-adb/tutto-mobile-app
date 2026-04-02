@@ -2,16 +2,17 @@ import SettingsSelectionEditor from "@/components/settings/SettingsSelectionEdit
 import { useI18n } from "@/i18n";
 import { useRouter } from "expo-router";
 
+
 export default function SettingsLanguageScreen() {
   const router = useRouter();
-  const { language, languages, setLanguage } = useI18n();
+  const { language, languages, setLanguage, t } = useI18n();
   const selectedLabel =
     languages.find((item) => item.code === language)?.label ?? "English";
 
   return (
     <SettingsSelectionEditor
-      title="Language"
-      subtitle="Choose the language you want Tutto to use across the app."
+      title={t("settings.language.title")}
+      subtitle={t("settings.language.subtitle")}
       options={languages.map((item) => item.label)}
       selected={[selectedLabel]}
       onToggle={(label) => {

@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import type { Href } from "expo-router";
 
 function summariseList(values: string[]) {
-  if (!values.length) return "Not set";
+  if (!values.length) return "";
   if (values.length === 1) return values[0];
   if (values.length === 2) return values.join(", ");
   return `${values[0]}, ${values[1]} +${values.length - 2}`;
@@ -28,7 +28,7 @@ const SETTINGS_ROUTES: Record<Exclude<SettingsView, "main">, Href> = {
 
 export default function SettingsIndexScreen() {
   const router = useRouter();
-  const { language, languages } = useI18n();
+  const { language, languages, t } = useI18n();
   const {
     copied,
     profileName,
@@ -55,14 +55,14 @@ export default function SettingsIndexScreen() {
       kitchenName={kitchenName}
       inviteCode={inviteCode}
       copied={copied}
-      appliancesSummary={summariseList(appliances)}
-      dietarySummary={summariseList(dietary)}
-      allergiesSummary={summariseList(allergies)}
-      dislikesSummary={summariseList(dislikes)}
-      cuisinesSummary={summariseList(cuisines)}
-      mealSlotsSummary={summariseList(mealSlots)}
+      appliancesSummary={summariseList(appliances) || t("settings.common.notSet")}
+      dietarySummary={summariseList(dietary) || t("settings.common.notSet")}
+      allergiesSummary={summariseList(allergies) || t("settings.common.notSet")}
+      dislikesSummary={summariseList(dislikes) || t("settings.common.notSet")}
+      cuisinesSummary={summariseList(cuisines) || t("settings.common.notSet")}
+      mealSlotsSummary={summariseList(mealSlots) || t("settings.common.notSet")}
       languageLabel={languageLabel}
-      anythingElseSummary={anythingElse.trim() ? anythingElse.trim() : "Not set"}
+      anythingElseSummary={anythingElse.trim() ? anythingElse.trim() : t("settings.common.notSet")}
       onBack={() => router.back()}
       onCopyInviteCode={copyInviteCode}
       onOpenView={(view) => {

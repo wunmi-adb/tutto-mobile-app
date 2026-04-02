@@ -19,13 +19,7 @@ export default function HouseholdCreate() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar
-        leftAccessory={
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={16} color={colors.text} />
-          </TouchableOpacity>
-        }
-      />
+      <OnboardingTopBar />
 
       <KeyboardAvoidingContainer style={styles.content}>
         <ScrollView
@@ -89,15 +83,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
   },
   content: {
     flex: 1,

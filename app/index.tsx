@@ -4,10 +4,12 @@ import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
 import SlideProgressBars from "@/components/SlideProgressBars";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useI18n } from "@/i18n";
+import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Animated, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -17,8 +19,12 @@ const SLIDE_DURATION = 4000;
 export default function Welcome() {
   const router = useRouter();
   const { t } = useI18n();
+  const { isAuthenticated, ready } = useAuth();
   const [current, setCurrent] = useState(0);
   const progress = useRef(new Animated.Value(0)).current;
+  const googleAuth = useGoogleAuth({
+    onSuccess: () => router.replace("/onboarding/household"),
+  });
 
   const slides = [
     {
@@ -54,6 +60,12 @@ export default function Welcome() {
     };
   }, [current, progress, slides.length]);
 
+  useEffect(() => {
+    if (ready && isAuthenticated) {
+      router.replace("/onboarding/household");
+    }
+  }, [isAuthenticated, ready, router]);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.illustrationArea}>
@@ -75,8 +87,24 @@ export default function Welcome() {
 
         <AuthButtons
           onApple={() => router.push("/onboarding/household")}
-          onGoogle={() => router.push("/onboarding/household")}
+          onGoogle={googleAuth.open}
         />
+
+        {googleAuth.isLoading ? (
+          <View style={styles.authStatusRow}>
+            <ActivityIndicator size="small" color={colors.brand} />
+            <Text style={styles.authStatusText}>{t("auth.google.loading")}</Text>
+          </View>
+        ) : null}
+
+        {googleAuth.error ? (
+          <View style={styles.authErrorContainer}>
+            <Text style={styles.authErrorText}>{googleAuth.error}</Text>
+            <TouchableOpacity onPress={googleAuth.retry} activeOpacity={0.7}>
+              <Text style={styles.authRetryText}>{t("auth.google.retry")}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -120,5 +148,36 @@ const styles = StyleSheet.create({
     color: colors.muted,
     maxWidth: 320,
     minHeight: 80,
+  },
+  authStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 16,
+  },
+  authStatusText: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    lineHeight: 22,
+    color: colors.muted,
+    textAlign: "center",
+  },
+  authErrorContainer: {
+    alignItems: "center",
+    marginTop: 16,
+    gap: 6,
+  },
+  authErrorText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.danger,
+    textAlign: "center",
+  },
+  authRetryText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.brand,
   },
 });

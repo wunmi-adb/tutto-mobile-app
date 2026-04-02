@@ -1,19 +1,21 @@
 import { useSettingsState } from "@/components/settings/SettingsProvider";
 import SettingsChipEditor from "@/components/settings/SettingsChipEditor";
+import { useI18n } from "@/i18n";
 import { useRouter } from "expo-router";
 
 export default function SettingsDietaryScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const { dietary, setDietary } = useSettingsState();
 
   return (
     <SettingsChipEditor
-      title="Dietary preferences"
-      subtitle="Add any dietary needs or preferences Tutto should consider while planning meals."
-      label="Dietary requirements"
+      title={t("settings.dietary.title")}
+      subtitle={t("settings.dietary.subtitle")}
+      label={t("settings.dietary.label")}
       chips={dietary}
-      placeholder="Type a requirement, press comma to add"
-      hint="e.g. Vegetarian, Gluten-free, Halal, Dairy-free, Keto"
+      placeholder={t("settings.dietary.placeholder")}
+      hint={t("settings.dietary.hint")}
       onAdd={(value) =>
         setDietary((prev) =>
           prev.some((item) => item.toLowerCase() === value.toLowerCase()) ? prev : [...prev, value],
