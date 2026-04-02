@@ -1,6 +1,9 @@
 import { ReactNode, createContext, useContext, useEffect, useState } from "react";
 import { clearStoredAuthSession, getStoredAuthSession, storeAuthSession } from "@/lib/auth/storage";
+import { isAccessTokenExpired, isRefreshTokenExpired } from "@/lib/auth/session";
+import { subscribeToAuthSession, syncAuthSession } from "@/lib/auth/session-store";
 import { AuthSession } from "@/lib/auth/types";
+import { refreshAuthSession } from "@/lib/auth/refresh";
 
 type AuthContextValue = {
   ready: boolean;
@@ -17,14 +20,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    return subscribeToAuthSession(setSessionState);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     const hydrateSession = async () => {
       try {
         const storedSession = await getStoredAuthSession();
 
+        if (!storedSession) {
+          if (!cancelled) {
+            syncAuthSession(null);
+          }
+
+          return;
+        }
+
+        if (isRefreshTokenExpired(storedSession)) {
+          await clearStoredAuthSession();
+
+          if (!cancelled) {
+            syncAuthSession(null);
+          }
+
+          return;
+        }
+
         if (!cancelled) {
-          setSessionState(storedSession);
+          syncAuthSession(storedSession);
+        }
+
+        if (isAccessTokenExpired(storedSession)) {
+          try {
+            await refreshAuthSession();
+          } catch (error) {
+            console.warn("Failed to refresh stored auth session.", error);
+          }
         }
       } catch (error) {
         console.warn("Failed to hydrate auth session.", error);
@@ -43,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setSession = async (nextSession: AuthSession) => {
-    setSessionState(nextSession);
+    syncAuthSession(nextSession);
 
     try {
       await storeAuthSession(nextSession);
@@ -53,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const clearSession = async () => {
-    setSessionState(null);
+    syncAuthSession(null);
 
     try {
       await clearStoredAuthSession();

@@ -1,22 +1,8 @@
 import * as SecureStore from "expo-secure-store";
+import { isAuthSession } from "@/lib/auth/session";
 import { AuthSession } from "@/lib/auth/types";
 
 const AUTH_SESSION_STORAGE_KEY = "tutto.auth.session";
-
-function isAuthSession(value: unknown): value is AuthSession {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const session = value as AuthSession;
-
-  return (
-    typeof session.access_token === "string" &&
-    typeof session.refresh_token === "string" &&
-    typeof session.expires_at === "number" &&
-    typeof session.refresh_expires_at === "number"
-  );
-}
 
 export async function getStoredAuthSession() {
   const rawValue = await SecureStore.getItemAsync(AUTH_SESSION_STORAGE_KEY);

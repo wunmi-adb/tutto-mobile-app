@@ -1,6 +1,7 @@
 import * as Linking from "expo-linking";
 import { apiClient } from "@/lib/api/client";
-import { AuthCallbackResult, AuthSession } from "@/lib/auth/types";
+import { normalizeAuthSession } from "@/lib/auth/session";
+import { AuthCallbackResult } from "@/lib/auth/types";
 
 type GoogleRedirectResponse = {
   data: {
@@ -9,37 +10,6 @@ type GoogleRedirectResponse = {
   message: string;
   status: boolean;
 };
-
-function parseNumber(value: unknown) {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    const parsed = Number(value);
-
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return null;
-}
-
-function isAuthSession(value: unknown): value is AuthSession {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const session = value as AuthSession;
-
-  return (
-    typeof session.access_token === "string" &&
-    typeof session.refresh_token === "string" &&
-    typeof session.expires_at === "number" &&
-    typeof session.refresh_expires_at === "number"
-  );
-}
 
 function getUrlParams(url: string) {
   const parsed = Linking.parse(url);
@@ -82,17 +52,14 @@ export function parseGoogleAuthCallback(url: string): AuthCallbackResult | null 
     };
   }
 
-  const session = {
+  const session = normalizeAuthSession({
     access_token: params.access_token,
     refresh_token: params.refresh_token,
-    expires_at: parseNumber(params.expires_at),
-    refresh_expires_at: parseNumber(params.refresh_expires_at),
-  };
+    expires_at: params.expires_at,
+    refresh_expires_at: params.refresh_expires_at,
+  });
 
-  if (
-    (status === "success" || typeof status !== "string") &&
-    isAuthSession(session)
-  ) {
+  if ((status === "success" || typeof status !== "string") && session) {
     return {
       status: "success",
       redirectUri,
