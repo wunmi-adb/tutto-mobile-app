@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import HapticPressable from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
@@ -24,7 +24,7 @@ export default function NotificationsScreen() {
   const [statusMessageKey, setStatusMessageKey] = useState<NotificationStatusKey | null>(null);
 
   const handleContinue = () => {
-    router.push("/onboarding/appliances");
+    router.replace("/onboarding/appliances");
   };
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
         <View style={styles.content}>
         <View style={styles.illustrationWrap}>

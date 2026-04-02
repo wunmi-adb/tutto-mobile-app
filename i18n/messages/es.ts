@@ -13,6 +13,13 @@ const es = {
     "Crea un plan semanal y compra solo lo que necesitas.",
   "welcome.auth.apple": "Continuar con Apple",
   "welcome.auth.google": "Continuar con Google",
+  "welcome.session.loading": "Estamos preparando tu cocina...",
+  "welcome.session.loadingSubtitle":
+    "Estamos comprobando tu cuenta y llevándote al siguiente paso correcto.",
+  "welcome.session.error": "No pudimos cargar tu cuenta ahora mismo.",
+  "welcome.session.errorSubtitle":
+    "Vuelve a intentarlo para continuar donde lo dejaste.",
+  "welcome.session.retry": "Intentarlo de nuevo",
   "auth.google.loading": "Opening Google sign in...",
   "auth.google.retry": "Try again",
   "auth.google.errors.generic": "Couldn't sign you in with Google. Please try again.",
@@ -32,6 +39,14 @@ const es = {
   "household.create.namePlaceholder": "p. ej. Los García",
   "household.create.peopleLabel": "PERSONAS EN EL HOGAR",
   "household.create.cta": "Crear hogar",
+  "household.create.error": "No pudimos crear tu hogar ahora mismo. Vuelve a intentarlo.",
+  "household.membership.exists": "Ya perteneces a un hogar.",
+  "household.preferences.invalid":
+    "Una o más preferencias del hogar no son válidas. Revisa tu selección y vuelve a intentarlo.",
+  "household.kitchen_appliances.invalid_values":
+    "Estos electrodomésticos de cocina no son compatibles: {{values}}. Elimínalos y vuelve a intentarlo.",
+  "household.preferences.validation_unavailable":
+    "No pudimos validar estas preferencias del hogar en este momento. Vuelve a intentarlo.",
   "household.choose.title": "Tu hogar.",
   "household.choose.subtitle": "Crea una nueva despensa o únete a una existente",
   "household.choose.createTitle": "Crear hogar",

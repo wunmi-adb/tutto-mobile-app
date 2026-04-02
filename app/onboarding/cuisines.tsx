@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
@@ -8,6 +8,7 @@ import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -35,6 +36,7 @@ type CommonCuisineId = (typeof COMMON_CUISINES)[number]["id"];
 export default function Cuisines() {
   const router = useRouter();
   const { t } = useI18n();
+  const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selectedCuisines, setSelectedCuisines] = useState<CommonCuisineId[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
 
@@ -61,12 +63,33 @@ export default function Cuisines() {
   };
   const canContinue = selectedCuisines.length > 0 || customCuisines.length > 0;
 
+  const handleContinue = async () => {
+    if (updateHouseholdMutation.isPending) {
+      return;
+    }
+
+    const selectedValues = COMMON_CUISINES
+      .filter((cuisine) => selectedCuisines.includes(cuisine.id))
+      .map((cuisine) => t(cuisine.key));
+    const customValues = customCuisines.map((cuisine) => cuisine.trim()).filter(Boolean);
+
+    try {
+      await updateHouseholdMutation.mutateAsync({
+        love: [...selectedValues, ...customValues].join(", "),
+      });
+
+      router.replace("/onboarding/meals");
+    } catch {
+      // The mutation hook already shows the translated error toast.
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <OnboardingTopBar
-        leftAccessory={<BackButton onPress={() => router.back()} />}
+        leftAccessory={<OnboardingBackButton />}
         rightAccessory={
-          <SkipButton label={t("cuisines.skip")} onPress={() => router.push("/onboarding/meals")} />
+          <SkipButton label={t("cuisines.skip")} onPress={() => router.replace("/onboarding/meals")} />
         }
       />
 
@@ -104,7 +127,10 @@ export default function Cuisines() {
           <Button
             title={t("cuisines.cta")}
             disabled={!canContinue}
-            onPress={() => router.push("/onboarding/meals")}
+            loading={updateHouseholdMutation.isPending}
+            onPress={() => {
+              void handleContinue();
+            }}
             style={styles.button}
           />
         </ScrollView>

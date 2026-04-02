@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import HapticPressable from "@/components/ui/HapticPressable";
 import Input from "@/components/ui/Input";
@@ -7,21 +7,33 @@ import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { useCreateHousehold } from "@/lib/api/household";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HouseholdCreate() {
-  const router = useRouter();
   const { t } = useI18n();
   const [householdName, setHouseholdName] = useState("");
   const [memberCount, setMemberCount] = useState(2);
 
+  const createHouseholdMutation = useCreateHousehold();
+
+  const handleCreateHousehold = () => {
+    if (createHouseholdMutation.isPending) {
+      return;
+    }
+
+    createHouseholdMutation.mutate({
+      name: householdName.trim(),
+      number_of_household: memberCount,
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <KeyboardAvoidingContainer style={styles.content}>
         <ScrollView
@@ -73,8 +85,9 @@ export default function HouseholdCreate() {
         <View style={styles.footer}>
           <Button
             title={t("household.create.cta")}
-            disabled={householdName.trim().length < 2}
-            onPress={() => router.push("/onboarding/notifications")}
+            disabled={householdName.trim().length < 1}
+            loading={createHouseholdMutation.isPending}
+            onPress={handleCreateHousehold}
             style={styles.button}
           />
         </View>

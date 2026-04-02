@@ -1,3 +1,4 @@
+import { clearStoredCurrentUser } from "@/lib/api/profile";
 import { ReactNode, createContext, useContext, useEffect, useState } from "react";
 import { clearStoredAuthSession, getStoredAuthSession, storeAuthSession } from "@/lib/auth/storage";
 import { isAccessTokenExpired, isRefreshTokenExpired } from "@/lib/auth/session";
@@ -31,6 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedSession = await getStoredAuthSession();
 
         if (!storedSession) {
+          await clearStoredCurrentUser();
+
           if (!cancelled) {
             syncAuthSession(null);
           }
@@ -40,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (isRefreshTokenExpired(storedSession)) {
           await clearStoredAuthSession();
+          await clearStoredCurrentUser();
 
           if (!cancelled) {
             syncAuthSession(null);
@@ -79,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     syncAuthSession(nextSession);
 
     try {
+      await clearStoredCurrentUser();
       await storeAuthSession(nextSession);
     } catch (error) {
       console.warn("Failed to persist auth session.", error);
@@ -90,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       await clearStoredAuthSession();
+      await clearStoredCurrentUser();
     } catch (error) {
       console.warn("Failed to clear auth session.", error);
     }

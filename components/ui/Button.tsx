@@ -1,8 +1,17 @@
 import HapticPressable, { HapticFeedbackType } from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
-import { ReactNode } from "react";
-import { PressableProps, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { ReactNode, useEffect, useRef } from "react";
+import {
+  Animated,
+  Easing,
+  PressableProps,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 
 type Props = Omit<PressableProps, "children" | "style"> & {
   title: string;
@@ -11,7 +20,48 @@ type Props = Omit<PressableProps, "children" | "style"> & {
   rightIcon?: ReactNode;
   style?: StyleProp<ViewStyle>;
   hapticType?: HapticFeedbackType;
+  loading?: boolean;
 };
+
+function ButtonSpinner({ color }: { color: string }) {
+  const rotation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 320,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+      rotation.setValue(0);
+    };
+  }, [rotation]);
+
+  const spin = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.spinner,
+        {
+          borderColor: color,
+          borderRightColor: "transparent",
+          transform: [{ rotate: spin }],
+        },
+      ]}
+    />
+  );
+}
 
 export default function Button({
   title,
@@ -21,22 +71,32 @@ export default function Button({
   leftIcon,
   rightIcon,
   hapticType,
+  loading = false,
   ...props
 }: Props) {
   const isSecondary = variant === "secondary";
+  const textColor = isSecondary ? colors.text : colors.background;
+  const isDisabled = disabled || loading;
 
   return (
     <HapticPressable
-      style={[styles.btn, isSecondary && styles.btnSecondary, disabled && styles.disabled, style]}
-      disabled={disabled}
+      style={[
+        styles.btn,
+        isSecondary && styles.btnSecondary,
+        loading && styles.loading,
+        disabled && !loading && styles.disabled,
+        style,
+      ]}
+      disabled={isDisabled}
       pressedOpacity={0.85}
       hapticType={hapticType ?? (isSecondary ? "selection" : "medium")}
       accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       {...props}
     >
-      {leftIcon && <View>{leftIcon}</View>}
+      {loading ? <ButtonSpinner color={textColor} /> : leftIcon ? <View>{leftIcon}</View> : null}
       <Text style={[styles.text, isSecondary && styles.textSecondary]}>{title}</Text>
-      {rightIcon && <View>{rightIcon}</View>}
+      {!loading && rightIcon ? <View>{rightIcon}</View> : null}
     </HapticPressable>
   );
 }
@@ -60,6 +120,9 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.3,
   },
+  loading: {
+    opacity: 0.58,
+  },
   text: {
     fontFamily: fonts.sansMedium,
     fontSize: 15,
@@ -68,5 +131,11 @@ const styles = StyleSheet.create({
   },
   textSecondary: {
     color: colors.text,
+  },
+  spinner: {
+    width: 16,
+    height: 16,
+    borderRadius: 999,
+    borderWidth: 2,
   },
 });

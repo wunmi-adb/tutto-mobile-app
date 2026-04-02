@@ -1,9 +1,9 @@
+import GoogleIcon from "@/assets/images/google-icon.svg";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import { FontAwesome } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import GoogleIcon from "@/assets/images/google-icon.svg";
 
 type Props = {
   onApple?: () => void;
@@ -16,7 +16,7 @@ export default function AuthButtons({ onApple, onGoogle }: Props) {
   return (
     <>
       <View style={styles.buttons}>
-        <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.85} onPress={onApple}>
+        <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.85} disabled onPress={onApple}>
           <FontAwesome name="apple" size={18} color="#fff" />
           <Text style={styles.primaryBtnText}>{t("welcome.auth.apple")}</Text>
         </TouchableOpacity>

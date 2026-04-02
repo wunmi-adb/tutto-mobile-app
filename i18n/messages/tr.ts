@@ -13,6 +13,13 @@ const tr = {
     "Haftalık planını oluştur ve yalnızca ihtiyacın olanları satın al.",
   "welcome.auth.apple": "Apple ile devam et",
   "welcome.auth.google": "Google ile devam et",
+  "welcome.session.loading": "Mutfağın hazırlanıyor...",
+  "welcome.session.loadingSubtitle":
+    "Hesabını kontrol ediyor ve seni doğru sonraki adıma yönlendiriyoruz.",
+  "welcome.session.error": "Hesabın şu anda yüklenemedi.",
+  "welcome.session.errorSubtitle":
+    "Kaldığın yerden devam etmek için lütfen tekrar dene.",
+  "welcome.session.retry": "Tekrar dene",
   "auth.google.loading": "Opening Google sign in...",
   "auth.google.retry": "Try again",
   "auth.google.errors.generic": "Couldn't sign you in with Google. Please try again.",
@@ -32,6 +39,14 @@ const tr = {
   "household.create.namePlaceholder": "ör. Yılmaz Ailesi",
   "household.create.peopleLabel": "HANEDEKİ KİŞİ SAYISI",
   "household.create.cta": "Hane oluştur",
+  "household.create.error": "Hanen şu anda oluşturulamadı. Lütfen tekrar dene.",
+  "household.membership.exists": "Zaten bir hanenin üyesisin.",
+  "household.preferences.invalid":
+    "Bir veya daha fazla hane tercihi geçersiz. Lütfen seçimlerini kontrol edip tekrar dene.",
+  "household.kitchen_appliances.invalid_values":
+    "Şu mutfak aletleri desteklenmiyor: {{values}}. Lütfen kaldırıp tekrar dene.",
+  "household.preferences.validation_unavailable":
+    "Bu hane tercihleri şu anda doğrulanamadı. Lütfen tekrar dene.",
   "household.choose.title": "Hanen.",
   "household.choose.subtitle": "Yeni bir kiler oluştur ya da var olan bir kilere katıl",
   "household.choose.createTitle": "Hane oluştur",

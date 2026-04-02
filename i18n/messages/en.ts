@@ -10,6 +10,11 @@ const en = {
   "welcome.slides.plan.subtitle": "Build a weekly timetable and shop only what you need.",
   "welcome.auth.apple": "Continue with Apple",
   "welcome.auth.google": "Continue with Google",
+  "welcome.session.loading": "Setting up your kitchen...",
+  "welcome.session.loadingSubtitle": "We're checking your account and taking you to the right next step.",
+  "welcome.session.error": "We couldn't load your account right now.",
+  "welcome.session.errorSubtitle": "Please try again to continue where you left off.",
+  "welcome.session.retry": "Try again",
   "auth.google.loading": "Opening Google sign in...",
   "auth.google.retry": "Try again",
   "auth.google.errors.generic": "Couldn't sign you in with Google. Please try again.",
@@ -28,6 +33,14 @@ const en = {
   "household.create.namePlaceholder": "e.g. The Johnsons",
   "household.create.peopleLabel": "PEOPLE IN HOUSEHOLD",
   "household.create.cta": "Create household",
+  "household.create.error": "We couldn't create your household right now. Please try again.",
+  "household.membership.exists": "You're already a member of a household.",
+  "household.preferences.invalid":
+    "One or more household preferences are invalid. Please review your selections and try again.",
+  "household.kitchen_appliances.invalid_values":
+    "These kitchen appliances aren't supported: {{values}}. Please remove them and try again.",
+  "household.preferences.validation_unavailable":
+    "We couldn't validate those household preferences right now. Please try again.",
   "household.choose.title": "Your household.",
   "household.choose.subtitle": "Create a new pantry or join an existing one",
   "household.choose.createTitle": "Create household",

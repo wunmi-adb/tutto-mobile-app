@@ -6,7 +6,9 @@ import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useI18n } from "@/i18n";
+import { getAppEntryRoute, getCurrentUser } from "@/lib/api/profile";
 import { useAuth } from "@/providers/AuthProvider";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Animated, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -23,7 +25,13 @@ export default function Welcome() {
   const [current, setCurrent] = useState(0);
   const progress = useRef(new Animated.Value(0)).current;
   const googleAuth = useGoogleAuth({
-    onSuccess: () => router.replace("/onboarding/household"),
+    onSuccess: () => {},
+  });
+  const currentUserQuery = useQuery({
+    queryKey: ["current-user"],
+    queryFn: getCurrentUser,
+    enabled: ready && isAuthenticated,
+    retry: 1,
   });
 
   const slides = [
@@ -61,10 +69,36 @@ export default function Welcome() {
   }, [current, progress, slides.length]);
 
   useEffect(() => {
-    if (ready && isAuthenticated) {
-      router.replace("/onboarding/household");
+    if (!ready || !isAuthenticated || !currentUserQuery.data) {
+      return;
     }
-  }, [isAuthenticated, ready, router]);
+
+    router.replace(getAppEntryRoute(currentUserQuery.data));
+  }, [currentUserQuery.data, isAuthenticated, ready, router]);
+
+  if (!ready || isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.authenticatedState}>
+          {ready && isAuthenticated && currentUserQuery.isError ? (
+            <>
+              <Text style={styles.sessionTitle}>{t("welcome.session.error")}</Text>
+              <Text style={styles.sessionSubtitle}>{t("welcome.session.errorSubtitle")}</Text>
+              <TouchableOpacity onPress={() => currentUserQuery.refetch()} activeOpacity={0.7}>
+                <Text style={styles.authRetryText}>{t("welcome.session.retry")}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <ActivityIndicator size="small" color={colors.brand} />
+              <Text style={styles.sessionTitle}>{t("welcome.session.loading")}</Text>
+              <Text style={styles.sessionSubtitle}>{t("welcome.session.loadingSubtitle")}</Text>
+            </>
+          )}
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -134,6 +168,13 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 24,
   },
+  authenticatedState: {
+    flex: 1,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
   heading: {
     fontFamily: fonts.serif,
     fontSize: 40,
@@ -179,5 +220,20 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansMedium,
     fontSize: 14,
     color: colors.brand,
+  },
+  sessionTitle: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.text,
+    textAlign: "center",
+  },
+  sessionSubtitle: {
+    maxWidth: 320,
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    lineHeight: 22,
+    color: colors.muted,
+    textAlign: "center",
   },
 });

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_BASE_URL, getApiBaseUrl } from "@/lib/api/config";
+import { API_BASE_URL, API_TIMEOUT_MS, getApiBaseUrl } from "@/lib/api/config";
 import { ensureValidAuthSession, refreshAuthSession } from "@/lib/auth/refresh";
 import { getAuthSession } from "@/lib/auth/session-store";
 
@@ -35,7 +35,7 @@ export const apiClient = axios.create({
     Accept: "application/json",
     "Content-Type": "application/json",
   },
-  timeout: 15000,
+  timeout: API_TIMEOUT_MS,
 });
 
 apiClient.interceptors.request.use(async (config) => {

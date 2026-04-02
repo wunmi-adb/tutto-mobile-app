@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getApiBaseUrl } from "@/lib/api/config";
+import { clearStoredCurrentUser } from "@/lib/api/profile";
 import {
   isAccessTokenExpired,
   isRefreshTokenExpired,
@@ -42,6 +43,7 @@ async function clearAuthSessionState() {
 
   try {
     await clearStoredAuthSession();
+    await clearStoredCurrentUser();
   } catch (error) {
     console.warn("Failed to clear auth session after refresh failure.", error);
   }

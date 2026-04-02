@@ -1,6 +1,5 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
-import { Feather } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text } from "react-native";
 
 type Props = {
@@ -15,9 +14,6 @@ export default function Chip({ label, selected = false, onPress }: Props) {
       onPress={onPress}
       style={[styles.chip, selected && styles.chipSelected]}
     >
-      {selected && (
-        <Feather name="check" size={14} color={colors.background} style={styles.check} />
-      )}
       <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
     </Pressable>
   );
@@ -25,8 +21,8 @@ export default function Chip({ label, selected = false, onPress }: Props) {
 
 const styles = StyleSheet.create({
   chip: {
-    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
@@ -37,9 +33,6 @@ const styles = StyleSheet.create({
   chipSelected: {
     backgroundColor: colors.text,
     borderColor: colors.text,
-  },
-  check: {
-    marginRight: 6,
   },
   label: {
     fontFamily: fonts.sansMedium,

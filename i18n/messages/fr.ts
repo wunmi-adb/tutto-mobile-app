@@ -13,6 +13,13 @@ const fr = {
     "Créez un programme hebdomadaire et n'achetez que ce dont vous avez besoin.",
   "welcome.auth.apple": "Continuer avec Apple",
   "welcome.auth.google": "Continuer avec Google",
+  "welcome.session.loading": "Nous préparons votre cuisine...",
+  "welcome.session.loadingSubtitle":
+    "Nous vérifions votre compte et vous guidons vers la bonne étape suivante.",
+  "welcome.session.error": "Nous n'avons pas pu charger votre compte pour le moment.",
+  "welcome.session.errorSubtitle":
+    "Veuillez réessayer pour reprendre là où vous vous êtes arrêté.",
+  "welcome.session.retry": "Réessayer",
   "auth.google.loading": "Opening Google sign in...",
   "auth.google.retry": "Try again",
   "auth.google.errors.generic": "Couldn't sign you in with Google. Please try again.",
@@ -32,6 +39,14 @@ const fr = {
   "household.create.namePlaceholder": "ex. Les Martin",
   "household.create.peopleLabel": "PERSONNES DANS LE FOYER",
   "household.create.cta": "Créer le foyer",
+  "household.create.error": "Nous n'avons pas pu créer votre foyer pour le moment. Veuillez réessayer.",
+  "household.membership.exists": "Vous faites déjà partie d'un foyer.",
+  "household.preferences.invalid":
+    "Une ou plusieurs préférences du foyer sont invalides. Vérifiez votre sélection et réessayez.",
+  "household.kitchen_appliances.invalid_values":
+    "Ces appareils de cuisine ne sont pas pris en charge : {{values}}. Supprimez-les et réessayez.",
+  "household.preferences.validation_unavailable":
+    "Nous n'avons pas pu valider ces préférences du foyer pour le moment. Veuillez réessayer.",
   "household.choose.title": "Votre foyer.",
   "household.choose.subtitle": "Créez un nouveau garde-manger ou rejoignez-en un existant",
   "household.choose.createTitle": "Créer le foyer",

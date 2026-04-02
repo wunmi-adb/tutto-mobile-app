@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
@@ -7,6 +7,7 @@ import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -18,15 +19,7 @@ const COMMON_APPLIANCES = [
   { id: "airFryer", key: "appliances.options.airFryer" },
   { id: "blender", key: "appliances.options.blender" },
   { id: "toaster", key: "appliances.options.toaster" },
-  { id: "slowCooker", key: "appliances.options.slowCooker" },
-  { id: "instantPot", key: "appliances.options.instantPot" },
-  { id: "foodProcessor", key: "appliances.options.foodProcessor" },
-  { id: "standMixer", key: "appliances.options.standMixer" },
   { id: "riceCooker", key: "appliances.options.riceCooker" },
-  { id: "grill", key: "appliances.options.grill" },
-  { id: "stovetop", key: "appliances.options.stovetop" },
-  { id: "dishwasher", key: "appliances.options.dishwasher" },
-  { id: "waffleMaker", key: "appliances.options.waffleMaker" },
 ] as const;
 
 type CommonApplianceId = (typeof COMMON_APPLIANCES)[number]["id"];
@@ -34,6 +27,7 @@ type CommonApplianceId = (typeof COMMON_APPLIANCES)[number]["id"];
 export default function Appliances() {
   const router = useRouter();
   const { t } = useI18n();
+  const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selectedAppliances, setSelectedAppliances] = useState<CommonApplianceId[]>([]);
   const [customAppliances, setCustomAppliances] = useState<string[]>([]);
 
@@ -63,9 +57,32 @@ export default function Appliances() {
   };
   const canContinue = selectedAppliances.length > 0 || customAppliances.length > 0;
 
+  const handleContinue = async () => {
+    if (updateHouseholdMutation.isPending) {
+      return;
+    }
+
+    const selectedValues = COMMON_APPLIANCES
+      .filter((appliance) => selectedAppliances.includes(appliance.id))
+      .map((appliance) => t(appliance.key));
+    const customValues = customAppliances
+      .map((appliance) => appliance.trim())
+      .filter(Boolean);
+
+    try {
+      await updateHouseholdMutation.mutateAsync({
+        kitchen_appliances: [...selectedValues, ...customValues].join(", "),
+      });
+
+      router.replace("/onboarding/dietary");
+    } catch {
+      // The mutation hook already shows the translated error toast.
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <KeyboardAvoidingContainer style={styles.keyboard}>
         <ScrollView
@@ -101,7 +118,10 @@ export default function Appliances() {
           <Button
             title={t("appliances.cta")}
             disabled={!canContinue}
-            onPress={() => router.push("/onboarding/dietary")}
+            loading={updateHouseholdMutation.isPending}
+            onPress={() => {
+              void handleContinue();
+            }}
             style={styles.button}
           />
         </ScrollView>

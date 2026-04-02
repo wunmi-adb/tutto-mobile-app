@@ -13,6 +13,13 @@ const ja = {
     "1週間の予定を立てて、本当に必要なものだけを買いましょう。",
   "welcome.auth.apple": "Appleで続ける",
   "welcome.auth.google": "Googleで続ける",
+  "welcome.session.loading": "キッチンを準備しています...",
+  "welcome.session.loadingSubtitle":
+    "アカウントを確認して、次に進むべき正しいステップへご案内しています。",
+  "welcome.session.error": "現在アカウントを読み込めませんでした。",
+  "welcome.session.errorSubtitle":
+    "中断したところから続けるために、もう一度お試しください。",
+  "welcome.session.retry": "もう一度試す",
   "auth.google.loading": "Opening Google sign in...",
   "auth.google.retry": "Try again",
   "auth.google.errors.generic": "Couldn't sign you in with Google. Please try again.",
@@ -31,6 +38,14 @@ const ja = {
   "household.create.namePlaceholder": "例: 田中ファミリー",
   "household.create.peopleLabel": "世帯の人数",
   "household.create.cta": "世帯を作成",
+  "household.create.error": "現在、世帯を作成できませんでした。もう一度お試しください。",
+  "household.membership.exists": "あなたはすでに世帯に参加しています。",
+  "household.preferences.invalid":
+    "世帯の設定の一部が無効です。選択内容を確認してもう一度お試しください。",
+  "household.kitchen_appliances.invalid_values":
+    "次のキッチン家電はサポートされていません: {{values}}。削除してもう一度お試しください。",
+  "household.preferences.validation_unavailable":
+    "現在、これらの世帯設定を確認できませんでした。もう一度お試しください。",
   "household.choose.title": "あなたの世帯。",
   "household.choose.subtitle": "新しいパントリーを作るか、既存のパントリーに参加しましょう",
   "household.choose.createTitle": "世帯を作成",

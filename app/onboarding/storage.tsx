@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
@@ -41,7 +41,7 @@ export default function Storage() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <KeyboardAvoidingContainer style={styles.keyboard}>
         <ScrollView
@@ -95,7 +95,7 @@ export default function Storage() {
                   : selected
                     ? t(LOCATIONS.find((l) => l.id === selected)?.key ?? "storage.options.fridge")
                     : t("storage.options.fridge");
-              router.push({ pathname: "/onboarding/add-items", params: { location: locationName } });
+              router.replace({ pathname: "/onboarding/add-items", params: { location: locationName } });
             }}
             style={styles.button}
           />

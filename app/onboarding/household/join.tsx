@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
@@ -18,7 +18,7 @@ export default function HouseholdJoin() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <KeyboardAvoidingContainer style={styles.content} extraOffset>
         <View style={styles.headingBlock}>
@@ -41,7 +41,7 @@ export default function HouseholdJoin() {
         <Button
           title={t("household.join.cta")}
           disabled={inviteCode.length < 4}
-          onPress={() => router.push("/onboarding/notifications")}
+          onPress={() => router.replace("/onboarding/notifications")}
         />
       </KeyboardAvoidingContainer>
     </SafeAreaView>

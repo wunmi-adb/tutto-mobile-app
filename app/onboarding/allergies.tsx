@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
@@ -8,6 +8,7 @@ import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -17,17 +18,12 @@ const COMMON_ALLERGIES = [
   { id: "peanuts", key: "allergies.options.peanuts" },
   { id: "treeNuts", key: "allergies.options.treeNuts" },
   { id: "milk", key: "allergies.options.milk" },
-  { id: "eggs", key: "allergies.options.eggs" },
-  { id: "wheat", key: "allergies.options.wheat" },
   { id: "soy", key: "allergies.options.soy" },
   { id: "fish", key: "allergies.options.fish" },
   { id: "shellfish", key: "allergies.options.shellfish" },
-  { id: "sesame", key: "allergies.options.sesame" },
   { id: "gluten", key: "allergies.options.gluten" },
-  { id: "corn", key: "allergies.options.corn" },
   { id: "mustard", key: "allergies.options.mustard" },
-  { id: "celery", key: "allergies.options.celery" },
-  { id: "lupin", key: "allergies.options.lupin" },
+
 ] as const;
 
 type CommonAllergyId = (typeof COMMON_ALLERGIES)[number]["id"];
@@ -35,6 +31,7 @@ type CommonAllergyId = (typeof COMMON_ALLERGIES)[number]["id"];
 export default function Allergies() {
   const router = useRouter();
   const { t } = useI18n();
+  const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selectedAllergies, setSelectedAllergies] = useState<CommonAllergyId[]>([]);
   const [customAllergies, setCustomAllergies] = useState<string[]>([]);
 
@@ -61,12 +58,33 @@ export default function Allergies() {
   };
   const canContinue = selectedAllergies.length > 0 || customAllergies.length > 0;
 
+  const handleContinue = async () => {
+    if (updateHouseholdMutation.isPending) {
+      return;
+    }
+
+    const selectedValues = COMMON_ALLERGIES
+      .filter((allergy) => selectedAllergies.includes(allergy.id))
+      .map((allergy) => t(allergy.key));
+    const customValues = customAllergies.map((allergy) => allergy.trim()).filter(Boolean);
+
+    try {
+      await updateHouseholdMutation.mutateAsync({
+        allergies: [...selectedValues, ...customValues].join(", "),
+      });
+
+      router.replace("/onboarding/cuisines");
+    } catch {
+      // The mutation hook already shows the translated error toast.
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <OnboardingTopBar
-        leftAccessory={<BackButton onPress={() => router.back()} />}
+        leftAccessory={<OnboardingBackButton />}
         rightAccessory={
-          <SkipButton label={t("allergies.skip")} onPress={() => router.push("/onboarding/cuisines")} />
+          <SkipButton label={t("allergies.skip")} onPress={() => router.replace("/onboarding/cuisines")} />
         }
       />
 
@@ -104,7 +122,10 @@ export default function Allergies() {
           <Button
             title={t("allergies.cta")}
             disabled={!canContinue}
-            onPress={() => router.push("/onboarding/cuisines")}
+            loading={updateHouseholdMutation.isPending}
+            onPress={() => {
+              void handleContinue();
+            }}
             style={styles.button}
           />
         </ScrollView>

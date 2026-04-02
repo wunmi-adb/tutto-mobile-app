@@ -1,10 +1,11 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import SelectableRow from "@/components/ui/SelectableRow";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -24,6 +25,7 @@ type MealId = (typeof MEALS)[number]["id"];
 export default function Meals() {
   const router = useRouter();
   const { t } = useI18n();
+  const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selected, setSelected] = useState<MealId[]>([]);
 
   const toggle = (id: MealId) => {
@@ -32,9 +34,29 @@ export default function Meals() {
     );
   };
 
+  const handleContinue = async () => {
+    if (updateHouseholdMutation.isPending) {
+      return;
+    }
+
+    const selectedValues = MEALS
+      .filter((meal) => selected.includes(meal.id))
+      .map((meal) => meal.id);
+
+    try {
+      await updateHouseholdMutation.mutateAsync({
+        meals: selectedValues.join(", "),
+      });
+
+      router.replace("/onboarding/storage");
+    } catch {
+      // The mutation hook already shows the translated error toast.
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar leftAccessory={<BackButton onPress={() => router.back()} />} />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <ScrollView
         style={styles.scroll}
@@ -61,7 +83,10 @@ export default function Meals() {
         <Button
           title={t("meals.cta")}
           disabled={selected.length === 0}
-          onPress={() => router.push("/onboarding/storage")}
+          loading={updateHouseholdMutation.isPending}
+          onPress={() => {
+            void handleContinue();
+          }}
           style={styles.button}
         />
       </ScrollView>

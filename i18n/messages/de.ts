@@ -13,6 +13,13 @@ const de = {
     "Erstelle einen Wochenplan und kaufe nur, was du wirklich brauchst.",
   "welcome.auth.apple": "Mit Apple fortfahren",
   "welcome.auth.google": "Mit Google fortfahren",
+  "welcome.session.loading": "Wir richten deine Küche ein...",
+  "welcome.session.loadingSubtitle":
+    "Wir prüfen dein Konto und bringen dich zum richtigen nächsten Schritt.",
+  "welcome.session.error": "Dein Konto konnte gerade nicht geladen werden.",
+  "welcome.session.errorSubtitle":
+    "Bitte versuche es erneut, um dort weiterzumachen, wo du aufgehört hast.",
+  "welcome.session.retry": "Erneut versuchen",
   "auth.google.loading": "Opening Google sign in...",
   "auth.google.retry": "Try again",
   "auth.google.errors.generic": "Couldn't sign you in with Google. Please try again.",
@@ -32,6 +39,14 @@ const de = {
   "household.create.namePlaceholder": "z. B. Familie Schmidt",
   "household.create.peopleLabel": "PERSONEN IM HAUSHALT",
   "household.create.cta": "Haushalt erstellen",
+  "household.create.error": "Dein Haushalt konnte gerade nicht erstellt werden. Bitte versuche es erneut.",
+  "household.membership.exists": "Du bist bereits Mitglied eines Haushalts.",
+  "household.preferences.invalid":
+    "Eine oder mehrere Haushaltseinstellungen sind ungültig. Bitte überprüfe deine Auswahl und versuche es erneut.",
+  "household.kitchen_appliances.invalid_values":
+    "Diese Küchengeräte werden nicht unterstützt: {{values}}. Bitte entferne sie und versuche es erneut.",
+  "household.preferences.validation_unavailable":
+    "Diese Haushaltseinstellungen konnten gerade nicht validiert werden. Bitte versuche es erneut.",
   "household.choose.title": "Dein Haushalt.",
   "household.choose.subtitle": "Erstelle eine neue Vorratskammer oder tritt einer bestehenden bei",
   "household.choose.createTitle": "Haushalt erstellen",

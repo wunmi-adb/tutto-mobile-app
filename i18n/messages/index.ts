@@ -10,6 +10,10 @@ import tr from "./tr";
 export type TranslationKey = keyof typeof en;
 export type TranslationDictionary = TranslationMessages;
 
+export function isTranslationKey(value: string): value is TranslationKey {
+  return value in en;
+}
+
 export const translations: Record<AppLanguage, TranslationDictionary> = {
   en,
   de,

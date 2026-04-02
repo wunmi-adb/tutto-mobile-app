@@ -1,5 +1,5 @@
+import OnboardingBackButton from "@/components/onboarding/OnboardingBackButton";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
-import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
@@ -8,6 +8,7 @@ import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -15,17 +16,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const COMMON_DIETS = [
   { id: "vegetarian", key: "dietary.options.vegetarian" },
-  { id: "vegan", key: "dietary.options.vegan" },
-  { id: "pescatarian", key: "dietary.options.pescatarian" },
   { id: "keto", key: "dietary.options.keto" },
   { id: "glutenFree", key: "dietary.options.glutenFree" },
   { id: "dairyFree", key: "dietary.options.dairyFree" },
   { id: "halal", key: "dietary.options.halal" },
-  { id: "kosher", key: "dietary.options.kosher" },
-  { id: "paleo", key: "dietary.options.paleo" },
   { id: "lowCarb", key: "dietary.options.lowCarb" },
-  { id: "whole30", key: "dietary.options.whole30" },
-  { id: "mediterranean", key: "dietary.options.mediterranean" },
 ] as const;
 
 type CommonDietId = (typeof COMMON_DIETS)[number]["id"];
@@ -33,6 +28,7 @@ type CommonDietId = (typeof COMMON_DIETS)[number]["id"];
 export default function Dietary() {
   const router = useRouter();
   const { t } = useI18n();
+  const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selectedDiets, setSelectedDiets] = useState<CommonDietId[]>([]);
   const [customDiets, setCustomDiets] = useState<string[]>([]);
 
@@ -59,12 +55,33 @@ export default function Dietary() {
   };
   const canContinue = selectedDiets.length > 0 || customDiets.length > 0;
 
+  const handleContinue = async () => {
+    if (updateHouseholdMutation.isPending) {
+      return;
+    }
+
+    const selectedValues = COMMON_DIETS
+      .filter((diet) => selectedDiets.includes(diet.id))
+      .map((diet) => t(diet.key));
+    const customValues = customDiets.map((diet) => diet.trim()).filter(Boolean);
+
+    try {
+      await updateHouseholdMutation.mutateAsync({
+        dietary: [...selectedValues, ...customValues].join(", "),
+      });
+
+      router.replace("/onboarding/allergies");
+    } catch {
+      // The mutation hook already shows the translated error toast.
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <OnboardingTopBar
-        leftAccessory={<BackButton onPress={() => router.back()} />}
+        leftAccessory={<OnboardingBackButton />}
         rightAccessory={
-          <SkipButton label={t("dietary.skip")} onPress={() => router.push("/onboarding/allergies")} />
+          <SkipButton label={t("dietary.skip")} onPress={() => router.replace("/onboarding/allergies")} />
         }
       />
 
@@ -102,7 +119,10 @@ export default function Dietary() {
           <Button
             title={t("dietary.cta")}
             disabled={!canContinue}
-            onPress={() => router.push("/onboarding/allergies")}
+            loading={updateHouseholdMutation.isPending}
+            onPress={() => {
+              void handleContinue();
+            }}
             style={styles.button}
           />
         </ScrollView>

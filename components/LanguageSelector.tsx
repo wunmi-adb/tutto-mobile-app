@@ -2,7 +2,7 @@ import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import { APP_LANGUAGE_TO_LOCALE, AppLanguage } from "@/i18n/config";
-import { updateCurrentUserLocale } from "@/lib/users/profile";
+import { updateCurrentUserLocale } from "@/lib/api/profile";
 import { useAuth } from "@/providers/AuthProvider";
 import { Feather } from "@expo/vector-icons";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -150,7 +150,7 @@ export default function LanguageSelector() {
       setIsSaving(true);
 
       try {
-        await updateCurrentUserLocale(session.access_token, APP_LANGUAGE_TO_LOCALE[nextLanguage]);
+        await updateCurrentUserLocale(APP_LANGUAGE_TO_LOCALE[nextLanguage]);
       } catch (error) {
         console.warn("Failed to update user locale.", error);
       } finally {

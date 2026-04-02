@@ -1,5 +1,14 @@
-import { I18nProvider, useI18nController } from "@/i18n";
+import { I18nProvider, useI18n, useI18nController } from "@/i18n";
+import {
+  CURRENT_USER_QUERY_KEY,
+  getAppEntryRoute,
+  getCurrentUser,
+  getStoredCurrentUser,
+} from "@/lib/api/profile";
 import { AppProviders } from "@/providers/AppProviders";
+import { useAuth } from "@/providers/AuthProvider";
+import { colors } from "@/constants/colors";
+import { fonts } from "@/constants/fonts";
 import {
   DMSans_400Regular,
   DMSans_400Regular_Italic,
@@ -13,12 +22,114 @@ import {
   InstrumentSerif_400Regular_Italic,
   useFonts,
 } from "@expo-google-fonts/instrument-serif";
-import { Stack } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { Redirect, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Toaster } from "sonner-native";
 
 SplashScreen.preventAutoHideAsync();
+
+function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
+  const { t } = useI18n();
+  const { ready: authReady, isAuthenticated } = useAuth();
+  const segments = useSegments();
+  const isRootIndex = segments.length === 0;
+  const requiresSessionResolution = isRootIndex && isAuthenticated;
+  const [storedCurrentUser, setStoredCurrentUser] = useState<Awaited<
+    ReturnType<typeof getStoredCurrentUser>
+  > | undefined>(undefined);
+  const currentUserQuery = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: getCurrentUser,
+    enabled:
+      assetsReady &&
+      authReady &&
+      requiresSessionResolution &&
+      storedCurrentUser === null,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const hydrateStoredCurrentUser = async () => {
+      if (!assetsReady || !authReady || !requiresSessionResolution) {
+        if (!cancelled) {
+          setStoredCurrentUser(null);
+        }
+        return;
+      }
+
+      try {
+        const user = await getStoredCurrentUser();
+
+        if (!cancelled) {
+          setStoredCurrentUser(user);
+        }
+      } catch (error) {
+        console.warn("Failed to hydrate stored current user.", error);
+
+        if (!cancelled) {
+          setStoredCurrentUser(null);
+        }
+      }
+    };
+
+    hydrateStoredCurrentUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assetsReady, authReady, requiresSessionResolution]);
+
+  useEffect(() => {
+    if (currentUserQuery.data) {
+      setStoredCurrentUser(currentUserQuery.data);
+    }
+  }, [currentUserQuery.data]);
+
+  const resolvedCurrentUser = storedCurrentUser ?? currentUserQuery.data ?? null;
+
+  const appReady =
+    assetsReady &&
+    authReady &&
+    (!requiresSessionResolution ||
+      (storedCurrentUser !== undefined &&
+        (storedCurrentUser !== null || !currentUserQuery.isPending)));
+  const shouldRedirectAuthenticatedRoot = requiresSessionResolution && !!resolvedCurrentUser;
+
+  useEffect(() => {
+    if (appReady && !shouldRedirectAuthenticatedRoot) {
+      SplashScreen.hideAsync();
+    }
+  }, [appReady, shouldRedirectAuthenticatedRoot]);
+
+  if (!appReady) {
+    return null;
+  }
+
+  if (shouldRedirectAuthenticatedRoot) {
+    return <Redirect href={getAppEntryRoute(resolvedCurrentUser)} />;
+  }
+
+  if (requiresSessionResolution && storedCurrentUser === null && currentUserQuery.isError) {
+    return (
+      <View style={styles.authenticatedState}>
+        <Text style={styles.sessionTitle}>{t("welcome.session.error")}</Text>
+        <Text style={styles.sessionSubtitle}>{t("welcome.session.errorSubtitle")}</Text>
+        <TouchableOpacity onPress={() => currentUserQuery.refetch()} activeOpacity={0.7}>
+          <Text style={styles.retryText}>{t("welcome.session.retry")}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -32,21 +143,77 @@ export default function RootLayout() {
     DMSans_700Bold_Italic,
   });
   const i18n = useI18nController();
+  const assetsReady = loaded && i18n.ready;
 
-  useEffect(() => {
-    if (loaded && i18n.ready) {
-      SplashScreen.hideAsync();
-    }
-  }, [i18n.ready, loaded]);
-
-  if (!loaded || !i18n.ready) return null;
+  if (!assetsReady) return null;
 
   return (
     <I18nProvider value={i18n}>
-      <AppProviders>
-        <StatusBar style="dark" backgroundColor="#ffffff" />
-        <Stack screenOptions={{ headerShown: false }} />
-      </AppProviders>
+      <GestureHandlerRootView style={styles.root}>
+        <AppProviders>
+          <StatusBar style="dark" backgroundColor="#ffffff" />
+          <RootNavigator assetsReady={assetsReady} />
+          <Toaster
+            position="top-center"
+            theme="light"
+            richColors
+            duration={4500}
+            offset={56}
+            toastOptions={{
+              style: styles.toast,
+              titleStyle: styles.toastTitle,
+              descriptionStyle: styles.toastDescription,
+            }}
+          />
+        </AppProviders>
+      </GestureHandlerRootView>
     </I18nProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  authenticatedState: {
+    flex: 1,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    backgroundColor: colors.background,
+  },
+  sessionTitle: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.text,
+    textAlign: "center",
+  },
+  sessionSubtitle: {
+    maxWidth: 320,
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    lineHeight: 22,
+    color: colors.muted,
+    textAlign: "center",
+  },
+  retryText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.brand,
+  },
+  toast: {
+    borderRadius: 16,
+  },
+  toastTitle: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  toastDescription: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+});

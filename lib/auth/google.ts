@@ -1,14 +1,11 @@
 import * as Linking from "expo-linking";
 import { apiClient } from "@/lib/api/client";
+import { ApiResponse } from "@/lib/api/types";
 import { normalizeAuthSession } from "@/lib/auth/session";
 import { AuthCallbackResult } from "@/lib/auth/types";
 
-type GoogleRedirectResponse = {
-  data: {
-    redirect_url: string;
-  };
-  message: string;
-  status: boolean;
+type GoogleRedirectData = {
+  redirect_url: string;
 };
 
 function getUrlParams(url: string) {
@@ -29,7 +26,7 @@ function getUrlParams(url: string) {
 }
 
 export async function getGoogleAuthRedirectUrl(redirectUri: string) {
-  const response = await apiClient.get<GoogleRedirectResponse>("/api/v1/auth/google", {
+  const response = await apiClient.get<ApiResponse<GoogleRedirectData>>("/api/v1/auth/google", {
     params: {
       redirect_uri: redirectUri,
     },
