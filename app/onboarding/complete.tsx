@@ -3,7 +3,9 @@ import Button from "@/components/ui/Button";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { prefetchStorageLocations } from "@/lib/api/storage-locations";
 import { Feather } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,7 +13,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function OnboardingComplete() {
   const router = useRouter();
   const { t } = useI18n();
-  const { location } = useLocalSearchParams<{ location: string }>();
+  const queryClient = useQueryClient();
+  const { location, source } = useLocalSearchParams<{ location: string; source?: string }>();
   const storageName = location ?? t("addItems.defaultStorage");
 
   return (
@@ -33,7 +36,13 @@ export default function OnboardingComplete() {
             title={t("complete.addLocation")}
             leftIcon={<Feather name="plus" size={16} color={colors.text} />}
             style={styles.btn}
-            onPress={() => router.replace("/onboarding/storage")}
+            onPress={async () => {
+              await prefetchStorageLocations(queryClient);
+              router.replace({
+                pathname: "/onboarding/storage",
+                params: source ? { source } : undefined,
+              });
+            }}
           />
           <Button
             title={t("complete.goToKitchen")}

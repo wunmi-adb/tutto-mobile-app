@@ -1,6 +1,7 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import HapticPressable from "@/components/ui/HapticPressable";
+import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
   value: number;
@@ -10,21 +11,21 @@ type Props = {
 export default function QtyStepper({ value, onChange }: Props) {
   return (
     <View style={styles.row}>
-      <TouchableOpacity
+      <HapticPressable
         style={styles.btn}
-        activeOpacity={0.7}
+        pressedOpacity={0.7}
         onPress={() => onChange(Math.max(1, value - 1))}
       >
         <Text style={styles.btnText}>−</Text>
-      </TouchableOpacity>
+      </HapticPressable>
       <Text style={styles.count}>{value}</Text>
-      <TouchableOpacity
+      <HapticPressable
         style={styles.btn}
-        activeOpacity={0.7}
+        pressedOpacity={0.7}
         onPress={() => onChange(value + 1)}
       >
         <Text style={styles.btnText}>+</Text>
-      </TouchableOpacity>
+      </HapticPressable>
     </View>
   );
 }

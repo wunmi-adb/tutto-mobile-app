@@ -11,6 +11,7 @@ export type CurrentUserHousehold = {
   created_at?: string | null;
   dietary?: string | null;
   dislike?: string | null;
+  has_item?: boolean | null;
   id?: string | null;
   invite_code?: string | null;
   is_owner?: boolean | null;
@@ -26,6 +27,7 @@ export type CurrentUserHousehold = {
 export type CurrentUser = {
   email: string;
   household: CurrentUserHousehold;
+  has_item?: boolean;
   itemsAdded?: boolean;
   items_added?: boolean;
   locale: string;
@@ -117,6 +119,30 @@ export async function updateCurrentUserHouseholdCache(
   });
 }
 
+export async function updateCurrentUserHasItemCache(
+  queryClient: QueryClient,
+  hasItem = true,
+) {
+  const currentUser =
+    queryClient.getQueryData<CurrentUser>(CURRENT_USER_QUERY_KEY) ??
+    (await getStoredCurrentUser());
+
+  if (!currentUser) {
+    return;
+  }
+
+  await setCurrentUserCache(queryClient, {
+    ...currentUser,
+    has_item: hasItem,
+    household: currentUser.household
+      ? {
+          ...currentUser.household,
+          has_item: hasItem,
+        }
+      : currentUser.household,
+  });
+}
+
 export async function getCurrentUser() {
   const response = await apiClient.get<ApiResponse<CurrentUser>>("/api/v1/user");
   await storeCurrentUser(response.data.data);
@@ -158,7 +184,7 @@ export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
     return "/onboarding/meals";
   }
 
-  if (user.itemsAdded || user.items_added) {
+  if (household.has_item || user.has_item) {
     return "/kitchen";
   }
 

@@ -1,30 +1,33 @@
 export type ItemType = "ingredient" | "cooked";
-export type FillLevel = "full" | "three-quarter" | "half" | "quarter" | "nearly-empty";
+export type TrackingMode = "quantity" | "fill_level";
+export type FillLevel = "sealed" | "full" | "half" | "nearly-empty";
 
 export interface Batch {
   id: number;
   qty: number;
   bestBefore: string; // "YYYY-MM-DD"
   fillLevel: FillLevel;
-  sealed: boolean;
-  useWithinDays: number | null;
-  dateMade: string; // "YYYY-MM-DD"
 }
 
-export const FILL_OPTIONS: { key: FillLevel; percent: number }[] = [
-  { key: "full", percent: 100 },
-  { key: "three-quarter", percent: 75 },
+export interface ItemDraft {
+  name: string;
+  itemType: ItemType;
+  countAsUnits: boolean;
+  batches: Batch[];
+  expandedBatchId: number;
+}
+
+export const INGREDIENT_FILL_OPTIONS: { key: FillLevel; percent: number }[] = [
+  { key: "sealed", percent: 100 },
+  { key: "full", percent: 90 },
   { key: "half", percent: 50 },
-  { key: "quarter", percent: 25 },
-  { key: "nearly-empty", percent: 8 },
+  { key: "nearly-empty", percent: 12 },
 ];
 
-export const USE_WITHIN = [
-  { key: "addItems.batch.useWithin.2days", days: 2 },
-  { key: "addItems.batch.useWithin.3days", days: 3 },
-  { key: "addItems.batch.useWithin.5days", days: 5 },
-  { key: "addItems.batch.useWithin.1week", days: 7 },
-  { key: "addItems.batch.useWithin.2weeks", days: 14 },
+export const COOKED_FILL_OPTIONS: { key: Exclude<FillLevel, "sealed">; percent: number }[] = [
+  { key: "full", percent: 100 },
+  { key: "half", percent: 50 },
+  { key: "nearly-empty", percent: 12 },
 ];
 
 let _batchId = 1;
@@ -32,8 +35,17 @@ export const makeBatch = (): Batch => ({
   id: _batchId++,
   qty: 1,
   bestBefore: "",
-  fillLevel: "full",
-  sealed: true,
-  useWithinDays: null,
-  dateMade: "",
+  fillLevel: "sealed",
 });
+
+export const makeItemDraft = (name = ""): ItemDraft => {
+  const batch = makeBatch();
+
+  return {
+    name,
+    itemType: "ingredient",
+    countAsUnits: false,
+    batches: [batch],
+    expandedBatchId: batch.id,
+  };
+};

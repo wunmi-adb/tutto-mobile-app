@@ -10,15 +10,14 @@ import {
   Easing,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import HapticPressable from "../ui/HapticPressable";
 import BatchCard from "./add-item/BatchCard";
-import { Batch, ItemType, makeBatch } from "./add-item/types";
+import { Batch, ItemDraft, ItemType, makeItemDraft } from "./add-item/types";
 
 type Item = { name: string };
 
@@ -27,14 +26,10 @@ type Props = {
   items: Item[];
   currentIndex: number;
   completedIndices: number[];
-  onFinish: () => void;
+  onFinish: (drafts: ItemDraft[]) => Promise<void> | void;
   onBack: () => void;
+  saving?: boolean;
 };
-
-function freshBatches() {
-  const b = makeBatch();
-  return { batches: [b], expandedId: b.id };
-}
 
 export default function AddItemView({
   storageName,
@@ -43,37 +38,52 @@ export default function AddItemView({
   completedIndices: initialCompleted,
   onFinish,
   onBack,
+  saving = false,
 }: Props) {
   const { t } = useI18n();
   const [idx, setIdx] = useState(initialIndex);
   const [completed, setCompleted] = useState(new Set(initialCompleted));
-
-  const [itemType, setItemType] = useState<ItemType>("ingredient");
-  const [itemName, setItemName] = useState(items[initialIndex]?.name ?? "");
-  const [countAsUnits, setCountAsUnits] = useState(false);
-  const [trackUseWithin, setTrackUseWithin] = useState(false);
-  const [batches, setBatches] = useState<Batch[]>(() => [makeBatch()]);
-  const [expandedId, setExpandedId] = useState(batches[0].id);
+  const [drafts, setDrafts] = useState<ItemDraft[]>(() => items.map((item) => makeItemDraft(item.name)));
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const nameInputRef = useRef<TextInput>(null);
+  const currentDraft = drafts[idx];
+
+  const updateCurrentDraft = (updater: (draft: ItemDraft) => ItemDraft) => {
+    setDrafts((prev) => prev.map((draft, draftIndex) => (draftIndex === idx ? updater(draft) : draft)));
+  };
 
   const updateBatch = (id: number, updates: Partial<Batch>) =>
-    setBatches((prev) => prev.map((b) => (b.id === id ? { ...b, ...updates } : b)));
+    updateCurrentDraft((draft) => ({
+      ...draft,
+      batches: draft.batches.map((batch) => (batch.id === id ? { ...batch, ...updates } : batch)),
+    }));
 
   const removeBatch = (id: number) => {
-    setBatches((prev) => {
-      const next = prev.filter((b) => b.id !== id);
-      if (expandedId === id) setExpandedId(next[0]?.id ?? -1);
-      return next;
+    updateCurrentDraft((draft) => {
+      const nextBatches = draft.batches.filter((batch) => batch.id !== id);
+
+      return {
+        ...draft,
+        batches: nextBatches,
+        expandedBatchId:
+          draft.expandedBatchId === id ? (nextBatches[0]?.id ?? -1) : draft.expandedBatchId,
+      };
     });
   };
 
   const addBatch = () => {
-    const nb = makeBatch();
-    setBatches((prev) => [...prev, nb]);
-    setExpandedId(nb.id);
+    updateCurrentDraft((draft) => {
+      const nextDraft = makeItemDraft(draft.name);
+      const nextBatch = nextDraft.batches[0];
+
+      return {
+        ...draft,
+        batches: [...draft.batches, nextBatch],
+        expandedBatchId: nextBatch.id,
+      };
+    });
   };
 
   const switchTo = (newIdx: number, newCompleted: Set<number>) => {
@@ -85,15 +95,8 @@ export default function AddItemView({
     ]).start(() => {
       slideAnim.setValue(dir * 10);
 
-      const { batches: nb, expandedId: ne } = freshBatches();
       setIdx(newIdx);
       setCompleted(newCompleted);
-      setItemName(items[newIdx]?.name ?? "");
-      setItemType("ingredient");
-      setCountAsUnits(false);
-      setTrackUseWithin(false);
-      setBatches(nb);
-      setExpandedId(ne);
 
       requestAnimationFrame(() => {
         Animated.parallel([
@@ -104,48 +107,60 @@ export default function AddItemView({
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (saving) {
+      return;
+    }
+
     const next = new Set(completed);
     next.add(idx);
+
     if (idx < items.length - 1) {
       switchTo(idx + 1, next);
     } else {
-      onFinish();
+      await onFinish(drafts);
     }
   };
 
   const isLast = idx === items.length - 1;
-  const isIngredient = itemType === "ingredient";
+  const isIngredient = currentDraft.itemType === "ingredient";
+  const addAnotherLabel = isIngredient
+    ? t("addItems.detail.addAnotherItem", {
+        name: currentDraft.name.trim() || t("addItems.detail.addAnotherItemFallback"),
+      })
+    : t("addItems.detail.addAnotherPortion", {
+        name: currentDraft.name.trim() || t("addItems.detail.addAnotherPortionFallback"),
+      });
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={onBack}>
+        <HapticPressable style={styles.backBtn} pressedOpacity={0.7} onPress={onBack}>
           <Feather name="arrow-left" size={16} color={colors.text} />
-        </TouchableOpacity>
+        </HapticPressable>
 
         {/* Absolutely centered so it's always pixel-perfect regardless of side widths */}
         <View style={styles.headerCenter} pointerEvents="box-none">
           {items.length > 1 ? (
             <View style={styles.itemNav}>
-              <TouchableOpacity
+              <HapticPressable
                 style={[styles.navBtn, idx === 0 && styles.navBtnDisabled]}
-                activeOpacity={0.7}
+                pressedOpacity={0.7}
                 disabled={idx === 0}
                 onPress={() => idx > 0 && switchTo(idx - 1, completed)}
               >
                 <Feather name="chevron-left" size={14} color={colors.muted} />
-              </TouchableOpacity>
+              </HapticPressable>
               <Text style={styles.navCounter}>{idx + 1} / {items.length}</Text>
-              <TouchableOpacity
+              <HapticPressable
                 style={[styles.navBtn, idx === items.length - 1 && styles.navBtnDisabled]}
-                activeOpacity={0.7}
+                pressedOpacity={0.7}
                 disabled={idx === items.length - 1}
                 onPress={() => idx < items.length - 1 && switchTo(idx + 1, completed)}
               >
                 <Feather name="chevron-right" size={14} color={colors.muted} />
-              </TouchableOpacity>
+              </HapticPressable>
             </View>
           ) : (
             <View style={styles.locationBadge}>
@@ -161,7 +176,7 @@ export default function AddItemView({
             <Text style={styles.locationText}>{storageName}</Text>
           </View>
         ) : (
-          <View style={styles.backBtn} />
+          <View style={styles.headerSpacer} />
         )}
       </View>
 
@@ -180,8 +195,13 @@ export default function AddItemView({
           <TextInput
             ref={nameInputRef}
             style={styles.nameInput}
-            value={itemName}
-            onChangeText={setItemName}
+            value={currentDraft.name}
+            onChangeText={(value) =>
+              updateCurrentDraft((draft) => ({
+                ...draft,
+                name: value,
+              }))
+            }
             placeholder={
               isIngredient
                 ? t("addItems.detail.namePlaceholder.ingredient")
@@ -197,112 +217,149 @@ export default function AddItemView({
           {/* Type toggle */}
           <View style={styles.typeToggle}>
             {(["ingredient", "cooked"] as ItemType[]).map((typeOption) => (
-              <TouchableOpacity
+              <HapticPressable
                 key={typeOption}
-                style={[styles.typeBtn, itemType === typeOption && styles.typeBtnActive]}
-                activeOpacity={0.7}
-                onPress={() => setItemType(typeOption)}
+                style={[styles.typeBtn, currentDraft.itemType === typeOption && styles.typeBtnActive]}
+                pressedOpacity={0.7}
+                onPress={() =>
+                  updateCurrentDraft((draft) => ({
+                    ...draft,
+                    itemType: typeOption,
+                  }))
+                }
               >
-                <Text style={[styles.typeBtnText, itemType === typeOption && styles.typeBtnTextActive]}>
+                <Text
+                  style={[
+                    styles.typeBtnText,
+                    currentDraft.itemType === typeOption && styles.typeBtnTextActive,
+                  ]}
+                >
                   {typeOption === "ingredient"
                     ? t("addItems.detail.type.ingredient")
                     : t("addItems.detail.type.cooked")}
                 </Text>
-              </TouchableOpacity>
+              </HapticPressable>
             ))}
           </View>
 
           {/* ── Ingredient ── */}
           {isIngredient && (
             <View style={styles.section}>
-              <TouchableOpacity
-                style={styles.toggleRow}
-                activeOpacity={0.7}
-                onPress={() => setCountAsUnits((v) => !v)}
-              >
-                <View style={styles.toggleLabel}>
-                  <Text style={styles.toggleText}>{t("addItems.detail.countAsUnits")}</Text>
-                  <Text style={styles.toggleHint}>{t("addItems.detail.countAsUnitsHint")}</Text>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>{t("addItems.detail.trackBy")}</Text>
+                <View style={styles.trackByToggle}>
+                  <HapticPressable
+                    style={[styles.trackByBtn, !currentDraft.countAsUnits && styles.trackByBtnActive]}
+                    pressedOpacity={0.7}
+                    onPress={() =>
+                      updateCurrentDraft((draft) => ({
+                        ...draft,
+                        countAsUnits: false,
+                      }))
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.trackByBtnText,
+                        !currentDraft.countAsUnits && styles.trackByBtnTextActive,
+                      ]}
+                    >
+                      {t("addItems.detail.trackBy.fillLevel")}
+                    </Text>
+                  </HapticPressable>
+                  <HapticPressable
+                    style={[styles.trackByBtn, currentDraft.countAsUnits && styles.trackByBtnActive]}
+                    pressedOpacity={0.7}
+                    onPress={() =>
+                      updateCurrentDraft((draft) => ({
+                        ...draft,
+                        countAsUnits: true,
+                      }))
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.trackByBtnText,
+                        currentDraft.countAsUnits && styles.trackByBtnTextActive,
+                      ]}
+                    >
+                      {t("addItems.detail.trackBy.quantity")}
+                    </Text>
+                  </HapticPressable>
                 </View>
-                <Switch
-                  value={countAsUnits}
-                  onValueChange={setCountAsUnits}
-                  trackColor={{ true: colors.text, false: colors.secondary }}
-                  thumbColor={colors.background}
-                />
-              </TouchableOpacity>
-
-              {!countAsUnits && (
-                <TouchableOpacity
-                  style={[styles.toggleRow, styles.toggleRowBorder]}
-                activeOpacity={0.7}
-                onPress={() => setTrackUseWithin((v) => !v)}
-              >
-                  <Text style={styles.toggleText}>{t("addItems.detail.trackUseWithin")}</Text>
-                  <Switch
-                    value={trackUseWithin}
-                    onValueChange={setTrackUseWithin}
-                    trackColor={{ true: colors.text, false: colors.secondary }}
-                    thumbColor={colors.background}
-                  />
-                </TouchableOpacity>
-              )}
+                <Text style={styles.trackByHint}>
+                  {currentDraft.countAsUnits
+                    ? t("addItems.detail.trackBy.quantityHint")
+                    : t("addItems.detail.trackBy.fillLevelHint")}
+                </Text>
+              </View>
 
               <View style={styles.divider} />
 
-              {batches.map((batch, i) => (
+              {currentDraft.batches.map((batch, i) => (
                 <BatchCard
                   key={batch.id}
                   batch={batch}
                   batchIndex={i}
-                  totalBatches={batches.length}
-                  isExpanded={expandedId === batch.id}
+                  totalBatches={currentDraft.batches.length}
+                  isExpanded={currentDraft.expandedBatchId === batch.id}
                   isIngredient
-                  countAsUnits={countAsUnits}
-                  trackUseWithin={trackUseWithin}
-                  onToggle={() => setExpandedId(expandedId === batch.id ? -1 : batch.id)}
+                  countAsUnits={currentDraft.countAsUnits}
+                  onToggle={() =>
+                    updateCurrentDraft((draft) => ({
+                      ...draft,
+                      expandedBatchId: draft.expandedBatchId === batch.id ? -1 : batch.id,
+                    }))
+                  }
                   onRemove={() => removeBatch(batch.id)}
                   onUpdate={(u) => updateBatch(batch.id, u)}
                 />
               ))}
 
-              <TouchableOpacity style={styles.addBatch} activeOpacity={0.7} onPress={addBatch}>
+              <HapticPressable style={styles.addBatch} pressedOpacity={0.7} onPress={addBatch}>
                 <Feather name="plus" size={14} color={colors.muted} />
-                <Text style={styles.addBatchText}>{t("addItems.detail.addBatch")}</Text>
-              </TouchableOpacity>
+                <Text style={styles.addBatchText}>{addAnotherLabel}</Text>
+              </HapticPressable>
             </View>
           )}
 
           {/* ── Cooked food ── */}
           {!isIngredient && (
             <View style={styles.section}>
-              {batches.map((batch, i) => (
+              {currentDraft.batches.map((batch, i) => (
                 <BatchCard
                   key={batch.id}
                   batch={batch}
                   batchIndex={i}
-                  totalBatches={batches.length}
-                  isExpanded={expandedId === batch.id}
+                  totalBatches={currentDraft.batches.length}
+                  isExpanded={currentDraft.expandedBatchId === batch.id}
                   isIngredient={false}
                   countAsUnits={false}
-                  trackUseWithin={false}
-                  onToggle={() => setExpandedId(expandedId === batch.id ? -1 : batch.id)}
+                  onToggle={() =>
+                    updateCurrentDraft((draft) => ({
+                      ...draft,
+                      expandedBatchId: draft.expandedBatchId === batch.id ? -1 : batch.id,
+                    }))
+                  }
                   onRemove={() => removeBatch(batch.id)}
                   onUpdate={(u) => updateBatch(batch.id, u)}
                 />
               ))}
 
-              <TouchableOpacity style={styles.addBatch} activeOpacity={0.7} onPress={addBatch}>
+              <HapticPressable style={styles.addBatch} pressedOpacity={0.7} onPress={addBatch}>
                 <Feather name="plus" size={14} color={colors.muted} />
-                <Text style={styles.addBatchText}>{t("addItems.detail.addPortion")}</Text>
-              </TouchableOpacity>
+                <Text style={styles.addBatchText}>{addAnotherLabel}</Text>
+              </HapticPressable>
             </View>
           )}
 
           <Button
             title={isLast ? t("addItems.detail.saveFinish") : t("addItems.detail.saveNext")}
-            disabled={!itemName.trim()}
-            onPress={handleSave}
+            disabled={!currentDraft.name.trim()}
+            loading={isLast && saving}
+            onPress={() => {
+              void handleSave();
+            }}
           />
           </ScrollView>
         </Animated.View>
@@ -339,6 +396,10 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
+  },
+  headerSpacer: {
+    width: 36,
+    height: 36,
   },
   locationBadge: {
     flexDirection: "row",
@@ -418,25 +479,46 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   section: { gap: 12 },
-  toggleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-  },
-  toggleRowBorder: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  toggleLabel: { flexDirection: "row", alignItems: "baseline", flex: 1 },
-  toggleText: {
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    color: colors.text,
-  },
-  toggleHint: {
+  field: { gap: 8 },
+  fieldLabel: {
     fontFamily: fonts.sans,
     fontSize: 12,
+    color: colors.muted,
+  },
+  trackByToggle: {
+    flexDirection: "row",
+    backgroundColor: colors.secondary,
+    borderRadius: 999,
+    padding: 2,
+  },
+  trackByBtn: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trackByBtnActive: {
+    backgroundColor: colors.background,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  trackByBtnText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 12,
+    color: colors.muted,
+  },
+  trackByBtnTextActive: {
+    color: colors.text,
+  },
+  trackByHint: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    lineHeight: 16,
     color: colors.muted,
   },
   divider: { height: 1, backgroundColor: colors.border },

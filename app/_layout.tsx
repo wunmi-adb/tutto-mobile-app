@@ -5,6 +5,7 @@ import {
   getCurrentUser,
   getStoredCurrentUser,
 } from "@/lib/api/profile";
+import { prefetchStorageLocations } from "@/lib/api/storage-locations";
 import { AppProviders } from "@/providers/AppProviders";
 import { useAuth } from "@/providers/AuthProvider";
 import { colors } from "@/constants/colors";
@@ -22,7 +23,7 @@ import {
   InstrumentSerif_400Regular_Italic,
   useFonts,
 } from "@expo-google-fonts/instrument-serif";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Redirect, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -36,8 +37,9 @@ SplashScreen.preventAutoHideAsync();
 function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
   const { t } = useI18n();
   const { ready: authReady, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
   const segments = useSegments();
-  const isRootIndex = segments.length === 0;
+  const isRootIndex = segments[0] == null;
   const requiresSessionResolution = isRootIndex && isAuthenticated;
   const [storedCurrentUser, setStoredCurrentUser] = useState<Awaited<
     ReturnType<typeof getStoredCurrentUser>
@@ -93,6 +95,7 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
   }, [currentUserQuery.data]);
 
   const resolvedCurrentUser = storedCurrentUser ?? currentUserQuery.data ?? null;
+  const resolvedEntryRoute = resolvedCurrentUser ? getAppEntryRoute(resolvedCurrentUser) : null;
 
   const appReady =
     assetsReady &&
@@ -101,6 +104,38 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
       (storedCurrentUser !== undefined &&
         (storedCurrentUser !== null || !currentUserQuery.isPending)));
   const shouldRedirectAuthenticatedRoot = requiresSessionResolution && !!resolvedCurrentUser;
+  const redirectHref =
+    shouldRedirectAuthenticatedRoot && resolvedEntryRoute ? resolvedEntryRoute : null;
+  const [storageRedirectReady, setStorageRedirectReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const prepareStorageRedirect = async () => {
+      if (!shouldRedirectAuthenticatedRoot || resolvedEntryRoute !== "/onboarding/storage") {
+        if (!cancelled) {
+          setStorageRedirectReady(false);
+        }
+        return;
+      }
+
+      try {
+        await prefetchStorageLocations(queryClient);
+      } catch {
+        // Let the storage screen handle query errors if prefetch fails.
+      } finally {
+        if (!cancelled) {
+          setStorageRedirectReady(true);
+        }
+      }
+    };
+
+    void prepareStorageRedirect();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [queryClient, resolvedEntryRoute, shouldRedirectAuthenticatedRoot]);
 
   useEffect(() => {
     if (appReady && !shouldRedirectAuthenticatedRoot) {
@@ -112,8 +147,12 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
     return null;
   }
 
-  if (shouldRedirectAuthenticatedRoot) {
-    return <Redirect href={getAppEntryRoute(resolvedCurrentUser)} />;
+  if (redirectHref === "/onboarding/storage" && !storageRedirectReady) {
+    return null;
+  }
+
+  if (redirectHref) {
+    return <Redirect href={redirectHref} />;
   }
 
   if (requiresSessionResolution && storedCurrentUser === null && currentUserQuery.isError) {

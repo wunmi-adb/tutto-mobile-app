@@ -9,9 +9,19 @@ import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import type { TranslationKey } from "@/i18n/messages";
+import { useStorageLocations } from "@/lib/api/storage-locations";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const FILL_META = {
@@ -90,7 +100,13 @@ const ITEMS: PantryItem[] = [
   },
 ];
 
-const LOCATIONS: KitchenLocationId[] = ["all", "fridge", "freezer", "spiceRack"];
+type PantryLocationFilter =
+  | { key: "all"; label: string }
+  | { key: string; label: string };
+
+function normalizeLocationName(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 const daysUntil = (dateStr: string) => {
   const diff = new Date(dateStr).getTime() - Date.now();
@@ -219,12 +235,37 @@ function PantryCard({ item }: { item: PantryItem }) {
 }
 
 export default function PantryTab() {
+  const router = useRouter();
   const { t } = useI18n();
+  const storageLocationsQuery = useStorageLocations();
   const [query, setQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState<KitchenLocationId>("all");
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
+
+  const locationFilters = useMemo<PantryLocationFilter[]>(() => {
+    const fetchedLocations = storageLocationsQuery.data ?? [];
+
+    return [
+      { key: "all", label: t("kitchen.locations.all") },
+      ...fetchedLocations.map((location) => ({
+        key: location.key,
+        label: location.name,
+      })),
+    ];
+  }, [storageLocationsQuery.data, t]);
+
+  useEffect(() => {
+    if (!locationFilters.some((location) => location.key === selectedLocation)) {
+      setSelectedLocation("all");
+    }
+  }, [locationFilters, selectedLocation]);
 
   const filteredItems = ITEMS.filter((item) => {
-    const matchesLocation = selectedLocation === "all" || item.locationId === selectedLocation;
+    const itemLocationLabel = getLocationLabel(t, item.locationId);
+    const selectedLocationLabel =
+      locationFilters.find((location) => location.key === selectedLocation)?.label ?? "";
+    const matchesLocation =
+      selectedLocation === "all" ||
+      normalizeLocationName(itemLocationLabel) === normalizeLocationName(selectedLocationLabel);
     const matchesQuery = t(item.nameKey).toLowerCase().includes(query.toLowerCase());
 
     return matchesLocation && matchesQuery;
@@ -241,7 +282,16 @@ export default function PantryTab() {
           title={t("kitchen.tabs.pantry")}
           subtitle={t("kitchen.pantry.subtitle", { count: filteredItems.length })}
           rightAction={
-            <TouchableOpacity style={styles.addBtn} activeOpacity={0.75}>
+            <TouchableOpacity
+              style={styles.addBtn}
+              activeOpacity={0.75}
+              onPress={() =>
+                router.push({
+                  pathname: "/onboarding/storage",
+                  params: { source: "pantry" },
+                })
+              }
+            >
               <Feather name="plus" size={16} color={colors.background} />
             </TouchableOpacity>
           }
@@ -259,23 +309,39 @@ export default function PantryTab() {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {LOCATIONS.map((locationId) => {
-            const active = locationId === selectedLocation;
+          {locationFilters.map((location) => {
+            const active = location.key === selectedLocation;
 
             return (
               <TouchableOpacity
-                key={locationId}
+                key={location.key}
                 style={[styles.filterChip, active && styles.filterChipActive]}
                 activeOpacity={0.75}
-                onPress={() => setSelectedLocation(locationId)}
+                onPress={() => setSelectedLocation(location.key)}
               >
                 <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                  {getLocationLabel(t, locationId)}
+                  {location.label}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
+
+        {storageLocationsQuery.isLoading ? (
+          <View style={styles.locationsStatusRow}>
+            <ActivityIndicator size="small" color={colors.brand} />
+            <Text style={styles.locationsStatusText}>{t("storage.loading")}</Text>
+          </View>
+        ) : null}
+
+        {storageLocationsQuery.isError ? (
+          <View style={styles.locationsStatusRow}>
+            <Text style={styles.locationsStatusText}>{t("storage.errorSubtitle")}</Text>
+            <TouchableOpacity activeOpacity={0.75} onPress={() => void storageLocationsQuery.refetch()}>
+              <Text style={styles.locationsRetryText}>{t("storage.retry")}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
         <SectionEyebrow>{t("kitchen.pantry.inventory")}</SectionEyebrow>
         <View style={styles.list}>
@@ -321,6 +387,25 @@ const styles = StyleSheet.create({
   chipRow: {
     gap: 8,
     paddingBottom: 18,
+  },
+  locationsStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: -4,
+    marginBottom: 18,
+  },
+  locationsStatusText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.muted,
+  },
+  locationsRetryText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 12,
+    color: colors.brand,
   },
   filterChip: {
     borderRadius: 999,

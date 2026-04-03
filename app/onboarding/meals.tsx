@@ -5,7 +5,9 @@ import SelectableRow from "@/components/ui/SelectableRow";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { prefetchStorageLocations } from "@/lib/api/storage-locations";
 import { useUpdateHouseholdProfile } from "@/lib/api/household";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -25,6 +27,7 @@ type MealId = (typeof MEALS)[number]["id"];
 export default function Meals() {
   const router = useRouter();
   const { t } = useI18n();
+  const queryClient = useQueryClient();
   const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selected, setSelected] = useState<MealId[]>([]);
 
@@ -48,6 +51,7 @@ export default function Meals() {
         meals: selectedValues.join(", "),
       });
 
+      await prefetchStorageLocations(queryClient);
       router.replace("/onboarding/storage");
     } catch {
       // The mutation hook already shows the translated error toast.

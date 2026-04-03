@@ -1,16 +1,20 @@
 import AddItemView from "@/components/items/AddItemView";
 import { useI18n } from "@/i18n";
+import { useCreateInventoryItems } from "@/lib/api/items";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function Detail() {
   const router = useRouter();
   const { t } = useI18n();
-  const { location, items, currentIndex, completedIndices } =
+  const createInventoryItemsMutation = useCreateInventoryItems();
+  const { location, storageKey, items, currentIndex, completedIndices, source } =
     useLocalSearchParams<{
       location: string;
+      storageKey: string;
       items: string;
       currentIndex: string;
       completedIndices: string;
+      source?: string;
     }>();
 
   const storageName = location ?? t("addItems.defaultStorage");
@@ -30,8 +34,25 @@ export default function Detail() {
       currentIndex={parseInt(currentIndex ?? "0", 10)}
       completedIndices={parsedCompleted}
       onBack={() => router.back()}
-      onFinish={() => {
-        router.replace({ pathname: "/onboarding/complete", params: { location: storageName } });
+      saving={createInventoryItemsMutation.isPending}
+      onFinish={async (drafts) => {
+        if (!storageKey) {
+          return;
+        }
+
+        try {
+          await createInventoryItemsMutation.mutateAsync({
+            drafts,
+            storageLocationKey: storageKey,
+          });
+
+          router.replace({
+            pathname: "/onboarding/complete",
+            params: { location: storageName, ...(source ? { source } : {}) },
+          });
+        } catch {
+          // The mutation hook already shows the translated error toast.
+        }
       }}
     />
   );

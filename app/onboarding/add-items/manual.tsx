@@ -3,7 +3,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function Manual() {
   const router = useRouter();
-  const { location } = useLocalSearchParams<{ location: string }>();
+  const { location, storageKey, source } = useLocalSearchParams<{
+    location: string;
+    storageKey: string;
+    source?: string;
+  }>();
 
   return (
     <ManualEntryView
@@ -12,7 +16,9 @@ export default function Manual() {
           pathname: "/onboarding/add-items/review",
           params: {
             location,
+            storageKey,
             items: JSON.stringify(items),
+            ...(source ? { source } : {}),
           },
         })
       }

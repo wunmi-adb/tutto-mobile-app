@@ -5,7 +5,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 export default function ReviewItems() {
   const router = useRouter();
   const { t } = useI18n();
-  const { location, items } = useLocalSearchParams<{ location: string; items: string }>();
+  const { location, storageKey, items, source } = useLocalSearchParams<{
+    location: string;
+    storageKey: string;
+    items: string;
+    source?: string;
+  }>();
   const storageName = location ?? t("addItems.defaultStorage");
 
   const parsedItems: DetectedItem[] = (() => {
@@ -25,9 +30,11 @@ export default function ReviewItems() {
           pathname: "/onboarding/add-items/detail",
           params: {
             location: storageName,
+            storageKey,
             items: JSON.stringify(confirmedItems),
             currentIndex: "0",
             completedIndices: "[]",
+            ...(source ? { source } : {}),
           },
         })
       }
