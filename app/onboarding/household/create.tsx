@@ -6,6 +6,7 @@ import Input from "@/components/ui/Input";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { getDeviceRegionCode } from "@/i18n/config";
 import { useI18n } from "@/i18n";
 import { useCreateHousehold } from "@/lib/api/household";
 import { Feather } from "@expo/vector-icons";
@@ -16,7 +17,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function HouseholdCreate() {
   const { t } = useI18n();
   const [householdName, setHouseholdName] = useState("");
+  const [city, setCity] = useState("");
   const [memberCount, setMemberCount] = useState(2);
+  const regionCode = getDeviceRegionCode();
 
   const createHouseholdMutation = useCreateHousehold();
 
@@ -26,8 +29,10 @@ export default function HouseholdCreate() {
     }
 
     createHouseholdMutation.mutate({
+      city: city.trim(),
       name: householdName.trim(),
       number_of_household: memberCount,
+      region_code: regionCode,
     });
   };
 
@@ -58,6 +63,16 @@ export default function HouseholdCreate() {
             />
 
             <View>
+              <Input
+                label={t("household.create.cityLabel")}
+                value={city}
+                onChangeText={setCity}
+                placeholder={t("household.create.cityPlaceholder")}
+              />
+              <Text style={styles.helperText}>{t("household.create.cityHint")}</Text>
+            </View>
+
+            <View>
               <Text style={styles.label}>{t("household.create.peopleLabel")}</Text>
               <View style={styles.stepper}>
                 <HapticPressable
@@ -85,7 +100,7 @@ export default function HouseholdCreate() {
         <View style={styles.footer}>
           <Button
             title={t("household.create.cta")}
-            disabled={householdName.trim().length < 1}
+            disabled={householdName.trim().length < 1 || city.trim().length < 1}
             loading={createHouseholdMutation.isPending}
             onPress={handleCreateHousehold}
             style={styles.button}
@@ -144,6 +159,13 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginBottom: 8,
     textTransform: "uppercase",
+  },
+  helperText: {
+    marginTop: 8,
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.muted,
   },
   stepper: {
     flexDirection: "row",

@@ -5,8 +5,8 @@ import {
   type KitchenLocationId,
   type RecipeId,
   type ShoppingCategoryId,
-} from "@/components/kitchen/data";
-import { KitchenScreenHeader, SectionEyebrow } from "@/components/kitchen/shared";
+} from "@/components/dashboard/data";
+import { KitchenScreenHeader, SectionEyebrow } from "@/components/dashboard/shared";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";

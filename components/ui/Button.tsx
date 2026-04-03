@@ -21,6 +21,7 @@ type Props = Omit<PressableProps, "children" | "style"> & {
   style?: StyleProp<ViewStyle>;
   hapticType?: HapticFeedbackType;
   loading?: boolean;
+  pressedOpacity?: number;
 };
 
 function ButtonSpinner({ color }: { color: string }) {
@@ -72,6 +73,7 @@ export default function Button({
   rightIcon,
   hapticType,
   loading = false,
+  pressedOpacity = 0.85,
   ...props
 }: Props) {
   const isSecondary = variant === "secondary";
@@ -94,7 +96,7 @@ export default function Button({
         style,
       ]}
       disabled={isDisabled}
-      pressedOpacity={0.85}
+      pressedOpacity={pressedOpacity}
       hapticType={hapticType ?? (isSecondary || isSoft ? "selection" : "medium")}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}

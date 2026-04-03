@@ -25,8 +25,10 @@ export type Household = {
 };
 
 export type CreateHouseholdInput = {
+  city: string;
   name: string;
   number_of_household: number;
+  region_code: string;
 };
 
 export type UpdateHouseholdInput = Partial<{
@@ -98,6 +100,7 @@ export function useCreateHousehold() {
     },
     onError: (error) => {
       const errorDetails = getApiErrorDetails(error);
+      console.log("Error creating household:", JSON.stringify(errorDetails), JSON.stringify(error));
       toast.error(getHouseholdErrorToastMessage(t, errorDetails, "household.create.error"));
     },
   });
@@ -116,7 +119,7 @@ export function useUpdateHouseholdProfile() {
     onError: (error) => {
       const errorDetails = getApiErrorDetails(error);
 
-      console.log("Error updating household:", JSON.stringify(errorDetails), JSON.stringify(error));
+    
       toast.error(getHouseholdErrorToastMessage(t, errorDetails, "household.preferences.invalid"));
     },
   });

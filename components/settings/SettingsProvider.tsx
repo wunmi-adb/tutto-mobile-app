@@ -1,5 +1,4 @@
 import { useI18n } from "@/i18n";
-import type { TranslationKey } from "@/i18n/messages";
 import { CURRENT_USER_QUERY_KEY, CurrentUser, getCurrentUser } from "@/lib/api/profile";
 import { MEAL_SLOT_OPTIONS } from "./data";
 import { useQuery } from "@tanstack/react-query";

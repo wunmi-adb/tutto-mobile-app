@@ -1,6 +1,6 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
-import { getLocationLabel } from "@/components/kitchen/data";
+import { getLocationLabel } from "@/components/dashboard/data";
 import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -21,7 +21,7 @@ export default function ExpiringSection() {
     <>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{t("kitchen.home.expiring.title")}</Text>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/kitchen")}>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/dashboard")}>
           <View style={styles.viewAllRow}>
             <Text style={styles.viewAll}>{t("kitchen.home.expiring.viewAll")}</Text>
             <Feather name="arrow-right" size={10} color={colors.text} />

@@ -47,6 +47,9 @@ export type DeleteCurrentUserAccountResponse = {
   deleted_household: boolean;
 };
 
+type CurrentUserCore = Pick<CurrentUser, "email" | "locale" | "name">;
+type PartialCurrentUserPayload = Partial<CurrentUser> & CurrentUserCore;
+
 export type AppEntryRoute =
   | "/onboarding/household"
   | "/onboarding/appliances"
@@ -55,7 +58,7 @@ export type AppEntryRoute =
   | "/onboarding/cuisines"
   | "/onboarding/meals"
   | "/onboarding/storage"
-  | "/kitchen";
+  | "/dashboard";
 
 function hasCompletedStep(value: string | null | undefined) {
   return typeof value === "string" && value.trim().length > 0;
@@ -76,6 +79,51 @@ function isCurrentUser(value: unknown): value is CurrentUser {
   );
 }
 
+function hasCurrentUserCore(value: unknown): value is CurrentUserCore {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const user = value as CurrentUserCore;
+
+  return (
+    typeof user.email === "string" &&
+    typeof user.locale === "string" &&
+    typeof user.name === "string"
+  );
+}
+
+function normalizeCurrentUser(
+  value: unknown,
+  existingUser?: CurrentUser | null,
+): CurrentUser | null {
+  if (isCurrentUser(value)) {
+    return value;
+  }
+
+  if (!hasCurrentUserCore(value)) {
+    return null;
+  }
+
+  const user = value as PartialCurrentUserPayload;
+
+  return {
+    email: user.email,
+    locale: user.locale,
+    name: user.name,
+    household:
+      "household" in user
+        ? (user.household as CurrentUserHousehold)
+        : (existingUser?.household ?? null),
+    has_item:
+      typeof user.has_item === "boolean" ? user.has_item : existingUser?.has_item,
+    itemsAdded:
+      typeof user.itemsAdded === "boolean" ? user.itemsAdded : existingUser?.itemsAdded,
+    items_added:
+      typeof user.items_added === "boolean" ? user.items_added : existingUser?.items_added,
+  };
+}
+
 export async function getStoredCurrentUser() {
   const rawValue = await AsyncStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
@@ -85,7 +133,7 @@ export async function getStoredCurrentUser() {
 
   try {
     const parsed = JSON.parse(rawValue) as unknown;
-    return isCurrentUser(parsed) ? parsed : null;
+    return normalizeCurrentUser(parsed);
   } catch (error) {
     console.warn("Failed to parse stored current user.", error);
     return null;
@@ -148,9 +196,16 @@ export async function updateCurrentUserHasItemCache(
 }
 
 export async function getCurrentUser() {
-  const response = await apiClient.get<ApiResponse<CurrentUser>>("/api/v1/user");
-  await storeCurrentUser(response.data.data);
-  return response.data.data;
+  const existingUser = await getStoredCurrentUser();
+  const response = await apiClient.get<ApiResponse<PartialCurrentUserPayload>>("/api/v1/user");
+  const normalizedUser = normalizeCurrentUser(response.data.data, existingUser);
+
+  if (!normalizedUser) {
+    throw new Error("Current user response did not contain the required fields.");
+  }
+
+  await storeCurrentUser(normalizedUser);
+  return normalizedUser;
 }
 
 export async function updateCurrentUserLocale(locale: string) {
@@ -175,7 +230,8 @@ export async function deleteCurrentUserAccount(email: string) {
 }
 
 export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
- 
+
+
   const household = user.household;
 
   if (!household) {
@@ -203,7 +259,7 @@ export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
   }
 
   if (household.has_item || user.has_item) {
-    return "/kitchen";
+    return "/dashboard";
   }
 
   return "/onboarding/storage";

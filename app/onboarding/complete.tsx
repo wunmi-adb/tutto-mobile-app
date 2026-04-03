@@ -48,7 +48,7 @@ export default function OnboardingComplete() {
             title={t("complete.goToKitchen")}
             rightIcon={<Feather name="arrow-right" size={16} color={colors.background} />}
             style={styles.btn}
-            onPress={() => router.replace("/kitchen")}
+            onPress={() => router.replace("/dashboard")}
           />
         </View>
       </View>

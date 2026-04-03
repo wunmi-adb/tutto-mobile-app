@@ -1,5 +1,5 @@
-import { LIBRARY_RECIPE_KEYS } from "@/components/kitchen/data";
-import { KitchenScreenHeader, SectionEyebrow } from "@/components/kitchen/shared";
+import { LIBRARY_RECIPE_KEYS } from "@/components/dashboard/data";
+import { KitchenScreenHeader, SectionEyebrow } from "@/components/dashboard/shared";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";

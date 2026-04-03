@@ -1,10 +1,10 @@
-import ExpiringSection from "@/components/kitchen/home/ExpiringSection";
-import HomeHeader from "@/components/kitchen/home/HomeHeader";
-import MealCard from "@/components/kitchen/home/MealCard";
-import RecentActivity from "@/components/kitchen/home/RecentActivity";
-import RecipeDetail from "@/components/kitchen/home/RecipeDetail";
-import StatsRow from "@/components/kitchen/home/StatsRow";
-import { HOME_MEAL_IDS, type RecipeId } from "@/components/kitchen/data";
+import ExpiringSection from "@/components/dashboard/home/ExpiringSection";
+import HomeHeader from "@/components/dashboard/home/HomeHeader";
+import MealCard from "@/components/dashboard/home/MealCard";
+import RecentActivity from "@/components/dashboard/home/RecentActivity";
+import RecipeDetail from "@/components/dashboard/home/RecipeDetail";
+import StatsRow from "@/components/dashboard/home/StatsRow";
+import { HOME_MEAL_IDS, type RecipeId } from "@/components/dashboard/data";
 import { colors } from "@/constants/colors";
 import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";

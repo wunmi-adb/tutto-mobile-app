@@ -4,7 +4,7 @@ import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { getGreetingKey } from "@/components/kitchen/data";
+import { getGreetingKey } from "@/components/dashboard/data";
 
 export default function HomeHeader() {
   const router = useRouter();

@@ -2,6 +2,7 @@ import { ItemDraft, ItemType, TrackingMode } from "@/components/items/add-item/t
 import { useI18n } from "@/i18n";
 import { isTranslationKey } from "@/i18n/messages";
 import { apiClient } from "@/lib/api/client";
+import { INVENTORY_QUERY_KEY } from "@/lib/api/inventory";
 import { updateCurrentUserHasItemCache } from "@/lib/api/profile";
 import { ApiResponse, getApiErrorDetails } from "@/lib/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +28,16 @@ export type InventoryItem = {
 export type CreateInventoryItemsInput = {
   drafts: ItemDraft[];
   storageLocationKey: string;
+};
+
+export type UpdateInventoryItemInput = {
+  draft: ItemDraft;
+  itemKey: string;
+  storageLocationKey: string;
+};
+
+export type DeleteInventoryItemResponse = {
+  key: string;
 };
 
 export function mapItemDraftToCreateInventoryItemInput(
@@ -57,6 +68,16 @@ export function mapItemDraftToCreateInventoryItemInput(
   };
 }
 
+export function mapItemDraftToUpdateInventoryItemInput(
+  draft: ItemDraft,
+  storageLocationKey: string,
+) {
+  return {
+    ...mapItemDraftToCreateInventoryItemInput(draft),
+    storage_location_key: storageLocationKey,
+  };
+}
+
 export async function createInventoryItems({
   drafts,
   storageLocationKey,
@@ -68,6 +89,29 @@ export async function createInventoryItems({
   const response = await apiClient.post<ApiResponse<InventoryItem[]>>(
     `/api/v1/storage-locations/${storageLocationKey}/items`,
     payload,
+  );
+
+  return response.data.data;
+}
+
+export async function updateInventoryItem({
+  draft,
+  itemKey,
+  storageLocationKey,
+}: UpdateInventoryItemInput) {
+  const payload = mapItemDraftToUpdateInventoryItemInput(draft, storageLocationKey);
+
+  const response = await apiClient.put<ApiResponse<InventoryItem>>(
+    `/api/v1/items/${itemKey}`,
+    payload,
+  );
+
+  return response.data.data;
+}
+
+export async function deleteInventoryItem(itemKey: string) {
+  const response = await apiClient.delete<ApiResponse<DeleteInventoryItemResponse>>(
+    `/api/v1/items/${itemKey}`,
   );
 
   return response.data.data;
@@ -89,6 +133,58 @@ export function useCreateInventoryItems() {
         typeof errorDetails.message === "string" && isTranslationKey(errorDetails.message)
           ? t(errorDetails.message)
           : t("addItems.create.error");
+
+      toast.error(errorMessage);
+    },
+  });
+}
+
+export function useUpdateInventoryItem() {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateInventoryItem,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+    },
+    onError: (error) => {
+      console.log(
+        "Error updating inventory item:",
+        JSON.stringify(getApiErrorDetails(error)),
+        JSON.stringify(error),
+      );
+      const errorDetails = getApiErrorDetails(error);
+      const errorMessage =
+        typeof errorDetails.message === "string" && isTranslationKey(errorDetails.message)
+          ? t(errorDetails.message)
+          : t("addItems.create.error");
+
+      toast.error(errorMessage);
+    },
+  });
+}
+
+export function useDeleteInventoryItem() {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteInventoryItem,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+    },
+    onError: (error) => {
+      console.log(
+        "Error deleting inventory item:",
+        JSON.stringify(getApiErrorDetails(error)),
+        JSON.stringify(error),
+      );
+      const errorDetails = getApiErrorDetails(error);
+      const errorMessage =
+        typeof errorDetails.message === "string" && isTranslationKey(errorDetails.message)
+          ? t(errorDetails.message)
+          : t("addItems.delete.error");
 
       toast.error(errorMessage);
     },

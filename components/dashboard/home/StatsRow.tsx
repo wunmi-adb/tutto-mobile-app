@@ -13,27 +13,27 @@ const STATS = [
   {
     labelKey: "kitchen.home.stats.pantry",
     value: "24",
-    href: "/kitchen/pantry",
+    href: "/dashboard/kitchen",
     image: PantryIllustration,
   },
   {
     labelKey: "kitchen.home.stats.meals",
     value: "7",
-    href: "/kitchen/plan",
+    href: "/dashboard/plan",
     image: MealsIllustration,
   },
   {
     labelKey: "kitchen.home.stats.toBuy",
     value: "5",
-    href: "/kitchen/shopping",
+    href: "/dashboard/shopping",
     image: ShoppingIllustration,
   },
-] as const satisfies ReadonlyArray<{
+] as const satisfies readonly {
   labelKey: TranslationKey;
   value: string;
   href: Href;
   image: number;
-}>;
+}[];
 
 export default function StatsRow() {
   const router = useRouter();

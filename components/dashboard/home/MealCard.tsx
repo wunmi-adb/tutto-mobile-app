@@ -8,7 +8,7 @@ import {
   getRecipeName,
   RECIPE_DEFINITIONS,
   type RecipeId,
-} from "@/components/kitchen/data";
+} from "@/components/dashboard/data";
 
 interface Props {
   mealId: RecipeId;
@@ -25,7 +25,7 @@ export default function MealCard({ mealId, onShuffle, onViewRecipe }: Props) {
     <>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{t("kitchen.home.meal.title")}</Text>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/kitchen")}>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/dashboard")}>
           <View style={styles.viewAllRow}>
             <Text style={styles.viewAll}>{t("kitchen.home.meal.planLink")}</Text>
             <Feather name="arrow-right" size={10} color={colors.text} />

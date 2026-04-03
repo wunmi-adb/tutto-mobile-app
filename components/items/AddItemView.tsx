@@ -1,5 +1,6 @@
 import Button from "@/components/ui/Button";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
+import SettingsConfirmationSheet from "@/components/settings/SettingsConfirmationSheet";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
@@ -33,6 +34,8 @@ type Props = {
   completedIndices: number[];
   onFinish: (drafts: ItemDraft[]) => Promise<void> | void;
   onBack: () => void;
+  onDelete?: () => Promise<void> | void;
+  deleting?: boolean;
   saving?: boolean;
 };
 
@@ -43,11 +46,14 @@ export default function AddItemView({
   completedIndices: initialCompleted,
   onFinish,
   onBack,
+  onDelete,
+  deleting = false,
   saving = false,
 }: Props) {
   const { t } = useI18n();
   const [idx, setIdx] = useState(initialIndex);
   const [completed, setCompleted] = useState(new Set(initialCompleted));
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [drafts, setDrafts] = useState<ItemDraft[]>(() =>
     items.map((item) => makeItemDraftFromPrefill(item))
   );
@@ -181,6 +187,14 @@ export default function AddItemView({
             <Feather name="map-pin" size={11} color={colors.muted} />
             <Text style={styles.locationText}>{storageName}</Text>
           </View>
+        ) : onDelete ? (
+          <HapticPressable
+            style={styles.deleteBtn}
+            pressedOpacity={0.7}
+            onPress={() => setConfirmDeleteVisible(true)}
+          >
+            <Feather name="trash-2" size={15} color={colors.danger} />
+          </HapticPressable>
         ) : (
           <View style={styles.headerSpacer} />
         )}
@@ -357,6 +371,25 @@ export default function AddItemView({
           </ScrollView>
         </Animated.View>
       </KeyboardAvoidingContainer>
+
+      <SettingsConfirmationSheet
+        visible={confirmDeleteVisible}
+        title={t("addItems.detail.delete.title", {
+          name: currentDraft.name.trim() || t("addItems.detail.delete.fallbackName"),
+        })}
+        subtitle={t("addItems.detail.delete.subtitle", {
+          name: currentDraft.name.trim() || t("addItems.detail.delete.fallbackName"),
+        })}
+        confirmLabel={t("addItems.detail.delete.confirm")}
+        cancelLabel={t("addItems.detail.delete.cancel")}
+        destructive
+        confirmLoading={deleting}
+        onCancel={() => setConfirmDeleteVisible(false)}
+        onConfirm={async () => {
+          setConfirmDeleteVisible(false);
+          await onDelete?.();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -393,6 +426,15 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 36,
     height: 36,
+  },
+  deleteBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.danger + "33",
+    alignItems: "center",
+    justifyContent: "center",
   },
   locationBadge: {
     flexDirection: "row",

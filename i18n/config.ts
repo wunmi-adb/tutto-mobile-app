@@ -54,3 +54,21 @@ export function getDeviceLocaleTag() {
 
   return APP_LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE];
 }
+
+export function getDeviceRegionCode() {
+  const deviceLocale = getLocales()[0];
+  const directRegionCode = deviceLocale?.regionCode?.toUpperCase();
+
+  if (directRegionCode) {
+    return directRegionCode;
+  }
+
+  const localeTag = getDeviceLocaleTag();
+  const tagRegionCode = localeTag.split("-")[1]?.toUpperCase();
+
+  if (tagRegionCode) {
+    return tagRegionCode;
+  }
+
+  return APP_LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE].split("-")[1] ?? "GB";
+}

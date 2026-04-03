@@ -140,7 +140,11 @@ export default function DatePickerField({ label, value, onChange }: Props) {
                   value={tempDate}
                   mode="date"
                   display="spinner"
+                  textColor={colors.text}
+                  accentColor={colors.brand}
+                  themeVariant="light"
                   onChange={(_, date) => { if (date) setTempDate(date); }}
+                  style={styles.picker}
                 />
               </View>
             </Animated.View>
@@ -215,6 +219,11 @@ const styles = StyleSheet.create({
   },
   pickerWrapper: {
     alignItems: "center",
+    backgroundColor: colors.background,
     paddingVertical: 8,
+  },
+  picker: {
+    backgroundColor: colors.background,
+    height: 216,
   },
 });

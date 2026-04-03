@@ -7,7 +7,7 @@ import {
   getRecipeSteps,
   RECIPE_DEFINITIONS,
   type RecipeId,
-} from "@/components/kitchen/data";
+} from "@/components/dashboard/data";
 import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
