@@ -13,6 +13,8 @@ type Props = {
   onChangeText: (value: string) => void;
   onBack: () => void;
   multiline?: boolean;
+  onSave?: () => Promise<void> | void;
+  saving?: boolean;
 };
 
 export default function SettingsTextEditor({
@@ -24,6 +26,8 @@ export default function SettingsTextEditor({
   onChangeText,
   onBack,
   multiline = false,
+  onSave,
+  saving = false,
 }: Props) {
   const { t } = useI18n();
 
@@ -32,7 +36,20 @@ export default function SettingsTextEditor({
       title={title}
       subtitle={subtitle}
       onBack={onBack}
-      footer={<Button title={t("settings.common.save")} onPress={onBack} />}
+      footer={
+        <Button
+          title={t("settings.common.save")}
+          onPress={() => {
+            if (onSave) {
+              void onSave();
+              return;
+            }
+
+            onBack();
+          }}
+          loading={saving}
+        />
+      }
     >
       <Input
         label={label}

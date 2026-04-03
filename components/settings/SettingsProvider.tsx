@@ -1,4 +1,8 @@
 import { useI18n } from "@/i18n";
+import type { TranslationKey } from "@/i18n/messages";
+import { CURRENT_USER_QUERY_KEY, CurrentUser, getCurrentUser } from "@/lib/api/profile";
+import { MEAL_SLOT_OPTIONS } from "./data";
+import { useQuery } from "@tanstack/react-query";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 
 type SettingsContextValue = {
@@ -29,35 +33,48 @@ type SettingsContextValue = {
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
+function splitCommaSeparated(value: string | null | undefined) {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getMealSlotLabels(user: CurrentUser | undefined, t: ReturnType<typeof useI18n>["t"]) {
+  const mealKeys = splitCommaSeparated(user?.household?.meals);
+
+  return mealKeys.map((mealKey) => {
+    const option = MEAL_SLOT_OPTIONS.find((item) => {
+      const labelKey = item.valueKey.replace("meals.options.", "").replace(".label", "");
+      return labelKey === mealKey;
+    });
+
+    return option ? t(option.valueKey) : mealKey;
+  });
+}
+
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n();
+  const currentUserQuery = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: getCurrentUser,
+  });
+  const currentUser = currentUserQuery.data;
   const [copied, setCopied] = useState(false);
-  const [profileName, setProfileName] = useState("Oluwole");
-  const [email, setEmail] = useState("oluwole@email.com");
-  const [kitchenName, setKitchenName] = useState(() => t("settings.defaults.kitchenName"));
-  const [inviteCode] = useState("OKFR-2847");
-  const [appliances, setAppliances] = useState(() => [
-    t("appliances.options.oven"),
-    t("appliances.options.microwave"),
-    t("appliances.options.airFryer"),
-    t("appliances.options.blender"),
-  ]);
-  const [dietary, setDietary] = useState(() => [t("dietary.options.halal")]);
-  const [allergies, setAllergies] = useState(() => [t("allergies.options.treeNuts")]);
-  const [dislikes, setDislikes] = useState(() => [
-    t("settings.defaults.dislikes.liver"),
-    t("settings.defaults.dislikes.blueCheese"),
-  ]);
-  const [cuisines, setCuisines] = useState(() => [
-    t("settings.defaults.cuisines.nigerian"),
-    t("cuisines.options.italian"),
-    t("cuisines.options.indian"),
-  ]);
-  const [mealSlots, setMealSlots] = useState(() => [
-    t("meals.options.breakfast.label"),
-    t("meals.options.lunch.label"),
-    t("meals.options.dinner.label"),
-  ]);
+  const [profileName, setProfileName] = useState("");
+  const [email, setEmail] = useState("");
+  const [kitchenName, setKitchenName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [appliances, setAppliances] = useState<string[]>([]);
+  const [dietary, setDietary] = useState<string[]>([]);
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [dislikes, setDislikes] = useState<string[]>([]);
+  const [cuisines, setCuisines] = useState<string[]>([]);
+  const [mealSlots, setMealSlots] = useState<string[]>([]);
   const [anythingElse, setAnythingElse] = useState("");
 
   useEffect(() => {
@@ -69,6 +86,23 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
     return () => clearTimeout(timeout);
   }, [copied]);
+
+  useEffect(() => {
+    if (!currentUser) {
+      return;
+    }
+
+    setProfileName(currentUser.name);
+    setEmail(currentUser.email);
+    setKitchenName(currentUser.household?.name ?? "");
+    setInviteCode(currentUser.household?.invite_code ?? "");
+    setAppliances(splitCommaSeparated(currentUser.household?.kitchen_appliances));
+    setDietary(splitCommaSeparated(currentUser.household?.dietary));
+    setAllergies(splitCommaSeparated(currentUser.household?.allergies));
+    setDislikes(splitCommaSeparated(currentUser.household?.dislike));
+    setCuisines(splitCommaSeparated(currentUser.household?.love));
+    setMealSlots(getMealSlotLabels(currentUser, t));
+  }, [currentUser, t]);
 
   return (
     <SettingsContext.Provider

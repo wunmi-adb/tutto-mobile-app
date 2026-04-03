@@ -9,19 +9,28 @@ type Props = {
   label: string;
   value?: string;
   onPress: () => void;
+  danger?: boolean;
+  showDivider?: boolean;
 };
 
-export default function SettingsRow({ icon, label, value, onPress }: Props) {
+export default function SettingsRow({
+  icon,
+  label,
+  value,
+  onPress,
+  danger = false,
+  showDivider = true,
+}: Props) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
+    <Pressable style={[styles.row, !showDivider && styles.rowNoDivider]} onPress={onPress}>
       <View style={styles.rowLeft}>
         <View style={styles.iconWrap}>{icon}</View>
         <View style={styles.textWrap}>
-          <Text style={styles.label}>{label}</Text>
+          <Text style={[styles.label, danger && styles.labelDanger]}>{label}</Text>
           {value ? <Text style={styles.value}>{value}</Text> : null}
         </View>
       </View>
-      <Feather name="chevron-right" size={18} color={colors.muted} />
+      <Feather name="chevron-right" size={18} color={danger ? colors.danger : colors.muted} />
     </Pressable>
   );
 }
@@ -35,6 +44,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     gap: 12,
+  },
+  rowNoDivider: {
+    borderBottomWidth: 0,
   },
   rowLeft: {
     flex: 1,
@@ -54,6 +66,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
   },
+  labelDanger: {
+    color: colors.danger,
+  },
   value: {
     marginTop: 3,
     fontFamily: fonts.sans,
@@ -62,4 +77,3 @@ const styles = StyleSheet.create({
     color: colors.muted,
   },
 });
-

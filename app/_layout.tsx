@@ -24,20 +24,22 @@ import {
   useFonts,
 } from "@expo-google-fonts/instrument-serif";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Redirect, Stack, useSegments } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
 
-SplashScreen.preventAutoHideAsync();
-
-function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
+function RootNavigator({
+  assetsReady,
+}: {
+  assetsReady: boolean;
+}) {
   const { t } = useI18n();
   const { ready: authReady, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const segments = useSegments();
   const isRootIndex = segments[0] == null;
   const requiresSessionResolution = isRootIndex && isAuthenticated;
@@ -106,6 +108,7 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
   const redirectHref =
     shouldRedirectAuthenticatedRoot && resolvedEntryRoute ? resolvedEntryRoute : null;
   const [storageRedirectReady, setStorageRedirectReady] = useState(false);
+  const lastRedirectRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -137,10 +140,22 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
   }, [queryClient, resolvedEntryRoute, shouldRedirectAuthenticatedRoot]);
 
   useEffect(() => {
-    if (appReady && !shouldRedirectAuthenticatedRoot) {
-      SplashScreen.hideAsync();
+    if (!redirectHref) {
+      lastRedirectRef.current = null;
+      return;
     }
-  }, [appReady, shouldRedirectAuthenticatedRoot]);
+
+    if (redirectHref === "/onboarding/storage" && !storageRedirectReady) {
+      return;
+    }
+
+    if (lastRedirectRef.current === redirectHref) {
+      return;
+    }
+
+    lastRedirectRef.current = redirectHref;
+    router.replace(redirectHref);
+  }, [redirectHref, router, storageRedirectReady]);
 
   if (!appReady) {
     return null;
@@ -151,7 +166,7 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
   }
 
   if (redirectHref) {
-    return <Redirect href={redirectHref} />;
+    return null;
   }
 
   if (requiresSessionResolution && storedCurrentUser === null && currentUserQuery.isError) {

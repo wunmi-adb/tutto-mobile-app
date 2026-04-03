@@ -43,6 +43,10 @@ export type UpdateUserProfile = {
   created_at: string;
 };
 
+export type DeleteCurrentUserAccountResponse = {
+  deleted_household: boolean;
+};
+
 export type AppEntryRoute =
   | "/onboarding/household"
   | "/onboarding/appliances"
@@ -157,8 +161,21 @@ export async function updateCurrentUserLocale(locale: string) {
   return response.data.data;
 }
 
+export async function deleteCurrentUserAccount(email: string) {
+  const response = await apiClient.delete<ApiResponse<DeleteCurrentUserAccountResponse>>(
+    "/api/v1/user",
+    {
+      data: {
+        email,
+      },
+    },
+  );
+
+  return response.data.data;
+}
+
 export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
-  console.log("Determining app entry route for user:", user);
+ 
   const household = user.household;
 
   if (!household) {

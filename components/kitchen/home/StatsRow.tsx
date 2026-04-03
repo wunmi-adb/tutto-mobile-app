@@ -4,15 +4,36 @@ import ShoppingIllustration from "@/assets/images/icon-shopping.png";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import type { TranslationKey } from "@/i18n/messages";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const STATS = [
-  { labelKey: "kitchen.home.stats.pantry", value: "24", tab: "pantry", image: PantryIllustration },
-  { labelKey: "kitchen.home.stats.meals", value: "7", tab: "plan", image: MealsIllustration },
-  { labelKey: "kitchen.home.stats.toBuy", value: "5", tab: "shopping", image: ShoppingIllustration },
-];
+  {
+    labelKey: "kitchen.home.stats.pantry",
+    value: "24",
+    href: "/kitchen/pantry",
+    image: PantryIllustration,
+  },
+  {
+    labelKey: "kitchen.home.stats.meals",
+    value: "7",
+    href: "/kitchen/plan",
+    image: MealsIllustration,
+  },
+  {
+    labelKey: "kitchen.home.stats.toBuy",
+    value: "5",
+    href: "/kitchen/shopping",
+    image: ShoppingIllustration,
+  },
+] as const satisfies ReadonlyArray<{
+  labelKey: TranslationKey;
+  value: string;
+  href: Href;
+  image: number;
+}>;
 
 export default function StatsRow() {
   const router = useRouter();
@@ -25,7 +46,7 @@ export default function StatsRow() {
           key={stat.labelKey}
           style={styles.statCard}
           activeOpacity={0.97}
-          onPress={() => router.push(`/kitchen/${stat.tab}`)}
+          onPress={() => router.push(stat.href)}
         >
           <Image source={stat.image} style={styles.statImage} resizeMode="contain" />
           <Text style={styles.statValue}>{stat.value}</Text>

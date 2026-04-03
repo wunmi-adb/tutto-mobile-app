@@ -15,7 +15,7 @@ function isAbsoluteUrl(url?: string) {
 }
 
 function setAuthorizationHeader(config: { headers?: unknown }, accessToken: string) {
-  console.log("Setting Authorization header with access token:", accessToken);
+
   const authorizationValue = `Bearer ${accessToken}`;
   const headers = config.headers;
 

@@ -3,6 +3,7 @@ import SettingsProfileHeader from "@/components/settings/SettingsProfileHeader";
 import SettingsRow from "@/components/settings/SettingsRow";
 import SettingsSection from "@/components/settings/SettingsSection";
 import SettingsSubscriptionCard from "@/components/settings/SettingsSubscriptionCard";
+import Button from "@/components/ui/Button";
 import { SettingsView } from "@/components/settings/types";
 import { colors } from "@/constants/colors";
 import { useI18n } from "@/i18n";
@@ -26,6 +27,8 @@ type Props = {
   onBack: () => void;
   onCopyInviteCode: () => void;
   onOpenView: (view: SettingsView) => void;
+  onDeleteAccount: () => void;
+  onLogOut: () => void;
 };
 
 export default function SettingsMainView({
@@ -45,6 +48,8 @@ export default function SettingsMainView({
   onBack,
   onCopyInviteCode,
   onOpenView,
+  onDeleteAccount,
+  onLogOut,
 }: Props) {
   const { t } = useI18n();
 
@@ -111,6 +116,7 @@ export default function SettingsMainView({
             label={t("settings.main.anythingElse")}
             value={anythingElseSummary}
             onPress={() => onOpenView("anything-else")}
+            showDivider={false}
           />
         </SettingsSection>
 
@@ -131,7 +137,21 @@ export default function SettingsMainView({
             label={t("settings.main.support")}
             onPress={() => onOpenView("support")}
           />
+          <SettingsRow
+            icon={<Feather name="trash-2" size={18} color={colors.danger} />}
+            label={t("settings.main.deleteAccount")}
+            onPress={onDeleteAccount}
+            danger
+            showDivider={false}
+          />
         </SettingsSection>
+
+        <Button
+          title={t("settings.logout.button")}
+          variant="soft"
+          onPress={onLogOut}
+          style={styles.logoutButton}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -149,5 +169,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 32,
+  },
+  logoutButton: {
+    width: "100%",
+    marginTop: 40,
   },
 });

@@ -109,7 +109,7 @@ export default function Processing() {
                 status,
               });
               setCaptureErrorMessage(
-                isTranslationKey(status.error_key) ? t(status.error_key) : undefined,
+                isTranslationKey(status.error_key) ? t(status.error_key) : null,
               );
               return;
             }

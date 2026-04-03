@@ -21,6 +21,8 @@ type Props = {
   onBack: () => void;
   variant?: "checkbox" | "radio";
   ctaLabel?: string;
+  onSave?: () => Promise<void> | void;
+  saving?: boolean;
 };
 
 export default function SettingsSelectionEditor({
@@ -32,6 +34,8 @@ export default function SettingsSelectionEditor({
   onBack,
   variant = "checkbox",
   ctaLabel = "Done",
+  onSave,
+  saving = false,
 }: Props) {
   const { t } = useI18n();
 
@@ -40,7 +44,20 @@ export default function SettingsSelectionEditor({
       title={title}
       subtitle={subtitle}
       onBack={onBack}
-      footer={<Button title={ctaLabel === "Save" ? t("settings.common.save") : t("settings.common.done")} onPress={onBack} />}
+      footer={
+        <Button
+          title={ctaLabel === "Save" ? t("settings.common.save") : t("settings.common.done")}
+          onPress={() => {
+            if (onSave) {
+              void onSave();
+              return;
+            }
+
+            onBack();
+          }}
+          loading={saving}
+        />
+      }
     >
       <View style={styles.list}>
         {options.map((option) => {

@@ -1,6 +1,7 @@
 import SettingsChipEditor from "@/components/settings/SettingsChipEditor";
 import { useSettingsState } from "@/components/settings/SettingsProvider";
 import { useI18n } from "@/i18n";
+import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 
 function addUniqueValue(current: string[], value: string) {
@@ -15,6 +16,7 @@ export default function SettingsDislikesScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const { dislikes, setDislikes } = useSettingsState();
+  const updateHouseholdMutation = useUpdateHouseholdProfile();
 
   return (
     <SettingsChipEditor
@@ -27,6 +29,15 @@ export default function SettingsDislikesScreen() {
       onAdd={(value) => setDislikes((prev) => addUniqueValue(prev, value))}
       onRemove={(value) => setDislikes((prev) => prev.filter((item) => item !== value))}
       onBack={() => router.back()}
+      saving={updateHouseholdMutation.isPending}
+      onSave={async () => {
+        try {
+          await updateHouseholdMutation.mutateAsync({ dislike: dislikes.join(", ") });
+          router.back();
+        } catch {
+          // The mutation hook already shows the translated error toast.
+        }
+      }}
     />
   );
 }

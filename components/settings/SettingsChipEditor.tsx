@@ -17,6 +17,8 @@ type Props = {
   placeholder?: string;
   hint?: string;
   minHeight?: number;
+  onSave?: () => Promise<void> | void;
+  saving?: boolean;
 };
 
 export default function SettingsChipEditor({
@@ -30,6 +32,8 @@ export default function SettingsChipEditor({
   placeholder,
   hint,
   minHeight,
+  onSave,
+  saving = false,
 }: Props) {
   const { t } = useI18n();
 
@@ -38,7 +42,20 @@ export default function SettingsChipEditor({
       title={title}
       subtitle={subtitle}
       onBack={onBack}
-      footer={<Button title={t("settings.common.done")} onPress={onBack} />}
+      footer={
+        <Button
+          title={t("settings.common.done")}
+          onPress={() => {
+            if (onSave) {
+              void onSave();
+              return;
+            }
+
+            onBack();
+          }}
+          loading={saving}
+        />
+      }
     >
       <ChipInput
         label={label}

@@ -8,13 +8,19 @@ type Props = {
   code: string;
   copied: boolean;
   onCopy: () => void;
+  showDivider?: boolean;
 };
 
-export default function SettingsInviteCodeRow({ code, copied, onCopy }: Props) {
+export default function SettingsInviteCodeRow({
+  code,
+  copied,
+  onCopy,
+  showDivider = true,
+}: Props) {
   const { t } = useI18n();
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, !showDivider && styles.rowNoDivider]}>
       <View style={styles.left}>
         <Feather name="users" size={18} color={colors.muted} />
         <Text style={styles.label}>{t("settings.inviteCode.label")}</Text>
@@ -37,6 +43,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     gap: 12,
+  },
+  rowNoDivider: {
+    borderBottomWidth: 0,
   },
   left: {
     flexDirection: "row",

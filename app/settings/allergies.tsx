@@ -1,12 +1,14 @@
 import { useSettingsState } from "@/components/settings/SettingsProvider";
 import SettingsChipEditor from "@/components/settings/SettingsChipEditor";
 import { useI18n } from "@/i18n";
+import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 
 export default function SettingsAllergiesScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const { allergies, setAllergies } = useSettingsState();
+  const updateHouseholdMutation = useUpdateHouseholdProfile();
 
   return (
     <SettingsChipEditor
@@ -23,6 +25,15 @@ export default function SettingsAllergiesScreen() {
       }
       onRemove={(value) => setAllergies((prev) => prev.filter((item) => item !== value))}
       onBack={() => router.back()}
+      saving={updateHouseholdMutation.isPending}
+      onSave={async () => {
+        try {
+          await updateHouseholdMutation.mutateAsync({ allergies: allergies.join(", ") });
+          router.back();
+        } catch {
+          // The mutation hook already shows the translated error toast.
+        }
+      }}
     />
   );
 }

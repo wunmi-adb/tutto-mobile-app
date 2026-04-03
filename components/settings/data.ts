@@ -48,7 +48,10 @@ export const MEAL_SLOT_OPTIONS = [
   { valueKey: "meals.options.snacks.label", sublabelKey: "meals.options.snacks.time" },
   { valueKey: "meals.options.dinner.label", sublabelKey: "meals.options.dinner.time" },
   { valueKey: "meals.options.supper.label", sublabelKey: "meals.options.supper.time" },
-];
+] as const satisfies ReadonlyArray<{
+  valueKey: TranslationKey;
+  sublabelKey: TranslationKey;
+}>;
 
 export const LANGUAGE_OPTIONS = [
   { code: "en", label: "English" },
@@ -58,3 +61,4 @@ export const LANGUAGE_OPTIONS = [
   { code: "ja", label: "Japanese" },
   { code: "tr", label: "Turkish" },
 ];
+import type { TranslationKey } from "@/i18n/messages";

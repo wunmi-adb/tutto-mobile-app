@@ -1,5 +1,4 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getLocales } from "expo-localization";
 import {
   createContext,
   ReactNode,
@@ -11,12 +10,13 @@ import {
 import {
   AppLanguage,
   DEFAULT_LANGUAGE,
-  LANGUAGE_STORAGE_KEY,
-  SUPPORTED_LANGUAGES,
+  getDeviceLocaleTag,
   isSupportedLanguage,
+  LANGUAGE_STORAGE_KEY,
   normalizeLanguageTag,
+  SUPPORTED_LANGUAGES,
 } from "./config";
-import { translations, TranslationKey } from "./messages";
+import { TranslationKey, translations } from "./messages";
 
 type TranslationParams = Record<string, number | string>;
 
@@ -34,9 +34,7 @@ type I18nController = I18nContextValue & {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function getDeviceLanguage() {
-  const deviceLocale = getLocales()[0];
-
-  return normalizeLanguageTag(deviceLocale?.languageCode ?? deviceLocale?.languageTag);
+  return normalizeLanguageTag(getDeviceLocaleTag());
 }
 
 function interpolate(template: string, params?: TranslationParams) {

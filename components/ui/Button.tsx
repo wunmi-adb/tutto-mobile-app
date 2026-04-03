@@ -15,7 +15,7 @@ import {
 
 type Props = Omit<PressableProps, "children" | "style"> & {
   title: string;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger" | "muted" | "soft";
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -75,7 +75,10 @@ export default function Button({
   ...props
 }: Props) {
   const isSecondary = variant === "secondary";
-  const textColor = isSecondary ? colors.text : colors.background;
+  const isMuted = variant === "muted";
+  const isSoft = variant === "soft";
+  const isDanger = variant === "danger";
+  const textColor = isSecondary || isMuted || isSoft ? colors.text : colors.background;
   const isDisabled = disabled || loading;
 
   return (
@@ -83,19 +86,24 @@ export default function Button({
       style={[
         styles.btn,
         isSecondary && styles.btnSecondary,
+        isMuted && styles.btnMuted,
+        isSoft && styles.btnSoft,
+        isDanger && styles.btnDanger,
         loading && styles.loading,
         disabled && !loading && styles.disabled,
         style,
       ]}
       disabled={isDisabled}
       pressedOpacity={0.85}
-      hapticType={hapticType ?? (isSecondary ? "selection" : "medium")}
+      hapticType={hapticType ?? (isSecondary || isSoft ? "selection" : "medium")}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       {...props}
     >
       {loading ? <ButtonSpinner color={textColor} /> : leftIcon ? <View>{leftIcon}</View> : null}
-      <Text style={[styles.text, isSecondary && styles.textSecondary]}>{title}</Text>
+      <Text style={[styles.text, (isSecondary || isMuted || isSoft) && styles.textSecondary]}>
+        {title}
+      </Text>
       {!loading && rightIcon ? <View>{rightIcon}</View> : null}
     </HapticPressable>
   );
@@ -116,6 +124,15 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  btnMuted: {
+    backgroundColor: colors.secondary,
+  },
+  btnSoft: {
+    backgroundColor: colors.secondary,
+  },
+  btnDanger: {
+    backgroundColor: colors.danger,
   },
   disabled: {
     opacity: 0.3,

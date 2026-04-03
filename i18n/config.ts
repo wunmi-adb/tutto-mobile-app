@@ -1,3 +1,5 @@
+import { getLocales } from "expo-localization";
+
 export const SUPPORTED_LANGUAGES = [
   { code: "en", label: "English" },
   { code: "de", label: "Deutsch" },
@@ -35,4 +37,20 @@ export function normalizeLanguageTag(value: string | null | undefined): AppLangu
   }
 
   return DEFAULT_LANGUAGE;
+}
+
+export function getDeviceLocaleTag() {
+  const deviceLocale = getLocales()[0];
+  const languageTag = deviceLocale?.languageTag?.replaceAll("_", "-");
+
+  if (languageTag) {
+    return languageTag;
+  }
+
+  if (deviceLocale?.languageCode) {
+    const normalizedLanguage = normalizeLanguageTag(deviceLocale.languageCode);
+    return APP_LANGUAGE_TO_LOCALE[normalizedLanguage];
+  }
+
+  return APP_LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE];
 }
