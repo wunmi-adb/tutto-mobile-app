@@ -202,6 +202,12 @@ const en = {
   "addItems.manual.reviewCta.plural": "Review {{count}} items",
   "addItems.processing.title": "Detecting items...",
   "addItems.processing.subtitle": "Our AI is scanning for groceries and pantry items",
+  "addItems.captureError.title": "No items found",
+  "addItems.captureError.subtitle.image":
+    "We couldn't spot any food or ingredients in that photo. Try pointing the camera directly at your items.",
+  "addItems.captureError.subtitle.voice":
+    "We couldn't pick up any food or ingredients from that recording. Try speaking clearly and listing your items.",
+  "addItems.captureError.retry": "Try again",
   "addItems.voice.permission.title": "Microphone access needed",
   "addItems.voice.permission.subtitle": "Tutto needs your microphone to record voice notes of your items.",
   "addItems.voice.permission.cta": "Allow microphone",
@@ -227,6 +233,7 @@ const en = {
   "addItems.detail.namePlaceholder.cooked": "Meal name",
   "addItems.detail.type.ingredient": "Ingredient",
   "addItems.detail.type.cooked": "Cooked meal",
+  "addItems.detail.fillLevelTracking": "Enable fill level tracking",
   "addItems.detail.trackBy": "Track by",
   "addItems.detail.trackBy.fillLevel": "Fill level",
   "addItems.detail.trackBy.quantity": "Quantity",
@@ -277,8 +284,8 @@ const en = {
   "complete.subtitle": "Great start! You can keep adding locations and items, or jump straight into your pantry.",
   "complete.addLocation": "Add another location",
   "complete.goToKitchen": "Go to your kitchen",
-  "kitchen.tabs.home": "Kitchen",
-  "kitchen.tabs.pantry": "Pantry",
+  "kitchen.tabs.home": "Home",
+  "kitchen.tabs.pantry": "Kitchen",
   "kitchen.tabs.library": "Recipes",
   "kitchen.tabs.plan": "Plan",
   "kitchen.tabs.shopping": "Shopping",
@@ -537,6 +544,8 @@ const en = {
   "settings.defaults.dislikes.liver": "Liver",
   "settings.defaults.dislikes.blueCheese": "Blue cheese",
   "settings.defaults.cuisines.nigerian": "Nigerian",
+  "inventory.item_capture.temporarily_unavailable":
+    "Item detection is temporarily unavailable. Please try again.",
 } as const;
 
 export type TranslationMessages = { [Key in keyof typeof en]: string };

@@ -215,6 +215,12 @@ const es = {
   "addItems.manual.reviewCta.plural": "Revisar {{count}} productos",
   "addItems.processing.title": "Detectando productos...",
   "addItems.processing.subtitle": "Nuestra IA esta buscando comestibles y productos de despensa",
+  "addItems.captureError.title": "No se encontraron productos",
+  "addItems.captureError.subtitle.image":
+    "No pudimos detectar alimentos o ingredientes en esa foto. Intenta apuntar la camara directamente a tus productos.",
+  "addItems.captureError.subtitle.voice":
+    "No pudimos detectar alimentos o ingredientes en esa grabacion. Intenta hablar con claridad y enumerar tus productos.",
+  "addItems.captureError.retry": "Intentar de nuevo",
   "addItems.voice.permission.title": "Se necesita acceso al microfono",
   "addItems.voice.permission.subtitle": "Tutto necesita tu microfono para grabar notas de voz de tus productos.",
   "addItems.voice.permission.cta": "Permitir microfono",
@@ -240,6 +246,7 @@ const es = {
   "addItems.detail.namePlaceholder.cooked": "Nombre del plato",
   "addItems.detail.type.ingredient": "Ingrediente",
   "addItems.detail.type.cooked": "Plato cocinado",
+  "addItems.detail.fillLevelTracking": "Activar seguimiento del nivel",
   "addItems.detail.trackBy": "Seguir por",
   "addItems.detail.trackBy.fillLevel": "Nivel de llenado",
   "addItems.detail.trackBy.quantity": "Cantidad",
@@ -290,8 +297,8 @@ const es = {
   "complete.subtitle": "Buen comienzo. Puedes seguir anadiendo ubicaciones y productos o entrar directamente en tu despensa.",
   "complete.addLocation": "Anadir otra ubicacion",
   "complete.goToKitchen": "Ir a tu cocina",
-  "kitchen.tabs.home": "Cocina",
-  "kitchen.tabs.pantry": "Despensa",
+  "kitchen.tabs.home": "Inicio",
+  "kitchen.tabs.pantry": "Cocina",
   "kitchen.tabs.library": "Recetas",
   "kitchen.tabs.plan": "Plan",
   "kitchen.tabs.shopping": "Compras",
@@ -550,6 +557,8 @@ const es = {
   "settings.defaults.dislikes.liver": "Higado",
   "settings.defaults.dislikes.blueCheese": "Queso azul",
   "settings.defaults.cuisines.nigerian": "Nigeriana",
+  "inventory.item_capture.temporarily_unavailable":
+    "La deteccion de productos no esta disponible temporalmente. Vuelve a intentarlo.",
 } as const satisfies TranslationMessages;
 
 export default es;

@@ -3,6 +3,7 @@ import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { CapturedInventoryItem } from "@/lib/api/item-capture";
 import { Feather } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import {
@@ -15,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export type DetectedItem = { name: string };
+export type DetectedItem = CapturedInventoryItem;
 
 type Props = {
   storageName: string;
@@ -49,7 +50,7 @@ export default function ReviewItemsView({
     const trimmed = editValue.trim();
     if (trimmed) {
       setItems((prev) =>
-        prev.map((item, i) => (i === editingIndex ? { name: trimmed } : item))
+        prev.map((item, i) => (i === editingIndex ? { ...item, name: trimmed } : item))
       );
     }
     setEditingIndex(null);

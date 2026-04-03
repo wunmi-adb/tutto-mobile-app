@@ -50,8 +50,7 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
     enabled:
       assetsReady &&
       authReady &&
-      requiresSessionResolution &&
-      storedCurrentUser === null,
+      requiresSessionResolution,
     retry: 1,
   });
 
@@ -102,7 +101,7 @@ function RootNavigator({ assetsReady }: { assetsReady: boolean }) {
     authReady &&
     (!requiresSessionResolution ||
       (storedCurrentUser !== undefined &&
-        (storedCurrentUser !== null || !currentUserQuery.isPending)));
+        !currentUserQuery.isPending));
   const shouldRedirectAuthenticatedRoot = requiresSessionResolution && !!resolvedCurrentUser;
   const redirectHref =
     shouldRedirectAuthenticatedRoot && resolvedEntryRoute ? resolvedEntryRoute : null;

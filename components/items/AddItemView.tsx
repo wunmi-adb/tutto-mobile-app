@@ -17,13 +17,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import HapticPressable from "../ui/HapticPressable";
 import BatchCard from "./add-item/BatchCard";
-import { Batch, ItemDraft, ItemType, makeItemDraft } from "./add-item/types";
-
-type Item = { name: string };
+import {
+  Batch,
+  ItemDraft,
+  ItemType,
+  PrefillableItem,
+  makeItemDraft,
+  makeItemDraftFromPrefill,
+} from "./add-item/types";
 
 type Props = {
   storageName: string;
-  items: Item[];
+  items: PrefillableItem[];
   currentIndex: number;
   completedIndices: number[];
   onFinish: (drafts: ItemDraft[]) => Promise<void> | void;
@@ -43,11 +48,12 @@ export default function AddItemView({
   const { t } = useI18n();
   const [idx, setIdx] = useState(initialIndex);
   const [completed, setCompleted] = useState(new Set(initialCompleted));
-  const [drafts, setDrafts] = useState<ItemDraft[]>(() => items.map((item) => makeItemDraft(item.name)));
+  const [drafts, setDrafts] = useState<ItemDraft[]>(() =>
+    items.map((item) => makeItemDraftFromPrefill(item))
+  );
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const nameInputRef = useRef<TextInput>(null);
   const currentDraft = drafts[idx];
 
   const updateCurrentDraft = (updater: (draft: ItemDraft) => ItemDraft) => {
@@ -102,7 +108,7 @@ export default function AddItemView({
         Animated.parallel([
           Animated.timing(fadeAnim, { toValue: 1, duration: 80, easing: Easing.out(Easing.ease), useNativeDriver: true }),
           Animated.timing(slideAnim, { toValue: 0, duration: 80, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-        ]).start(() => nameInputRef.current?.focus());
+        ]).start();
       });
     });
   };
@@ -193,7 +199,6 @@ export default function AddItemView({
           >
           {/* Item name */}
           <TextInput
-            ref={nameInputRef}
             style={styles.nameInput}
             value={currentDraft.name}
             onChangeText={(value) =>
@@ -210,7 +215,6 @@ export default function AddItemView({
             placeholderTextColor={colors.muted + "66"}
             autoCapitalize="words"
             returnKeyType="done"
-            autoFocus
             selectionColor={colors.text}
           />
 
@@ -246,52 +250,41 @@ export default function AddItemView({
           {isIngredient && (
             <View style={styles.section}>
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>{t("addItems.detail.trackBy")}</Text>
-                <View style={styles.trackByToggle}>
+                <View style={styles.trackingRow}>
+                  <View style={styles.trackingCopy}>
+                    <Text style={styles.trackingTitle}>
+                      {t("addItems.detail.fillLevelTracking")}
+                    </Text>
+                    <Text style={styles.trackingHint}>
+                      {t("addItems.detail.trackBy.fillLevelHint")}
+                    </Text>
+                  </View>
+
                   <HapticPressable
-                    style={[styles.trackByBtn, !currentDraft.countAsUnits && styles.trackByBtnActive]}
-                    pressedOpacity={0.7}
+                    style={[
+                      styles.switchTrack,
+                      !currentDraft.countAsUnits
+                        ? styles.switchTrackActive
+                        : styles.switchTrackInactive,
+                    ]}
+                    pressedOpacity={0.85}
+                    accessibilityRole="switch"
+                    accessibilityState={{ checked: !currentDraft.countAsUnits }}
                     onPress={() =>
                       updateCurrentDraft((draft) => ({
                         ...draft,
-                        countAsUnits: false,
+                        countAsUnits: !draft.countAsUnits,
                       }))
                     }
                   >
-                    <Text
+                    <View
                       style={[
-                        styles.trackByBtnText,
-                        !currentDraft.countAsUnits && styles.trackByBtnTextActive,
+                        styles.switchThumb,
+                        !currentDraft.countAsUnits && styles.switchThumbActive,
                       ]}
-                    >
-                      {t("addItems.detail.trackBy.fillLevel")}
-                    </Text>
-                  </HapticPressable>
-                  <HapticPressable
-                    style={[styles.trackByBtn, currentDraft.countAsUnits && styles.trackByBtnActive]}
-                    pressedOpacity={0.7}
-                    onPress={() =>
-                      updateCurrentDraft((draft) => ({
-                        ...draft,
-                        countAsUnits: true,
-                      }))
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.trackByBtnText,
-                        currentDraft.countAsUnits && styles.trackByBtnTextActive,
-                      ]}
-                    >
-                      {t("addItems.detail.trackBy.quantity")}
-                    </Text>
+                    />
                   </HapticPressable>
                 </View>
-                <Text style={styles.trackByHint}>
-                  {currentDraft.countAsUnits
-                    ? t("addItems.detail.trackBy.quantityHint")
-                    : t("addItems.detail.trackBy.fillLevelHint")}
-                </Text>
               </View>
 
               <View style={styles.divider} />
@@ -485,41 +478,57 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.muted,
   },
-  trackByToggle: {
+  trackingRow: {
     flexDirection: "row",
-    backgroundColor: colors.secondary,
-    borderRadius: 999,
-    padding: 2,
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 16,
   },
-  trackByBtn: {
+  trackingCopy: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  trackByBtnActive: {
-    backgroundColor: colors.background,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 2,
-  },
-  trackByBtnText: {
+  trackingTitle: {
     fontFamily: fonts.sansMedium,
-    fontSize: 12,
-    color: colors.muted,
-  },
-  trackByBtnTextActive: {
+    fontSize: 14,
     color: colors.text,
   },
-  trackByHint: {
+  trackingHint: {
     fontFamily: fonts.sans,
     fontSize: 11,
     lineHeight: 16,
     color: colors.muted,
+    marginTop: 4,
+  },
+  switchTrack: {
+    width: 44,
+    height: 26,
+    borderRadius: 999,
+    paddingHorizontal: 2,
+    alignItems: "flex-start",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  switchTrackActive: {
+    backgroundColor: colors.success,
+  },
+  switchTrackInactive: {
+    backgroundColor: colors.secondary,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  switchThumb: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.background,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  switchThumbActive: {
+    transform: [{ translateX: 18 }],
   },
   divider: { height: 1, backgroundColor: colors.border },
   addBatch: {

@@ -1,4 +1,5 @@
 import AddItemView from "@/components/items/AddItemView";
+import { DetectedItem } from "@/components/items/ReviewItemsView";
 import { useI18n } from "@/i18n";
 import { useCreateInventoryItems } from "@/lib/api/items";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -19,7 +20,7 @@ export default function Detail() {
 
   const storageName = location ?? t("addItems.defaultStorage");
 
-  const parsedItems: { name: string }[] = (() => {
+  const parsedItems: DetectedItem[] = (() => {
     try { return items ? JSON.parse(items) : []; } catch { return []; }
   })();
 

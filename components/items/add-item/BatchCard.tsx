@@ -39,17 +39,17 @@ export default function BatchCard({
     label:
       option.key === "sealed"
         ? t("addItems.batch.fill.full")
-        : option.key === "full"
+        : option.key === "just_opened"
           ? t("addItems.batch.fill.justOpened")
-          : option.key === "half"
-            ? t("addItems.batch.fill.half")
-            : t("addItems.batch.fill.nearlyEmpty"),
+        : option.key === "half"
+          ? t("addItems.batch.fill.half")
+          : t("addItems.batch.fill.nearlyEmpty"),
   }));
 
   const cookedFillOptions = COOKED_FILL_OPTIONS.map((option) => ({
     ...option,
     label:
-      option.key === "full"
+      option.key === "just_opened"
         ? t("addItems.batch.fill.full")
         : option.key === "half"
           ? t("addItems.batch.fill.half")
@@ -58,9 +58,9 @@ export default function BatchCard({
 
   const fillLabels: Record<FillLevel, string> = {
     sealed: t("addItems.batch.fill.full"),
-    full: isIngredient ? t("addItems.batch.fill.justOpened") : t("addItems.batch.fill.full"),
+    just_opened: isIngredient ? t("addItems.batch.fill.justOpened") : t("addItems.batch.fill.full"),
     half: t("addItems.batch.fill.half"),
-    "nearly-empty": t("addItems.batch.fill.nearlyEmpty"),
+    almost_empty: t("addItems.batch.fill.nearlyEmpty"),
   };
 
   const label = isIngredient

@@ -158,6 +158,7 @@ export async function updateCurrentUserLocale(locale: string) {
 }
 
 export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
+  console.log("Determining app entry route for user:", user);
   const household = user.household;
 
   if (!household) {

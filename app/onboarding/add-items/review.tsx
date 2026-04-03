@@ -15,7 +15,8 @@ export default function ReviewItems() {
 
   const parsedItems: DetectedItem[] = (() => {
     try {
-      return items ? JSON.parse(items) : [];
+      const parsed = items ? JSON.parse(items) : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }

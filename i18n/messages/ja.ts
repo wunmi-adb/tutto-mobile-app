@@ -214,6 +214,12 @@ const ja = {
   "addItems.manual.reviewCta.plural": "{{count}}件の食材を確認",
   "addItems.processing.title": "食材を検出しています...",
   "addItems.processing.subtitle": "AIが食品やパントリーのアイテムをスキャンしています",
+  "addItems.captureError.title": "アイテムが見つかりませんでした",
+  "addItems.captureError.subtitle.image":
+    "その写真では食品や材料を見つけられませんでした。カメラをアイテムにしっかり向けてもう一度お試しください。",
+  "addItems.captureError.subtitle.voice":
+    "その録音では食品や材料を見つけられませんでした。アイテム名をはっきり話してもう一度お試しください。",
+  "addItems.captureError.retry": "もう一度試す",
   "addItems.voice.permission.title": "マイクへのアクセスが必要です",
   "addItems.voice.permission.subtitle": "Tuttoでは、食材の音声メモを録音するためにマイクが必要です。",
   "addItems.voice.permission.cta": "マイクを許可",
@@ -239,6 +245,7 @@ const ja = {
   "addItems.detail.namePlaceholder.cooked": "料理名",
   "addItems.detail.type.ingredient": "食材",
   "addItems.detail.type.cooked": "調理済みの料理",
+  "addItems.detail.fillLevelTracking": "残量トラッキングを有効にする",
   "addItems.detail.trackBy": "管理方法",
   "addItems.detail.trackBy.fillLevel": "残量",
   "addItems.detail.trackBy.quantity": "個数",
@@ -289,8 +296,8 @@ const ja = {
   "complete.subtitle": "順調なスタートです。場所や食材を追加し続けることも、そのままキッチンに進むこともできます。",
   "complete.addLocation": "別の場所を追加",
   "complete.goToKitchen": "キッチンへ進む",
-  "kitchen.tabs.home": "キッチン",
-  "kitchen.tabs.pantry": "パントリー",
+  "kitchen.tabs.home": "ホーム",
+  "kitchen.tabs.pantry": "キッチン",
   "kitchen.tabs.library": "レシピ",
   "kitchen.tabs.plan": "計画",
   "kitchen.tabs.shopping": "買い物",
@@ -549,6 +556,8 @@ const ja = {
   "settings.defaults.dislikes.liver": "レバー",
   "settings.defaults.dislikes.blueCheese": "ブルーチーズ",
   "settings.defaults.cuisines.nigerian": "ナイジェリア料理",
+  "inventory.item_capture.temporarily_unavailable":
+    "アイテム検出は一時的に利用できません。もう一度お試しください。",
 } as const satisfies TranslationMessages;
 
 export default ja;

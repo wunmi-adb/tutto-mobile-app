@@ -1,7 +1,7 @@
-import axios from "axios";
 import { API_BASE_URL, API_TIMEOUT_MS, getApiBaseUrl } from "@/lib/api/config";
 import { ensureValidAuthSession, refreshAuthSession } from "@/lib/auth/refresh";
 import { getAuthSession } from "@/lib/auth/session-store";
+import axios from "axios";
 
 declare module "axios" {
   interface AxiosRequestConfig {
@@ -15,6 +15,7 @@ function isAbsoluteUrl(url?: string) {
 }
 
 function setAuthorizationHeader(config: { headers?: unknown }, accessToken: string) {
+  console.log("Setting Authorization header with access token:", accessToken);
   const authorizationValue = `Bearer ${accessToken}`;
   const headers = config.headers;
 

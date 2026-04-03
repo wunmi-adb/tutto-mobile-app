@@ -215,6 +215,12 @@ const de = {
   "addItems.manual.reviewCta.plural": "{{count}} Artikel prufen",
   "addItems.processing.title": "Artikel werden erkannt...",
   "addItems.processing.subtitle": "Unsere KI scannt nach Lebensmitteln und Vorratsartikeln",
+  "addItems.captureError.title": "Keine Artikel gefunden",
+  "addItems.captureError.subtitle.image":
+    "Wir konnten auf dem Foto keine Lebensmittel oder Zutaten erkennen. Richte die Kamera direkt auf deine Artikel und versuche es erneut.",
+  "addItems.captureError.subtitle.voice":
+    "Wir konnten in der Aufnahme keine Lebensmittel oder Zutaten erkennen. Sprich deutlich und nenne deine Artikel erneut.",
+  "addItems.captureError.retry": "Erneut versuchen",
   "addItems.voice.permission.title": "Mikrofonzugriff benotigt",
   "addItems.voice.permission.subtitle": "Tutto benotigt dein Mikrofon, um Sprachnotizen fur deine Artikel aufzunehmen.",
   "addItems.voice.permission.cta": "Mikrofon erlauben",
@@ -240,6 +246,7 @@ const de = {
   "addItems.detail.namePlaceholder.cooked": "Mahlzeitenname",
   "addItems.detail.type.ingredient": "Zutat",
   "addItems.detail.type.cooked": "Gekochte Mahlzeit",
+  "addItems.detail.fillLevelTracking": "Fullstandsverfolgung aktivieren",
   "addItems.detail.trackBy": "Erfassen nach",
   "addItems.detail.trackBy.fillLevel": "Fuellstand",
   "addItems.detail.trackBy.quantity": "Menge",
@@ -290,8 +297,8 @@ const de = {
   "complete.subtitle": "Starker Start! Du kannst weitere Orte und Artikel hinzufugen oder direkt in deine Kuche springen.",
   "complete.addLocation": "Weiteren Ort hinzufugen",
   "complete.goToKitchen": "Zu deiner Kuche",
-  "kitchen.tabs.home": "Kuche",
-  "kitchen.tabs.pantry": "Vorrat",
+  "kitchen.tabs.home": "Start",
+  "kitchen.tabs.pantry": "Kuche",
   "kitchen.tabs.library": "Rezepte",
   "kitchen.tabs.plan": "Plan",
   "kitchen.tabs.shopping": "Einkauf",
@@ -550,6 +557,8 @@ const de = {
   "settings.defaults.dislikes.liver": "Leber",
   "settings.defaults.dislikes.blueCheese": "Blauschimmelkase",
   "settings.defaults.cuisines.nigerian": "Nigerianisch",
+  "inventory.item_capture.temporarily_unavailable":
+    "Die Artikelerkennung ist vorubergehend nicht verfugbar. Bitte versuche es erneut.",
 } as const satisfies TranslationMessages;
 
 export default de;

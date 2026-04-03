@@ -215,6 +215,12 @@ const tr = {
   "addItems.manual.reviewCta.plural": "{{count}} urunu gozden gecir",
   "addItems.processing.title": "Urunler algilaniyor...",
   "addItems.processing.subtitle": "Yapay zekamiz market ve kiler urunlerini tarıyor",
+  "addItems.captureError.title": "Urun bulunamadi",
+  "addItems.captureError.subtitle.image":
+    "Bu fotografta yiyecek veya malzeme algilayamadik. Kamerayi dogrudan urunlerine dogrultup tekrar dene.",
+  "addItems.captureError.subtitle.voice":
+    "Bu kayitta yiyecek veya malzeme algilayamadik. Urunlerini net sekilde soyleyip tekrar dene.",
+  "addItems.captureError.retry": "Tekrar dene",
   "addItems.voice.permission.title": "Mikrofon erisimi gerekli",
   "addItems.voice.permission.subtitle": "Tutto, urunlerin icin sesli not kaydetmek uzere mikrofonuna ihtiyac duyar.",
   "addItems.voice.permission.cta": "Mikrofonu izin ver",
@@ -240,6 +246,7 @@ const tr = {
   "addItems.detail.namePlaceholder.cooked": "Yemek adi",
   "addItems.detail.type.ingredient": "Malzeme",
   "addItems.detail.type.cooked": "Pismis yemek",
+  "addItems.detail.fillLevelTracking": "Doluluk takibini etkinlestir",
   "addItems.detail.trackBy": "Takip sekli",
   "addItems.detail.trackBy.fillLevel": "Doluluk seviyesi",
   "addItems.detail.trackBy.quantity": "Adet",
@@ -290,8 +297,8 @@ const tr = {
   "complete.subtitle": "Harika bir baslangic! Daha fazla alan ve urun ekleyebilir ya da dogrudan mutfagina gecebilirsin.",
   "complete.addLocation": "Baska alan ekle",
   "complete.goToKitchen": "Mutfagina git",
-  "kitchen.tabs.home": "Mutfak",
-  "kitchen.tabs.pantry": "Erzak",
+  "kitchen.tabs.home": "Ana Sayfa",
+  "kitchen.tabs.pantry": "Mutfak",
   "kitchen.tabs.library": "Tarifler",
   "kitchen.tabs.plan": "Plan",
   "kitchen.tabs.shopping": "Alisveris",
@@ -550,6 +557,8 @@ const tr = {
   "settings.defaults.dislikes.liver": "Ciger",
   "settings.defaults.dislikes.blueCheese": "Mavi peynir",
   "settings.defaults.cuisines.nigerian": "Nijerya mutfagi",
+  "inventory.item_capture.temporarily_unavailable":
+    "Urun algilama gecici olarak kullanilamiyor. Lutfen tekrar dene.",
 } as const satisfies TranslationMessages;
 
 export default tr;

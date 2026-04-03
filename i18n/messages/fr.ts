@@ -216,6 +216,12 @@ const fr = {
   "addItems.manual.reviewCta.plural": "Verifier {{count}} produits",
   "addItems.processing.title": "Detection des produits...",
   "addItems.processing.subtitle": "Notre IA analyse les courses et les produits du garde-manger",
+  "addItems.captureError.title": "Aucun produit trouve",
+  "addItems.captureError.subtitle.image":
+    "Nous n'avons trouve aucun aliment ou ingredient sur cette photo. Essayez de pointer l'appareil photo directement vers vos produits.",
+  "addItems.captureError.subtitle.voice":
+    "Nous n'avons trouve aucun aliment ou ingredient dans cet enregistrement. Essayez de parler clairement en listant vos produits.",
+  "addItems.captureError.retry": "Reessayer",
   "addItems.voice.permission.title": "Acces au microphone necessaire",
   "addItems.voice.permission.subtitle": "Tutto a besoin de votre microphone pour enregistrer des notes vocales sur vos produits.",
   "addItems.voice.permission.cta": "Autoriser le microphone",
@@ -241,6 +247,7 @@ const fr = {
   "addItems.detail.namePlaceholder.cooked": "Nom du plat",
   "addItems.detail.type.ingredient": "Ingredient",
   "addItems.detail.type.cooked": "Plat cuisine",
+  "addItems.detail.fillLevelTracking": "Activer le suivi du niveau",
   "addItems.detail.trackBy": "Suivre par",
   "addItems.detail.trackBy.fillLevel": "Niveau restant",
   "addItems.detail.trackBy.quantity": "Quantite",
@@ -291,8 +298,8 @@ const fr = {
   "complete.subtitle": "Tres bon debut ! Vous pouvez continuer a ajouter des espaces et des produits, ou acceder directement a votre cuisine.",
   "complete.addLocation": "Ajouter un autre espace",
   "complete.goToKitchen": "Aller a votre cuisine",
-  "kitchen.tabs.home": "Cuisine",
-  "kitchen.tabs.pantry": "Reserve",
+  "kitchen.tabs.home": "Accueil",
+  "kitchen.tabs.pantry": "Cuisine",
   "kitchen.tabs.library": "Recettes",
   "kitchen.tabs.plan": "Plan",
   "kitchen.tabs.shopping": "Courses",
@@ -551,6 +558,8 @@ const fr = {
   "settings.defaults.dislikes.liver": "Foie",
   "settings.defaults.dislikes.blueCheese": "Fromage bleu",
   "settings.defaults.cuisines.nigerian": "Nigeriane",
+  "inventory.item_capture.temporarily_unavailable":
+    "La detection des produits est temporairement indisponible. Veuillez reessayer.",
 } as const satisfies TranslationMessages;
 
 export default fr;

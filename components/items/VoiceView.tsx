@@ -20,7 +20,7 @@ import Waveform from "./voice/Waveform";
 
 type Props = {
   storageName: string;
-  onDone: () => void;
+  onDone: (recordingUri: string) => void;
   onBack: () => void;
 };
 
@@ -122,7 +122,10 @@ export default function VoiceView({ storageName, onDone, onBack }: Props) {
     } catch (e) {
       console.warn("Failed to stop recording:", e);
     }
-    onDone();
+
+    if (recorder.uri) {
+      onDone(recorder.uri);
+    }
   };
 
   const handleBack = async () => {
