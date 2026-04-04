@@ -1,4 +1,5 @@
 import type { MealTypeId, RecipeId } from "@/components/dashboard/data";
+import type { FillLevel } from "@/components/items/add-item/types";
 
 export type CustomMealRecipe = {
   kind: "custom";
@@ -17,10 +18,26 @@ export type MealRecipe =
   | { kind: "preset"; recipeId: RecipeId }
   | CustomMealRecipe;
 
+export type CookedMealPlanEntry = {
+  kind: "cooked_meal";
+  fillLevel?: FillLevel;
+  itemKey: string;
+  location: string;
+  storageLocationKey?: string;
+  name: string;
+};
+
+export type PlannedMeal =
+  | {
+      kind: "recipe";
+      recipe: MealRecipe;
+    }
+  | CookedMealPlanEntry;
+
 export type MealSlot = {
   id: string;
   type: MealTypeId;
-  recipe: MealRecipe | null;
+  meal: PlannedMeal;
 };
 
 export type DayPlan = {

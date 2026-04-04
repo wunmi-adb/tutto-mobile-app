@@ -1,6 +1,6 @@
 import type { MealTypeId } from "@/components/dashboard/data";
 import CookingStoryScreen from "@/components/dashboard/plan/CookingStoryScreen";
-import { parseMealRecipe } from "@/components/dashboard/plan/helpers";
+import { parseMealRecipe, serializeMealRecipe } from "@/components/dashboard/plan/helpers";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 
@@ -28,7 +28,15 @@ export default function PlanCookScreen() {
       mealType={params.mealType}
       recipe={recipe}
       onBack={() => router.back()}
-      onFinish={() => router.back()}
+      onFinish={() =>
+        router.replace({
+          pathname: "/dashboard/plan/update-usage",
+          params: {
+            mealType: params.mealType,
+            recipe: serializeMealRecipe(recipe),
+          },
+        })
+      }
     />
   );
 }

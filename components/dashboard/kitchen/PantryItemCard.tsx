@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import HapticPressable from "@/components/ui/HapticPressable";
 import { formatDateLabel } from "@/components/dashboard/data";
@@ -27,6 +27,7 @@ export default function PantryItemCard({ item, onEdit }: Props) {
   const { language, t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const chevronRotation = useRef(new Animated.Value(0)).current;
+  const isCookedMeal = item.type === "cooked_meal";
 
   const activeBatches = getActiveBatches(item);
   const allFinished = activeBatches.length === 0;
@@ -56,6 +57,198 @@ export default function PantryItemCard({ item, onEdit }: Props) {
     });
   };
 
+  const handleToggleExpanded = () => {
+    setExpanded((value) => !value);
+  };
+
+  const chevronAnimatedStyle = {
+    transform: [
+      {
+        rotate: chevronRotation.interpolate({
+          inputRange: [0, 1],
+          outputRange: ["0deg", "90deg"],
+        }),
+      },
+    ],
+  };
+
+  const renderCookedBadge = () => {
+    if (!isCookedMeal) {
+      return null;
+    }
+
+    return (
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>{t("dashboard.kitchen.cookedBadge")}</Text>
+      </View>
+    );
+  };
+
+  const renderExpiryMeta = () => {
+    if (allFinished || !earliestExpiry) {
+      return null;
+    }
+
+    return (
+      <>
+        <Text style={styles.metaDivider}>·</Text>
+        <Text
+          style={[
+            styles.expiryText,
+            urgency === "danger" && styles.expiryDanger,
+            urgency === "warn" && styles.expiryWarn,
+          ]}
+        >
+          {getExpiryLabel(t, language, earliestExpiry)}
+        </Text>
+      </>
+    );
+  };
+
+  const getEmptyStateTitle = () => {
+    if (isCookedMeal) {
+      return t("addItems.batch.finished.empty.cooked.title");
+    }
+
+    return t("addItems.batch.finished.empty.ingredient.title");
+  };
+
+  const getEmptyStateSubtitle = () => {
+    if (isCookedMeal) {
+      return t("dashboard.kitchen.emptyFinished.cooked");
+    }
+
+    return t("dashboard.kitchen.emptyFinished.ingredient");
+  };
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyState}>
+      <Feather name="package" size={20} color={colors.muted + "66"} />
+      <Text style={styles.emptyStateTitle}>{getEmptyStateTitle()}</Text>
+      <Text style={styles.emptyStateSubtitle}>{getEmptyStateSubtitle()}</Text>
+    </View>
+  );
+
+  const renderBatchHeader = (index: number) => {
+    if (activeBatches.length <= 1) {
+      return null;
+    }
+
+    const label = isCookedMeal
+      ? t("addItems.batch.label.portion", { index: index + 1 })
+      : t("addItems.batch.label.batch", { index: index + 1 });
+
+    return (
+      <View style={styles.batchHeader}>
+        <Text style={styles.batchLabel}>{label}</Text>
+      </View>
+    );
+  };
+
+  const renderBatchAmount = (batch: PantryItem["batches"][number], index: number) => {
+    if (item.countAsUnits) {
+      return (
+        <View style={styles.detailRow}>
+          <Text style={styles.detailKey}>{t("addItems.batch.field.quantity")}</Text>
+          <Text style={styles.detailValue}>{batch.qty}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.fillSection}>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailKey}>
+            {batch.sealed ? t("addItems.batch.state.sealed") : t("addItems.batch.state.opened")}
+          </Text>
+          <Text style={styles.detailValue}>{getFillLabel(t, batch.fillLevel)}</Text>
+        </View>
+        <View style={styles.fillTrack}>
+          <View style={[styles.fillBar, { width: `${getFillPercent(batch.fillLevel)}%` }]} />
+        </View>
+      </View>
+    );
+  };
+
+  const renderBestBefore = (batch: PantryItem["batches"][number]) => {
+    if (!batch.bestBefore) {
+      return null;
+    }
+
+    const batchUrgency = getExpiryUrgency(batch.bestBefore);
+
+    return (
+      <View style={styles.detailRow}>
+        <Text style={styles.detailKey}>{t("addItems.batch.field.bestBefore")}</Text>
+        <Text
+          style={[
+            styles.detailValue,
+            batchUrgency === "danger" && styles.expiryDanger,
+            batchUrgency === "warn" && styles.expiryWarn,
+          ]}
+        >
+          {formatDateLabel(language, new Date(batch.bestBefore), {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderDateMade = (batch: PantryItem["batches"][number]) => {
+    if (!batch.dateMade) {
+      return null;
+    }
+
+    return (
+      <View style={styles.detailRow}>
+        <Text style={styles.detailKey}>{t("addItems.batch.field.dateMade")}</Text>
+        <Text style={styles.detailValue}>
+          {formatDateLabel(language, new Date(batch.dateMade), {
+            day: "numeric",
+            month: "short",
+          })}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderBatchBlock = (batch: PantryItem["batches"][number], index: number) => (
+    <View
+      key={batch.id}
+      style={[styles.batchBlock, index < activeBatches.length - 1 && styles.batchDivider]}
+    >
+      {renderBatchHeader(index)}
+      {renderBatchAmount(batch, index)}
+      {renderBestBefore(batch)}
+      {renderDateMade(batch)}
+    </View>
+  );
+
+  const renderExpandedBody = () => {
+    if (!expanded) {
+      return null;
+    }
+
+    return (
+      <View style={styles.details}>
+        {allFinished ? renderEmptyState() : <View style={styles.batchList}>{activeBatches.map(renderBatchBlock)}</View>}
+
+        <HapticPressable
+          style={styles.editButton}
+          pressedStyle={styles.editButtonPressed}
+          hapticType="medium"
+          onPress={handleEdit}
+        >
+          <Feather name="edit-2" size={12} color={colors.muted} />
+          <Text style={styles.editButtonText}>{t("dashboard.kitchen.editItem")}</Text>
+        </HapticPressable>
+      </View>
+    );
+  };
+
   return (
     <View
       style={[
@@ -67,7 +260,7 @@ export default function PantryItemCard({ item, onEdit }: Props) {
     >
       <HapticPressable
         style={[styles.headerButton, allFinished && styles.headerButtonFinished]}
-        onPress={() => setExpanded((value) => !value)}
+        onPress={handleToggleExpanded}
         hapticType="selection"
         pressedOpacity={1}
       >
@@ -76,150 +269,20 @@ export default function PantryItemCard({ item, onEdit }: Props) {
             <Text style={styles.itemName} numberOfLines={1}>
               {item.name}
             </Text>
-            {item.type === "cooked_meal" ? (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{t("dashboard.kitchen.cookedBadge")}</Text>
-              </View>
-            ) : null}
+            {renderCookedBadge()}
           </View>
           <View style={styles.metaRow}>
             <Text style={styles.metaText}>{summary}</Text>
-            {!allFinished && earliestExpiry ? (
-              <>
-                <Text style={styles.metaDivider}>·</Text>
-                <Text
-                  style={[
-                    styles.expiryText,
-                    urgency === "danger" && styles.expiryDanger,
-                    urgency === "warn" && styles.expiryWarn,
-                  ]}
-                >
-                  {getExpiryLabel(t, language, earliestExpiry)}
-                </Text>
-              </>
-            ) : null}
+            {renderExpiryMeta()}
           </View>
         </View>
 
-        <Animated.View
-          style={{
-            transform: [
-              {
-                rotate: chevronRotation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ["0deg", "90deg"],
-                }),
-              },
-            ],
-          }}
-        >
+        <Animated.View style={chevronAnimatedStyle}>
           <Feather name="chevron-right" size={14} color={colors.muted} />
         </Animated.View>
       </HapticPressable>
 
-      {expanded ? (
-        <View style={styles.details}>
-          {allFinished ? (
-            <View style={styles.emptyState}>
-              <Feather name="package" size={20} color={colors.muted + "66"} />
-              <Text style={styles.emptyStateTitle}>
-                {item.type === "cooked_meal"
-                  ? t("addItems.batch.finished.empty.cooked.title")
-                  : t("addItems.batch.finished.empty.ingredient.title")}
-              </Text>
-              <Text style={styles.emptyStateSubtitle}>
-                {item.type === "cooked_meal"
-                  ? t("dashboard.kitchen.emptyFinished.cooked")
-                  : t("dashboard.kitchen.emptyFinished.ingredient")}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.batchList}>
-              {activeBatches.map((batch, index) => (
-                <View
-                  key={batch.id}
-                  style={[styles.batchBlock, index < activeBatches.length - 1 && styles.batchDivider]}
-                >
-                  {activeBatches.length > 1 ? (
-                    <View style={styles.batchHeader}>
-                      <Text style={styles.batchLabel}>
-                        {item.type === "cooked_meal"
-                          ? t("addItems.batch.label.portion", { index: index + 1 })
-                          : t("addItems.batch.label.batch", { index: index + 1 })}
-                      </Text>
-                    </View>
-                  ) : null}
-
-                  {item.countAsUnits ? (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailKey}>{t("addItems.batch.field.quantity")}</Text>
-                      <Text style={styles.detailValue}>{batch.qty}</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.fillSection}>
-                      <View style={styles.detailRow}>
-                        <Text style={styles.detailKey}>
-                          {batch.sealed
-                            ? t("addItems.batch.state.sealed")
-                            : t("addItems.batch.state.opened")}
-                        </Text>
-                        <Text style={styles.detailValue}>{getFillLabel(t, batch.fillLevel)}</Text>
-                      </View>
-                      <View style={styles.fillTrack}>
-                        <View
-                          style={[
-                            styles.fillBar,
-                            { width: `${getFillPercent(batch.fillLevel)}%` },
-                          ]}
-                        />
-                      </View>
-                    </View>
-                  )}
-
-                  {batch.bestBefore ? (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailKey}>{t("addItems.batch.field.bestBefore")}</Text>
-                      <Text
-                        style={[
-                          styles.detailValue,
-                          getExpiryUrgency(batch.bestBefore) === "danger" && styles.expiryDanger,
-                          getExpiryUrgency(batch.bestBefore) === "warn" && styles.expiryWarn,
-                        ]}
-                      >
-                        {formatDateLabel(language, new Date(batch.bestBefore), {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </Text>
-                    </View>
-                  ) : null}
-
-                  {batch.dateMade ? (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailKey}>{t("addItems.batch.field.dateMade")}</Text>
-                      <Text style={styles.detailValue}>
-                        {formatDateLabel(language, new Date(batch.dateMade), {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-              ))}
-            </View>
-          )}
-
-          <Pressable
-            style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
-            onPress={handleEdit}
-          >
-            <Feather name="edit-2" size={12} color={colors.muted} />
-            <Text style={styles.editButtonText}>{t("dashboard.kitchen.editItem")}</Text>
-          </Pressable>
-        </View>
-      ) : null}
+      {renderExpandedBody()}
     </View>
   );
 }

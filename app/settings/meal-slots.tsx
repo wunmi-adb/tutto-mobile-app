@@ -1,7 +1,8 @@
 import { MEAL_SLOT_OPTIONS } from "@/components/settings/data";
-import { useSettingsState } from "@/components/settings/SettingsProvider";
+import { useSettingsState } from "@/stores/settingsStore";
 import SettingsSelectionEditor from "@/components/settings/SettingsSelectionEditor";
 import { useI18n } from "@/i18n";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 
@@ -47,8 +48,8 @@ export default function SettingsMealSlotsScreen() {
             meals: mealSlots.map((value) => getMealSlotKeyFromLabel(value, t)).join(", "),
           });
           router.back();
-        } catch {
-          // The mutation hook already shows the translated error toast.
+        } catch (error) {
+          handleCaughtApiError(error);
         }
       }}
     />

@@ -18,29 +18,68 @@ export default function OnboardingTopBar({
 }: OnboardingTopBarProps) {
   const hasControls = !!leftAccessory || !!rightAccessory;
 
+  const renderLanguageControl = (showSpacerWhenHidden: boolean) => {
+    if (showLanguageSelector) {
+      return <LanguageSelector />;
+    }
+
+    if (showSpacerWhenHidden) {
+      return <View style={styles.languageSpacer} />;
+    }
+
+    return null;
+  };
+
+  const renderRightAccessory = () => {
+    if (!rightAccessory) {
+      return null;
+    }
+
+    return <View style={styles.rightAccessory}>{rightAccessory}</View>;
+  };
+
+  const renderBrandRow = () => (
+    <View style={styles.brandRow}>
+      <TuttoLogo width={88} height={24} />
+      {renderLanguageControl(true)}
+    </View>
+  );
+
+  const renderCompactControlsRow = () => (
+    <View style={[styles.controlsRow, styles.controlsRowCompact]}>
+      <View style={styles.accessory}>{leftAccessory}</View>
+      <View style={styles.rightControls}>
+        {renderRightAccessory()}
+        {renderLanguageControl(false)}
+      </View>
+    </View>
+  );
+
+  const renderTopRow = () => {
+    if (showLogo) {
+      return renderBrandRow();
+    }
+
+    return renderCompactControlsRow();
+  };
+
+  const renderControlsRow = () => {
+    if (!showLogo || !hasControls) {
+      return null;
+    }
+
+    return (
+      <View style={styles.controlsRow}>
+        <View style={styles.accessory}>{leftAccessory}</View>
+        <View style={styles.rightAccessory}>{rightAccessory}</View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      {showLogo ? (
-        <View style={styles.brandRow}>
-          <TuttoLogo width={88} height={24} />
-          {showLanguageSelector ? <LanguageSelector /> : <View style={styles.languageSpacer} />}
-        </View>
-      ) : (
-        <View style={[styles.controlsRow, styles.controlsRowCompact]}>
-          <View style={styles.accessory}>{leftAccessory}</View>
-          <View style={styles.rightControls}>
-            {rightAccessory ? <View style={styles.rightAccessory}>{rightAccessory}</View> : null}
-            {showLanguageSelector ? <LanguageSelector /> : null}
-          </View>
-        </View>
-      )}
-
-      {showLogo && hasControls ? (
-        <View style={styles.controlsRow}>
-          <View style={styles.accessory}>{leftAccessory}</View>
-          <View style={styles.rightAccessory}>{rightAccessory}</View>
-        </View>
-      ) : null}
+      {renderTopRow()}
+      {renderControlsRow()}
     </View>
   );
 }

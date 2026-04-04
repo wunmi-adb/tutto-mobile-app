@@ -5,6 +5,7 @@ import SelectableRow from "@/components/ui/SelectableRow";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { prefetchStorageLocations } from "@/lib/api/storage-locations";
 import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,8 +51,8 @@ export default function Meals() {
 
       await prefetchStorageLocations(queryClient);
       router.replace("/onboarding/storage");
-    } catch {
-      // The mutation hook already shows the translated error toast.
+    } catch (error) {
+      handleCaughtApiError(error);
     }
   };
 

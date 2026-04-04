@@ -1,5 +1,5 @@
 import SettingsAccountEditor from "@/components/settings/SettingsAccountEditor";
-import { useSettingsState } from "@/components/settings/SettingsProvider";
+import { useSettingsState } from "@/stores/settingsStore";
 import { useRouter } from "expo-router";
 
 export default function SettingsAccountScreen() {

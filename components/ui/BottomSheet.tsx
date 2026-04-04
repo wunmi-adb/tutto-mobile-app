@@ -174,6 +174,25 @@ export default function BottomSheet({
     [backdropAnim, dragEnabled, onClose, restoreSheet, sheetAnim],
   );
 
+  const renderSheetContent = () => {
+    if (!keyboardAvoiding) {
+      return children;
+    }
+
+    return (
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: keyboardInset },
+        ]}
+      >
+        {children}
+      </ScrollView>
+    );
+  };
+
   if (!rendered) {
     return null;
   }
@@ -207,20 +226,7 @@ export default function BottomSheet({
                 <View style={styles.handle} />
                 {header}
               </View>
-              {keyboardAvoiding ? (
-                <ScrollView
-                  keyboardShouldPersistTaps="handled"
-                  bounces={false}
-                  contentContainerStyle={[
-                    styles.scrollContent,
-                    { paddingBottom: keyboardInset },
-                  ]}
-                >
-                  {children}
-                </ScrollView>
-              ) : (
-                children
-              )}
+              {renderSheetContent()}
             </View>
           </SafeAreaView>
         </Animated.View>

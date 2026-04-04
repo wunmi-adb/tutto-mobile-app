@@ -1,5 +1,5 @@
 import SettingsTextEditor from "@/components/settings/SettingsTextEditor";
-import { useSettingsState } from "@/components/settings/SettingsProvider";
+import { useSettingsState } from "@/stores/settingsStore";
 import { useI18n } from "@/i18n";
 import { useRouter } from "expo-router";
 

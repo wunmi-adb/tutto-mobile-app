@@ -38,6 +38,24 @@ export default function SettingsConfirmationSheet({
   inputValue,
   onChangeInput,
 }: Props) {
+  const renderInput = () => {
+    if (!inputLabel || !onChangeInput) {
+      return null;
+    }
+
+    return (
+      <Input
+        label={inputLabel}
+        value={inputValue ?? ""}
+        onChangeText={onChangeInput}
+        placeholder={inputPlaceholder ?? ""}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        containerStyle={styles.inputWrap}
+      />
+    );
+  };
+
   return (
     <BottomSheet
       visible={visible}
@@ -47,18 +65,7 @@ export default function SettingsConfirmationSheet({
     >
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
-
-      {inputLabel && onChangeInput ? (
-        <Input
-          label={inputLabel}
-          value={inputValue ?? ""}
-          onChangeText={onChangeInput}
-          placeholder={inputPlaceholder ?? ""}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          containerStyle={styles.inputWrap}
-        />
-      ) : null}
+      {renderInput()}
 
       <Button
         title={confirmLabel}

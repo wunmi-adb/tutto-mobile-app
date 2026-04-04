@@ -8,6 +8,7 @@ import SelectableRow from "@/components/ui/SelectableRow";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useCreateStorageLocation, useStorageLocations } from "@/lib/api/storage-locations";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -97,8 +98,8 @@ export default function Storage() {
       }
 
       await createStorageLocationMutation.mutateAsync({ name: newName.trim() });
-    } catch {
-      // The mutation hook already shows the translated error toast.
+    } catch (error) {
+      handleCaughtApiError(error);
     }
   };
 

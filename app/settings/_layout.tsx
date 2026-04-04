@@ -1,10 +1,10 @@
-import { SettingsProvider } from "@/components/settings/SettingsProvider";
+import { useSettingsSync } from "@/stores/settingsStore";
 import { Stack } from "expo-router";
 
 export default function SettingsLayout() {
+  useSettingsSync();
+
   return (
-    <SettingsProvider>
-      <Stack screenOptions={{ headerShown: false }} />
-    </SettingsProvider>
+    <Stack screenOptions={{ headerShown: false }} />
   );
 }

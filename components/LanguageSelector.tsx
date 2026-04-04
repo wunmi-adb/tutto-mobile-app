@@ -7,7 +7,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import BottomSheet from "@/components/ui/BottomSheet";
 import { Feather } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from "react-native";
 
 export default function LanguageSelector() {
   const { language, languages, setLanguage, t } = useI18n();
@@ -54,6 +54,47 @@ export default function LanguageSelector() {
     [closeSheet, isAuthenticated, isSaving, language, session?.access_token, setLanguage],
   );
 
+  const getRowStyle = ({ pressed }: PressableStateCallbackType, active: boolean) => [
+    styles.langRow,
+    active && styles.langRowActive,
+    pressed && styles.langRowPressed,
+    isSaving && styles.langRowDisabled,
+  ];
+
+  const createSelectLanguageHandler = (nextLanguage: AppLanguage) => {
+    return () => {
+      void handleSelectLanguage(nextLanguage);
+    };
+  };
+
+  const renderCheckBadge = (active: boolean) => {
+    if (!active) {
+      return null;
+    }
+
+    return (
+      <View style={styles.checkBadge}>
+        <Feather name="check" size={14} color={colors.background} />
+      </View>
+    );
+  };
+
+  const renderLanguageRow = (lang: (typeof languages)[number]) => {
+    const active = language === lang.code;
+
+    return (
+      <Pressable
+        key={lang.code}
+        style={(state) => getRowStyle(state, active)}
+        disabled={isSaving}
+        onPress={createSelectLanguageHandler(lang.code)}
+      >
+        <Text style={[styles.langLabel, active && styles.langLabelActive]}>{lang.label}</Text>
+        {renderCheckBadge(active)}
+      </Pressable>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Pressable style={styles.button} onPress={openSheet}>
@@ -72,34 +113,7 @@ export default function LanguageSelector() {
         contentStyle={styles.sheet}
       >
         <View style={styles.list}>
-          {languages.map((lang) => {
-            const active = language === lang.code;
-
-            return (
-              <Pressable
-                key={lang.code}
-                style={({ pressed }) => [
-                  styles.langRow,
-                  active && styles.langRowActive,
-                  pressed && styles.langRowPressed,
-                  isSaving && styles.langRowDisabled,
-                ]}
-                disabled={isSaving}
-                onPress={() => {
-                  void handleSelectLanguage(lang.code);
-                }}
-              >
-                <Text style={[styles.langLabel, active && styles.langLabelActive]}>
-                  {lang.label}
-                </Text>
-                {active ? (
-                  <View style={styles.checkBadge}>
-                    <Feather name="check" size={14} color={colors.background} />
-                  </View>
-                ) : null}
-              </Pressable>
-            );
-          })}
+          {languages.map(renderLanguageRow)}
         </View>
       </BottomSheet>
     </View>

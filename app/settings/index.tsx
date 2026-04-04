@@ -1,10 +1,10 @@
 import SettingsConfirmationSheet from "@/components/settings/SettingsConfirmationSheet";
 import SettingsMainView from "@/components/settings/SettingsMainView";
-import { useSettingsState } from "@/components/settings/SettingsProvider";
 import { SettingsView } from "@/components/settings/types";
 import { useI18n } from "@/i18n";
 import { isTranslationKey } from "@/i18n/messages";
 import { clearAllClientState } from "@/lib/app/reset";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { deleteCurrentUserAccount } from "@/lib/api/profile";
 import { getApiErrorDetails } from "@/lib/api/types";
 import { useAuth } from "@/providers/AuthProvider";
@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { useState } from "react";
 import { toast } from "sonner-native";
+import { useSettingsState } from "@/stores/settingsStore";
 
 function summariseList(values: string[]) {
   if (!values.length) return "";
@@ -144,8 +145,12 @@ export default function SettingsIndexScreen() {
           deleteAccountMutation.reset();
         }}
         confirmLoading={deleteAccountMutation.isPending}
-        onConfirm={() => {
-          void deleteAccountMutation.mutateAsync();
+        onConfirm={async () => {
+          try {
+            await deleteAccountMutation.mutateAsync();
+          } catch (error) {
+            handleCaughtApiError(error);
+          }
         }}
       />
     </>

@@ -8,6 +8,7 @@ import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -79,8 +80,8 @@ export default function Cuisines() {
       });
 
       router.replace("/onboarding/meals");
-    } catch {
-      // The mutation hook already shows the translated error toast.
+    } catch (error) {
+      handleCaughtApiError(error);
     }
   };
 

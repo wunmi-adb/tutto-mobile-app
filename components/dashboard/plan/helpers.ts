@@ -7,29 +7,95 @@ import {
   type RecipeId,
 } from "@/components/dashboard/data";
 import type { TranslationKey } from "@/i18n/messages";
-import type { DayPlan, MealRecipe, ResolvedMealRecipe } from "./types";
+import type {
+  CookedMealPlanEntry,
+  CustomMealRecipe,
+  DayPlan,
+  MealRecipe,
+  ResolvedMealRecipe,
+} from "./types";
 
 type TranslationFn = (key: TranslationKey, params?: Record<string, number | string>) => string;
 
-const RECIPE_POOLS: Record<MealTypeId, RecipeId[]> = {
-  breakfast: ["avocadoEggsToast", "oatPorridgeBerries"],
-  brunch: [],
-  lunch: ["jollofRiceChicken", "mediterraneanWrap"],
-  snack: [],
-  dinner: ["spaghettiBolognese", "grilledSalmonGreens"],
-  supper: [],
+const PLAN_MEAL_TYPES = ["breakfast", "lunch", "dinner"] as const satisfies readonly MealTypeId[];
+
+type PlannedMealType = (typeof PLAN_MEAL_TYPES)[number];
+
+const FALLBACK_CUSTOM_RECIPE: MealRecipe = {
+  kind: "custom",
+  name: "Meal",
+  timeMinutes: 30,
+  servings: 2,
+  calories: 400,
+  protein: "20g",
+  carbs: "45g",
+  fat: "15g",
+  ingredients: [],
+  steps: [],
 };
 
-export const ADDABLE_MEAL_TYPES: MealTypeId[] = [
-  "breakfast",
-  "brunch",
-  "lunch",
-  "snack",
-  "dinner",
-  "supper",
-];
+const RECIPE_POOLS: Record<PlannedMealType, RecipeId[]> = {
+  breakfast: ["avocadoEggsToast", "oatPorridgeBerries"],
+  lunch: ["jollofRiceChicken", "mediterraneanWrap"],
+  dinner: ["spaghettiBolognese", "grilledSalmonGreens"],
+};
+
+export const ADDABLE_MEAL_TYPES: MealTypeId[] = [...PLAN_MEAL_TYPES];
+
+function isPlannedMealType(type: MealTypeId): type is PlannedMealType {
+  return PLAN_MEAL_TYPES.includes(type as PlannedMealType);
+}
+
+function createRecipeMeal(type: PlannedMealType): MealRecipe {
+  const recipe = pickRandomRecipe(type);
+
+  if (recipe) {
+    return recipe;
+  }
+
+  return FALLBACK_CUSTOM_RECIPE;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string");
+}
+
+function isPresetMealRecipe(value: unknown): value is Extract<MealRecipe, { kind: "preset" }> {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const parsed = value as Record<string, unknown>;
+
+  return parsed.kind === "preset" && typeof parsed.recipeId === "string";
+}
+
+function isCustomMealRecipe(value: unknown): value is CustomMealRecipe {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const parsed = value as Record<string, unknown>;
+
+  return (
+    parsed.kind === "custom" &&
+    typeof parsed.name === "string" &&
+    typeof parsed.timeMinutes === "number" &&
+    typeof parsed.servings === "number" &&
+    typeof parsed.calories === "number" &&
+    typeof parsed.protein === "string" &&
+    typeof parsed.carbs === "string" &&
+    typeof parsed.fat === "string" &&
+    isStringArray(parsed.ingredients) &&
+    isStringArray(parsed.steps)
+  );
+}
 
 export function pickRandomRecipe(type: MealTypeId): MealRecipe | null {
+  if (!isPlannedMealType(type)) {
+    return null;
+  }
+
   const pool = RECIPE_POOLS[type];
 
   if (!pool.length) {
@@ -55,9 +121,21 @@ export function generateWeek(): DayPlan[] {
     return {
       date: currentDate.toISOString(),
       meals: [
-        { id: `${index}-b`, type: "breakfast", recipe: pickRandomRecipe("breakfast") },
-        { id: `${index}-l`, type: "lunch", recipe: pickRandomRecipe("lunch") },
-        { id: `${index}-d`, type: "dinner", recipe: pickRandomRecipe("dinner") },
+        {
+          id: `${index}-b`,
+          type: "breakfast",
+          meal: { kind: "recipe", recipe: createRecipeMeal("breakfast") },
+        },
+        {
+          id: `${index}-l`,
+          type: "lunch",
+          meal: { kind: "recipe", recipe: createRecipeMeal("lunch") },
+        },
+        {
+          id: `${index}-d`,
+          type: "dinner",
+          meal: { kind: "recipe", recipe: createRecipeMeal("dinner") },
+        },
       ],
     };
   });
@@ -83,6 +161,10 @@ export function resolveMealRecipe(recipe: MealRecipe, t: TranslationFn): Resolve
   return recipe;
 }
 
+export function isCookedMealEntry(meal: DayPlan["meals"][number]["meal"]): meal is CookedMealPlanEntry {
+  return meal.kind === "cooked_meal";
+}
+
 export function serializeMealRecipe(recipe: MealRecipe): string {
   return JSON.stringify(recipe);
 }
@@ -93,24 +175,13 @@ export function parseMealRecipe(value: string | string[] | undefined): MealRecip
   }
 
   try {
-    const parsed = JSON.parse(value) as Partial<MealRecipe>;
+    const parsed = JSON.parse(value) as unknown;
 
-    if (parsed.kind === "preset" && typeof parsed.recipeId === "string") {
+    if (isPresetMealRecipe(parsed)) {
       return { kind: "preset", recipeId: parsed.recipeId as RecipeId };
     }
 
-    if (
-      parsed.kind === "custom" &&
-      typeof parsed.name === "string" &&
-      typeof parsed.timeMinutes === "number" &&
-      typeof parsed.servings === "number" &&
-      typeof parsed.calories === "number" &&
-      typeof parsed.protein === "string" &&
-      typeof parsed.carbs === "string" &&
-      typeof parsed.fat === "string" &&
-      Array.isArray(parsed.ingredients) &&
-      Array.isArray(parsed.steps)
-    ) {
+    if (isCustomMealRecipe(parsed)) {
       return {
         kind: "custom",
         name: parsed.name,

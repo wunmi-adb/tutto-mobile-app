@@ -1,6 +1,7 @@
-import { useSettingsState } from "@/components/settings/SettingsProvider";
+import { useSettingsState } from "@/stores/settingsStore";
 import SettingsChipEditor from "@/components/settings/SettingsChipEditor";
 import { useI18n } from "@/i18n";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useUpdateHouseholdProfile } from "@/lib/api/household";
 import { useRouter } from "expo-router";
 
@@ -32,8 +33,8 @@ export default function SettingsAppliancesScreen() {
             kitchen_appliances: appliances.join(", "),
           });
           router.back();
-        } catch {
-          // The mutation hook already shows the translated error toast.
+        } catch (error) {
+          handleCaughtApiError(error);
         }
       }}
     />

@@ -6,6 +6,7 @@ import {
   useDeleteInventoryItem,
   useUpdateInventoryItem,
 } from "@/lib/api/items";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function Detail() {
@@ -52,8 +53,12 @@ export default function Detail() {
       onDelete={
         itemKey
           ? async () => {
-              await deleteInventoryItemMutation.mutateAsync(itemKey);
-              router.back();
+              try {
+                await deleteInventoryItemMutation.mutateAsync(itemKey);
+                router.back();
+              } catch (error) {
+                handleCaughtApiError(error);
+              }
             }
           : undefined
       }
@@ -92,8 +97,8 @@ export default function Detail() {
             pathname: "/onboarding/complete",
             params: { location: storageName, ...(source ? { source } : {}) },
           });
-        } catch {
-          // The mutation hook already shows the translated error toast.
+        } catch (error) {
+          handleCaughtApiError(error);
         }
       }}
     />

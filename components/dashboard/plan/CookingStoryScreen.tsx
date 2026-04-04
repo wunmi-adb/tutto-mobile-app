@@ -8,7 +8,7 @@ import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
@@ -54,16 +54,79 @@ export default function CookingStoryScreen({
     [currentStep],
   );
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(stepDurationSeconds);
+  const [timerText, setTimerText] = useState<string | null>(
+    stepDurationSeconds === null ? null : formatTimer(stepDurationSeconds),
+  );
+  const [outgoingTimerChars, setOutgoingTimerChars] = useState<(string | null)[]>(
+    Array(5).fill(null),
+  );
   const [timerRunning, setTimerRunning] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const storyScale = useRef(new Animated.Value(1)).current;
+  const progressPosition = useRef(new Animated.Value(0)).current;
+  const timerIncomingTranslateY = useRef(
+    Array.from({ length: 5 }, () => new Animated.Value(0)),
+  ).current;
+  const timerIncomingOpacity = useRef(
+    Array.from({ length: 5 }, () => new Animated.Value(1)),
+  ).current;
+  const timerOutgoingTranslateY = useRef(
+    Array.from({ length: 5 }, () => new Animated.Value(0)),
+  ).current;
+  const timerOutgoingOpacity = useRef(
+    Array.from({ length: 5 }, () => new Animated.Value(0)),
+  ).current;
+  const transitionDirection = useRef(1);
+  const hasAnimatedStep = useRef(false);
 
   useEffect(() => {
     setRemainingSeconds(stepDurationSeconds);
+    setTimerText(stepDurationSeconds === null ? null : formatTimer(stepDurationSeconds));
+    setOutgoingTimerChars(Array(5).fill(null));
     setTimerRunning(false);
   }, [stepDurationSeconds, currentStepIndex]);
+
+  useEffect(() => {
+    Animated.timing(progressPosition, {
+      toValue: currentStepIndex,
+      duration: 300,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [currentStepIndex, progressPosition]);
+
+  useEffect(() => {
+    if (!hasAnimatedStep.current) {
+      hasAnimatedStep.current = true;
+      return;
+    }
+
+    contentOpacity.setValue(0);
+    contentTranslateX.setValue(transitionDirection.current * 18);
+    storyScale.setValue(0.985);
+
+    Animated.parallel([
+      Animated.spring(contentOpacity, {
+        toValue: 1,
+        speed: 18,
+        bounciness: 0,
+        useNativeDriver: true,
+      }),
+      Animated.spring(contentTranslateX, {
+        toValue: 0,
+        speed: 16,
+        bounciness: 4,
+        useNativeDriver: true,
+      }),
+      Animated.spring(storyScale, {
+        toValue: 1,
+        speed: 16,
+        bounciness: 6,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [contentOpacity, contentTranslateX, currentStepIndex, storyScale]);
 
   useEffect(() => {
     if (!timerRunning || remainingSeconds === null || remainingSeconds <= 0) {
@@ -84,58 +147,109 @@ export default function CookingStoryScreen({
     return () => clearInterval(intervalId);
   }, [remainingSeconds, timerRunning]);
 
-  const transitionToStep = (nextIndex: number) => {
-    if (nextIndex === currentStepIndex || isTransitioning) {
+  useEffect(() => {
+    if (remainingSeconds === null) {
+      setTimerText(null);
+      setOutgoingTimerChars(Array(5).fill(null));
       return;
     }
 
-    const direction = nextIndex > currentStepIndex ? 1 : -1;
-    setIsTransitioning(true);
+    const nextTimerText = formatTimer(remainingSeconds);
 
-    Animated.parallel([
-      Animated.timing(contentOpacity, {
-        toValue: 0,
-        duration: 120,
-        useNativeDriver: true,
-      }),
-      Animated.timing(contentTranslateX, {
-        toValue: direction * -18,
-        duration: 140,
-        useNativeDriver: true,
-      }),
-      Animated.timing(storyScale, {
-        toValue: 0.985,
-        duration: 120,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setCurrentStepIndex(nextIndex);
-      contentTranslateX.setValue(direction * 18);
-      storyScale.setValue(0.985);
+    if (timerText === null || timerText === nextTimerText) {
+      setTimerText(nextTimerText);
+      return;
+    }
 
-      Animated.parallel([
-        Animated.spring(contentOpacity, {
-          toValue: 1,
-          speed: 18,
-          bounciness: 0,
-          useNativeDriver: true,
-        }),
-        Animated.spring(contentTranslateX, {
+    const nextOutgoingChars = timerText.split("").map((char, index) => {
+      if (char === ":" || char === nextTimerText[index]) {
+        return null;
+      }
+
+      return char;
+    });
+
+    const animations: Animated.CompositeAnimation[] = [];
+
+    nextOutgoingChars.forEach((char, index) => {
+      if (!char) {
+        timerIncomingTranslateY[index].setValue(0);
+        timerIncomingOpacity[index].setValue(1);
+        timerOutgoingTranslateY[index].setValue(0);
+        timerOutgoingOpacity[index].setValue(0);
+        return;
+      }
+
+      timerIncomingTranslateY[index].setValue(16);
+      timerIncomingOpacity[index].setValue(0);
+      timerOutgoingTranslateY[index].setValue(0);
+      timerOutgoingOpacity[index].setValue(1);
+
+      animations.push(
+        Animated.timing(timerIncomingTranslateY[index], {
           toValue: 0,
-          speed: 16,
-          bounciness: 4,
+          duration: 260,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.spring(storyScale, {
+        Animated.timing(timerIncomingOpacity[index], {
           toValue: 1,
-          speed: 16,
-          bounciness: 6,
+          duration: 220,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
-      ]).start(() => {
-        setIsTransitioning(false);
+        Animated.timing(timerOutgoingTranslateY[index], {
+          toValue: -16,
+          duration: 260,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(timerOutgoingOpacity[index], {
+          toValue: 0,
+          duration: 200,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      );
+    });
+
+    setOutgoingTimerChars(nextOutgoingChars);
+    setTimerText(nextTimerText);
+
+    if (animations.length === 0) {
+      return;
+    }
+
+    Animated.parallel(animations).start(() => {
+      setOutgoingTimerChars(Array(5).fill(null));
+
+      nextOutgoingChars.forEach((char, index) => {
+        if (!char) {
+          return;
+        }
+
+        timerIncomingTranslateY[index].setValue(0);
+        timerIncomingOpacity[index].setValue(1);
+        timerOutgoingTranslateY[index].setValue(0);
+        timerOutgoingOpacity[index].setValue(0);
       });
     });
+  }, [
+    remainingSeconds,
+    timerIncomingOpacity,
+    timerIncomingTranslateY,
+    timerOutgoingOpacity,
+    timerOutgoingTranslateY,
+    timerText,
+  ]);
+
+  const transitionToStep = (nextIndex: number) => {
+    if (nextIndex === currentStepIndex) {
+      return;
+    }
+
+    transitionDirection.current = nextIndex > currentStepIndex ? 1 : -1;
+    setCurrentStepIndex(nextIndex);
   };
 
   const handlePrevious = () => {
@@ -147,6 +261,87 @@ export default function CookingStoryScreen({
   };
 
   const isLastStep = currentStepIndex === totalSteps - 1;
+  const renderProgressBar = (_: string, index: number) => {
+    return (
+      <View key={`progress-${index}`} style={styles.progressBar}>
+        <Animated.View
+          style={[
+            styles.progressBarFill,
+            {
+              width: progressPosition.interpolate({
+                inputRange: [index - 1, index],
+                outputRange: ["0%", "100%"],
+                extrapolate: "clamp",
+              }),
+            },
+          ]}
+        />
+      </View>
+    );
+  };
+
+  const renderProgressRow = () => {
+    if (totalSteps <= 0) {
+      return null;
+    }
+
+    return (
+      <View style={styles.progressRow}>
+        {recipeDetails.steps.map(renderProgressBar)}
+      </View>
+    );
+  };
+
+  const renderTimerValue = () => {
+    if (timerText === null) {
+      return null;
+    }
+
+    return (
+      <View style={styles.timerDigitsRow}>
+        {timerText.split("").map((char, index) => {
+          if (char === ":") {
+            return (
+              <Text key={`timer-separator-${index}`} style={styles.timerValue}>
+                :
+              </Text>
+            );
+          }
+
+          return (
+            <View key={`timer-digit-${index}`} style={styles.timerDigitSlot}>
+              {outgoingTimerChars[index] ? (
+                <Animated.Text
+                  style={[
+                    styles.timerValue,
+                    styles.timerValueLayer,
+                    {
+                      opacity: timerOutgoingOpacity[index],
+                      transform: [{ translateY: timerOutgoingTranslateY[index] }],
+                    },
+                  ]}
+                >
+                  {outgoingTimerChars[index]}
+                </Animated.Text>
+              ) : null}
+              <Animated.Text
+                style={[
+                  styles.timerValue,
+                  styles.timerValueLayer,
+                  {
+                    opacity: timerIncomingOpacity[index],
+                    transform: [{ translateY: timerIncomingTranslateY[index] }],
+                  },
+                ]}
+              >
+                {char}
+              </Animated.Text>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
@@ -159,17 +354,7 @@ export default function CookingStoryScreen({
           </HapticPressable>
         </View>
 
-        <View style={styles.progressRow}>
-          {recipeDetails.steps.map((_, index) => (
-            <View
-              key={`progress-${index}`}
-              style={[
-                styles.progressBar,
-                index <= currentStepIndex && styles.progressBarActive,
-              ]}
-            />
-          ))}
-        </View>
+        {renderProgressRow()}
 
         <Text style={styles.stepCounter}>
           {t("kitchen.plan.cooking.stepCounter", {
@@ -197,7 +382,7 @@ export default function CookingStoryScreen({
           {remainingSeconds !== null ? (
             <View style={styles.timerBlock}>
               <Text style={styles.timerLabel}>{t("kitchen.plan.cooking.timer")}</Text>
-              <Text style={styles.timerValue}>{formatTimer(remainingSeconds)}</Text>
+              {renderTimerValue()}
 
               <View style={styles.timerActions}>
                 <HapticPressable
@@ -291,9 +476,12 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 999,
     backgroundColor: colors.border,
+    overflow: "hidden",
   },
-  progressBarActive: {
+  progressBarFill: {
+    height: "100%",
     backgroundColor: colors.text,
+    borderRadius: 999,
   },
   stepCounter: {
     fontFamily: fonts.sansMedium,
@@ -344,9 +532,26 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   timerValue: {
-    fontFamily: fonts.sansMedium,
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
     fontSize: 32,
     color: colors.text,
+  },
+  timerDigitsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 1,
+  },
+  timerDigitSlot: {
+    width: 22,
+    height: 40,
+    overflow: "hidden",
+    justifyContent: "center",
+  },
+  timerValueLayer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
   },
   timerActions: {
     flexDirection: "row",

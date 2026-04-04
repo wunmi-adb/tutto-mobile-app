@@ -1,6 +1,7 @@
 import ReviewItemsView, { DetectedItem } from "@/components/items/ReviewItemsView";
 import { makeItemDraftFromPrefill } from "@/components/items/add-item/types";
 import { useI18n } from "@/i18n";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useCreateInventoryItems } from "@/lib/api/items";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -47,8 +48,8 @@ export default function ReviewItems() {
             pathname: "/onboarding/complete",
             params: { location: storageName, ...(source ? { source } : {}) },
           });
-        } catch {
-          // The mutation hook already shows the translated error toast.
+        } catch (error) {
+          handleCaughtApiError(error);
         }
       }}
       onContinue={(confirmedItems) =>

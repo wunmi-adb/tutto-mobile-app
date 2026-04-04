@@ -30,6 +30,18 @@ type Props = {
   onClearAll: () => void;
 };
 
+function getFilterIconColor(icon?: StatusOption["icon"]) {
+  if (icon === "clock") {
+    return colors.danger;
+  }
+
+  if (icon === "alert-triangle") {
+    return colors.warning;
+  }
+
+  return colors.muted;
+}
+
 function FilterRow({
   label,
   count,
@@ -43,13 +55,21 @@ function FilterRow({
   active: boolean;
   onPress: () => void;
 }) {
-  let iconColor: string = colors.muted;
+  const renderLeadingIcon = () => {
+    if (!icon) {
+      return <View style={styles.iconSpacer} />;
+    }
 
-  if (icon === "clock") {
-    iconColor = colors.danger;
-  } else if (icon === "alert-triangle") {
-    iconColor = colors.warning;
-  }
+    return <Feather name={icon} size={14} color={getFilterIconColor(icon)} />;
+  };
+
+  const renderSelectionIndicator = () => {
+    if (!active) {
+      return <View style={styles.checkSpacer} />;
+    }
+
+    return <Feather name="check" size={14} color={colors.brand} />;
+  };
 
   return (
     <HapticPressable
@@ -57,10 +77,10 @@ function FilterRow({
       onPress={onPress}
       hapticType="selection"
     >
-      {icon ? <Feather name={icon} size={14} color={iconColor} /> : <View style={styles.iconSpacer} />}
+      {renderLeadingIcon()}
       <Text style={[styles.rowLabel, active && styles.rowLabelActive]}>{label}</Text>
       <Text style={styles.rowCount}>{count}</Text>
-      {active ? <Feather name="check" size={14} color={colors.brand} /> : <View style={styles.checkSpacer} />}
+      {renderSelectionIndicator()}
     </HapticPressable>
   );
 }
@@ -81,15 +101,31 @@ export default function KitchenFilterSheet({
   onSelectLocation,
   onClearAll,
 }: Props) {
+  const renderClearAction = () => {
+    if (activeFilterCount <= 0) {
+      return null;
+    }
+
+    return (
+      <HapticPressable onPress={onClearAll} hapticType="selection">
+        <Text style={styles.clearText}>{clearLabel}</Text>
+      </HapticPressable>
+    );
+  };
+
+  const createStatusSelectHandler = (key: PantryStatusFilter) => () => {
+    onSelectStatus(key);
+  };
+
+  const createLocationSelectHandler = (key: string) => () => {
+    onSelectLocation(key);
+  };
+
   return (
     <BottomSheet visible={visible} onClose={onClose} contentStyle={styles.sheetContent}>
       <View style={styles.topRow}>
         <Text style={styles.title}>{title}</Text>
-        {activeFilterCount > 0 ? (
-          <HapticPressable onPress={onClearAll} hapticType="selection">
-            <Text style={styles.clearText}>{clearLabel}</Text>
-          </HapticPressable>
-        ) : null}
+        {renderClearAction()}
       </View>
 
       <View style={styles.section}>
@@ -102,7 +138,7 @@ export default function KitchenFilterSheet({
               count={option.count}
               icon={option.icon}
               active={activeStatus === option.key}
-              onPress={() => onSelectStatus(option.key)}
+              onPress={createStatusSelectHandler(option.key)}
             />
           ))}
         </View>
@@ -118,7 +154,7 @@ export default function KitchenFilterSheet({
               count={option.count}
               icon="map-pin"
               active={activeLocation === option.key}
-              onPress={() => onSelectLocation(option.key)}
+              onPress={createLocationSelectHandler(option.key)}
             />
           ))}
         </View>

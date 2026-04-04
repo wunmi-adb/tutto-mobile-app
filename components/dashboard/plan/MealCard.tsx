@@ -3,11 +3,13 @@ import {
   getMealTypeLabel,
   getRecipeName,
 } from "@/components/dashboard/data";
+import { isCookedMealEntry } from "@/components/dashboard/plan/helpers";
+import HapticPressable from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
-import { Feather } from "@expo/vector-icons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import type { MealSlot } from "./types";
 
 type Props = {
@@ -15,53 +17,114 @@ type Props = {
   onView: () => void;
   onRandomise: () => void;
   onRemove: () => void;
+  randomiseDisabled?: boolean;
+  removeDisabled?: boolean;
+  randomiseLabel?: string;
+  removeLabel?: string;
 };
 
-export default function MealCard({ slot, onView, onRandomise, onRemove }: Props) {
-  const { t } = useI18n();
+type MealCardContent = {
+  calories: number | null;
+  isCookedMeal: boolean;
+  recipeName: string;
+  timeMinutes: number | null;
+};
 
-  if (!slot.recipe) {
-    return null;
+function getMealCardContent(
+  slot: MealSlot,
+  t: ReturnType<typeof useI18n>["t"],
+): MealCardContent {
+  if (isCookedMealEntry(slot.meal)) {
+    return {
+      calories: null,
+      isCookedMeal: true,
+      recipeName: slot.meal.name,
+      timeMinutes: null,
+    };
   }
 
-  const recipeName =
-    slot.recipe.kind === "preset" ? getRecipeName(t, slot.recipe.recipeId) : slot.recipe.name;
-  const timeMinutes =
-    slot.recipe.kind === "preset"
-      ? RECIPE_DEFINITIONS[slot.recipe.recipeId].timeMinutes
-      : slot.recipe.timeMinutes;
-  const calories =
-    slot.recipe.kind === "preset"
-      ? RECIPE_DEFINITIONS[slot.recipe.recipeId].calories
-      : slot.recipe.calories;
+  if (slot.meal.recipe.kind === "preset") {
+    const definition = RECIPE_DEFINITIONS[slot.meal.recipe.recipeId];
+
+    return {
+      calories: definition.calories,
+      isCookedMeal: false,
+      recipeName: getRecipeName(t, slot.meal.recipe.recipeId),
+      timeMinutes: definition.timeMinutes,
+    };
+  }
+
+  return {
+    calories: slot.meal.recipe.calories,
+    isCookedMeal: false,
+    recipeName: slot.meal.recipe.name,
+    timeMinutes: slot.meal.recipe.timeMinutes,
+  };
+}
+
+export default function MealCard({
+  slot,
+  onView,
+  onRandomise,
+  onRemove,
+  randomiseDisabled = false,
+  removeDisabled = false,
+  randomiseLabel,
+  removeLabel,
+}: Props) {
+  const { t } = useI18n();
+  const { calories, isCookedMeal, recipeName, timeMinutes } = getMealCardContent(slot, t);
 
   return (
     <View style={styles.mealCard}>
-      <TouchableOpacity style={styles.mealMain} activeOpacity={0.75} onPress={onView}>
+      <HapticPressable style={styles.mealMain} pressedOpacity={0.75} hapticType="medium" onPress={onView}>
+        {isCookedMeal ? (
+          <View style={styles.cookedBadge}>
+            <MaterialCommunityIcons name="fridge-outline" size={16} color={colors.muted} />
+          </View>
+        ) : null}
         <View style={styles.mealCopy}>
           <Text style={styles.mealType}>{getMealTypeLabel(t, slot.type)}</Text>
           <Text style={styles.mealName}>{recipeName}</Text>
           <View style={styles.mealMetaRow}>
-            <Text style={styles.mealMeta}>{t("kitchen.common.minutes", { count: timeMinutes })}</Text>
-            <Text style={styles.mealMeta}>{t("kitchen.common.calories", { count: calories })}</Text>
+            {isCookedMeal ? (
+              <Text style={styles.mealMeta}>{t("kitchen.plan.cookedMeal")}</Text>
+            ) : (
+              <>
+                <Text style={styles.mealMeta}>{t("kitchen.common.minutes", { count: timeMinutes ?? 0 })}</Text>
+                <Text style={styles.mealMeta}>{t("kitchen.common.calories", { count: calories ?? 0 })}</Text>
+              </>
+            )}
           </View>
         </View>
         <Feather name="chevron-right" size={14} color={colors.muted + "66"} />
-      </TouchableOpacity>
+      </HapticPressable>
 
       <View style={styles.mealActions}>
-        <TouchableOpacity
-          style={[styles.mealAction, styles.mealActionDivider]}
-          activeOpacity={0.75}
+        <HapticPressable
+          style={[
+            styles.mealAction,
+            styles.mealActionDivider,
+            randomiseDisabled && styles.mealActionDisabled,
+          ]}
+          pressedOpacity={0.75}
+          hapticType="selection"
+          disabled={randomiseDisabled}
           onPress={onRandomise}
         >
           <Feather name="shuffle" size={12} color={colors.muted} />
-          <Text style={styles.mealActionText}>{t("kitchen.plan.shuffle")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.mealAction} activeOpacity={0.75} onPress={onRemove}>
+          <Text style={styles.mealActionText}>{randomiseLabel ?? t("kitchen.plan.shuffle")}</Text>
+        </HapticPressable>
+        <HapticPressable
+          style={[styles.mealAction, removeDisabled && styles.mealActionDisabled]}
+          pressedOpacity={0.75}
+          hapticType="light"
+          disabled={removeDisabled}
+          onPress={onRemove}
+        >
           <Feather name="x" size={12} color={colors.muted} />
-          <Text style={styles.mealActionText}>{t("kitchen.plan.remove")}</Text>
-        </TouchableOpacity>
+          <Text style={styles.mealActionText}>{removeLabel ?? t("kitchen.plan.remove")}</Text>
+        </HapticPressable>
       </View>
     </View>
   );
@@ -84,6 +147,15 @@ const styles = StyleSheet.create({
   },
   mealCopy: {
     flex: 1,
+    minWidth: 0,
+  },
+  cookedBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   mealType: {
     fontFamily: fonts.sansMedium,
@@ -121,6 +193,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     paddingVertical: 11,
+  },
+  mealActionDisabled: {
+    opacity: 0.45,
   },
   mealActionDivider: {
     borderRightWidth: 1,
