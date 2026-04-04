@@ -502,6 +502,7 @@ const ja = {
   "dashboard.kitchen.usedUp": "Used up",
   "dashboard.kitchen.emptyFinished.ingredient": "新しいバッチを追加するか、このアイテムを削除してください",
   "dashboard.kitchen.emptyFinished.cooked": "新しい量を追加するか、このアイテムを削除してください",
+  "dashboard.kitchen.empty.noItems": "No items in this location",
   "dashboard.kitchen.empty.title": "No matching items",
   "dashboard.kitchen.empty.subtitle":
     "Try another search or clear some filters to see more of your kitchen.",

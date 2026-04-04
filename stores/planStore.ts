@@ -14,11 +14,6 @@ import { atom, computed } from "nanostores";
 import { useStore } from "@nanostores/react";
 import { useEffect } from "react";
 
-function getTodayIndex() {
-  const day = new Date().getDay();
-  return (day + 6) % 7;
-}
-
 function mapPantryItemToCookedMealEntry(item: PantryItem): CookedMealPlanEntry {
   return {
     kind: "cooked_meal",
@@ -177,14 +172,14 @@ function hydratePlanWeek(days: MealPlanDayResponse[], t: ReturnType<typeof useI1
   const safeSelectedDay =
     currentSelectedDay >= 0 && currentSelectedDay < nextWeek.length
       ? currentSelectedDay
-      : getDayIndexForToday(nextWeek);
+      : 0;
 
   $selectedPlanDay.set(safeSelectedDay);
   $planHydratedFromApi.set(true);
 }
 
 export const $planWeek = atom<DayPlan[]>(generateWeek());
-export const $selectedPlanDay = atom(getTodayIndex());
+export const $selectedPlanDay = atom(0);
 export const $planHydratedFromApi = atom(false);
 export const $todayPlanDay = computed([$planWeek], (week) => getDayIndexForToday(week));
 export const $currentPlanDay = computed([$planWeek, $selectedPlanDay], (week, selectedDay) => {

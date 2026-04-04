@@ -5,17 +5,17 @@ import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
   title: string;
-  subtitle: string;
+  subtitle?: string;
 };
 
 export default function PantryEmptyState({ title, subtitle }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.iconWrap}>
-        <Feather name="package" size={18} color={colors.muted} />
+        <Feather name="package" size={20} color={colors.muted} />
       </View>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );
 }

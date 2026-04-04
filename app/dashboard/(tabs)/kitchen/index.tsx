@@ -6,7 +6,6 @@ import PantrySearchBar from "@/components/dashboard/kitchen/PantrySearchBar";
 import { KitchenScreenHeader } from "@/components/dashboard/shared";
 import HapticPressable from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
-import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import { useKitchenState } from "@/stores/kitchenStore";
 import { Feather } from "@expo/vector-icons";
@@ -15,7 +14,6 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -30,7 +28,6 @@ export default function KitchenScreen() {
     selectedStatus,
     filtersOpen,
     refreshing,
-    storageLocationsQuery,
     inventoryQuery,
     locationFilters,
     statusOptions,
@@ -47,6 +44,9 @@ export default function KitchenScreen() {
     toggleLocation,
     clearFilters,
   } = useKitchenState();
+  const hasQuery = query.trim().length > 0;
+  const hasActiveFilters = activeFilterCount > 0;
+  const showTrueEmptyState = !isInventoryLoading && !hasQuery && !hasActiveFilters && items.length === 0;
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -91,27 +91,9 @@ export default function KitchenScreen() {
               onChangeText={setQuery}
               placeholder={t("dashboard.kitchen.searchPlaceholder")}
               activeFilterCount={activeFilterCount}
+              disabled={showTrueEmptyState}
               onOpenFilters={openFilters}
             />
-
-            {storageLocationsQuery.isLoading ? (
-              <View style={styles.locationsStatusRow}>
-                <ActivityIndicator size="small" color={colors.brand} />
-                <Text style={styles.locationsStatusText}>{t("storage.loading")}</Text>
-              </View>
-            ) : null}
-
-            {storageLocationsQuery.isError ? (
-              <View style={styles.locationsStatusRow}>
-                <Text style={styles.locationsStatusText}>{t("storage.errorSubtitle")}</Text>
-              </View>
-            ) : null}
-
-            {inventoryQuery.isError ? (
-              <View style={styles.locationsStatusRow}>
-                <Text style={styles.locationsStatusText}>{t("dashboard.kitchen.error")}</Text>
-              </View>
-            ) : null}
           </>
         }
         ListEmptyComponent={
@@ -119,8 +101,12 @@ export default function KitchenScreen() {
             <KitchenItemsSkeleton />
           ) : (
             <PantryEmptyState
-              title={t("dashboard.kitchen.empty.title")}
-              subtitle={t("dashboard.kitchen.empty.subtitle")}
+              title={
+                showTrueEmptyState
+                  ? t("dashboard.kitchen.empty.noItems")
+                  : t("dashboard.kitchen.empty.title")
+              }
+              subtitle={showTrueEmptyState ? undefined : t("dashboard.kitchen.empty.subtitle")}
             />
           )
         }
@@ -175,20 +161,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.brand,
     marginTop: 4,
-  },
-  locationsStatusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: -4,
-    marginBottom: 18,
-  },
-  locationsStatusText: {
-    flex: 1,
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    lineHeight: 18,
-    color: colors.muted,
   },
   itemSeparator: {
     height: 12,

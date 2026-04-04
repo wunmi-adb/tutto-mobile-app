@@ -504,6 +504,7 @@ const de = {
   "dashboard.kitchen.usedUp": "Used up",
   "dashboard.kitchen.emptyFinished.ingredient": "Fuege eine neue Charge hinzu oder entferne diesen Artikel",
   "dashboard.kitchen.emptyFinished.cooked": "Fuege eine neue Portion hinzu oder entferne diesen Artikel",
+  "dashboard.kitchen.empty.noItems": "No items in this location",
   "dashboard.kitchen.empty.title": "No matching items",
   "dashboard.kitchen.empty.subtitle":
     "Try another search or clear some filters to see more of your kitchen.",

@@ -497,6 +497,7 @@ const en = {
   "dashboard.kitchen.usedUp": "Used up",
   "dashboard.kitchen.emptyFinished.ingredient": "Add a new batch or remove this item",
   "dashboard.kitchen.emptyFinished.cooked": "Add a new portion or remove this item",
+  "dashboard.kitchen.empty.noItems": "No items in this location",
   "dashboard.kitchen.empty.title": "No matching items",
   "dashboard.kitchen.empty.subtitle":
     "Try another search or clear some filters to see more of your kitchen.",

@@ -504,6 +504,7 @@ const tr = {
   "dashboard.kitchen.usedUp": "Used up",
   "dashboard.kitchen.emptyFinished.ingredient": "Yeni bir parti ekle veya bu urunu kaldir",
   "dashboard.kitchen.emptyFinished.cooked": "Yeni bir porsiyon ekle veya bu urunu kaldir",
+  "dashboard.kitchen.empty.noItems": "No items in this location",
   "dashboard.kitchen.empty.title": "No matching items",
   "dashboard.kitchen.empty.subtitle":
     "Try another search or clear some filters to see more of your kitchen.",

@@ -10,6 +10,7 @@ type Props = {
   placeholder: string;
   activeFilterCount: number;
   onOpenFilters: () => void;
+  disabled?: boolean;
 };
 
 export default function PantrySearchBar({
@@ -18,21 +19,27 @@ export default function PantrySearchBar({
   placeholder,
   activeFilterCount,
   onOpenFilters,
+  disabled = false,
 }: Props) {
   return (
     <View style={styles.row}>
-      <View style={styles.searchBox}>
+      <View style={[styles.searchBox, disabled && styles.disabledControl]}>
         <Feather name="search" size={16} color={colors.muted} />
         <TextInput
           value={value}
           onChangeText={onChangeText}
+          editable={!disabled}
           placeholder={placeholder}
           placeholderTextColor={colors.muted}
           style={styles.input}
         />
       </View>
 
-      <HapticPressable style={styles.filterButton} onPress={onOpenFilters}>
+      <HapticPressable
+        style={[styles.filterButton, disabled && styles.disabledControl]}
+        disabled={disabled}
+        onPress={onOpenFilters}
+      >
         <View style={styles.filterIconWrap}>
           <Feather name="sliders" size={16} color={colors.text} />
         </View>
@@ -63,6 +70,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     backgroundColor: colors.background,
+  },
+  disabledControl: {
+    opacity: 0.55,
   },
   input: {
     flex: 1,

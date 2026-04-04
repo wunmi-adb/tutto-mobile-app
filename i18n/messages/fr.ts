@@ -505,6 +505,7 @@ const fr = {
   "dashboard.kitchen.usedUp": "Used up",
   "dashboard.kitchen.emptyFinished.ingredient": "Ajoutez un nouveau lot ou supprimez cet article",
   "dashboard.kitchen.emptyFinished.cooked": "Ajoutez une nouvelle portion ou supprimez cet article",
+  "dashboard.kitchen.empty.noItems": "No items in this location",
   "dashboard.kitchen.empty.title": "No matching items",
   "dashboard.kitchen.empty.subtitle":
     "Try another search or clear some filters to see more of your kitchen.",
