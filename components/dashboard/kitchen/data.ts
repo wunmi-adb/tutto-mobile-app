@@ -31,7 +31,7 @@ export const MOCK_PANTRY_ITEMS: PantryItem[] = [
   {
     id: "4",
     name: "Jollof Rice",
-    type: "cooked",
+    type: "cooked_meal",
     location: "Fridge",
     countAsUnits: false,
     batches: [
@@ -88,7 +88,7 @@ export const MOCK_PANTRY_ITEMS: PantryItem[] = [
   {
     id: "10",
     name: "Stew",
-    type: "cooked",
+    type: "cooked_meal",
     location: "Freezer",
     countAsUnits: false,
     batches: [

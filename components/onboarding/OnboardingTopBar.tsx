@@ -5,12 +5,14 @@ import { StyleSheet, View } from "react-native";
 
 type OnboardingTopBarProps = {
   showLogo?: boolean;
+  showLanguageSelector?: boolean;
   leftAccessory?: ReactNode;
   rightAccessory?: ReactNode;
 };
 
 export default function OnboardingTopBar({
   showLogo = false,
+  showLanguageSelector = true,
   leftAccessory,
   rightAccessory,
 }: OnboardingTopBarProps) {
@@ -21,14 +23,14 @@ export default function OnboardingTopBar({
       {showLogo ? (
         <View style={styles.brandRow}>
           <TuttoLogo width={88} height={24} />
-          <LanguageSelector />
+          {showLanguageSelector ? <LanguageSelector /> : <View style={styles.languageSpacer} />}
         </View>
       ) : (
         <View style={[styles.controlsRow, styles.controlsRowCompact]}>
           <View style={styles.accessory}>{leftAccessory}</View>
           <View style={styles.rightControls}>
             {rightAccessory ? <View style={styles.rightAccessory}>{rightAccessory}</View> : null}
-            <LanguageSelector />
+            {showLanguageSelector ? <LanguageSelector /> : null}
           </View>
         </View>
       )}
@@ -79,5 +81,9 @@ const styles = StyleSheet.create({
     minWidth: 36,
     alignItems: "flex-end",
     justifyContent: "center",
+  },
+  languageSpacer: {
+    width: 36,
+    height: 36,
   },
 });

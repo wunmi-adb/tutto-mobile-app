@@ -1,6 +1,6 @@
 import type { FillLevel, ItemType } from "@/components/items/add-item/types";
 
-export type PantryStatusFilter = "all" | "expiring" | "low" | "finished";
+export type PantryStatusFilter = "expiring" | "low" | "finished";
 
 export type PantryBatch = {
   id: number;
@@ -17,6 +17,7 @@ export type PantryItem = {
   name: string;
   type: ItemType;
   location: string;
+  storageLocationKey?: string;
   countAsUnits: boolean;
   batches: PantryBatch[];
 };

@@ -109,7 +109,9 @@ export default function Processing() {
                 status,
               });
               setCaptureErrorMessage(
-                isTranslationKey(status.error_key) ? t(status.error_key) : null,
+                isTranslationKey(status.error_key)
+                  ? t(status.error_key)
+                  : t("inventory.item_capture.failed"),
               );
               return;
             }
@@ -179,5 +181,5 @@ export default function Processing() {
     );
   }
 
-  return <ProcessingOverlay />;
+  return <ProcessingOverlay subtitle={t("addItems.processing.subtitle")} />;
 }

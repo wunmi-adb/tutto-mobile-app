@@ -81,6 +81,14 @@ export default function NotificationsScreen() {
     await Linking.openSettings();
   };
 
+  let buttonTitle = t("notifications.cta.default");
+
+  if (requesting) {
+    buttonTitle = t("notifications.cta.requesting");
+  } else if (permissionGranted) {
+    buttonTitle = t("notifications.cta.enabled");
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
@@ -98,13 +106,7 @@ export default function NotificationsScreen() {
 
       <View style={styles.footer}>
         <Button
-          title={
-            requesting
-              ? t("notifications.cta.requesting")
-              : permissionGranted
-                ? t("notifications.cta.enabled")
-                : t("notifications.cta.default")
-          }
+          title={buttonTitle}
           onPress={handleEnableNotifications}
           disabled={requesting || permissionGranted}
         />

@@ -55,6 +55,16 @@ export function getDeviceLocaleTag() {
   return APP_LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE];
 }
 
+export function getDeviceTimezone() {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  if (timezone) {
+    return timezone;
+  }
+
+  return "Europe/London";
+}
+
 export function getDeviceRegionCode() {
   const deviceLocale = getLocales()[0];
   const directRegionCode = deviceLocale?.regionCode?.toUpperCase();

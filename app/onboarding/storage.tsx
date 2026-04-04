@@ -11,7 +11,7 @@ import { useI18n } from "@/i18n";
 import { useCreateStorageLocation, useStorageLocations } from "@/lib/api/storage-locations";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -102,9 +102,125 @@ export default function Storage() {
     }
   };
 
+  let content: ReactNode;
+
+  if (shouldShowInitialLoading) {
+    content = (
+      <View style={styles.loadingState}>
+        <ActivityIndicator size="small" color={colors.text} />
+        <Text style={styles.loadingText}>{t("storage.loading")}</Text>
+      </View>
+    );
+  } else if (storageLocationsQuery.isError) {
+    content = (
+      <View style={styles.errorState}>
+        <Text style={styles.title}>{t("storage.errorTitle")}</Text>
+        <Text style={styles.subtitle}>{t("storage.errorSubtitle")}</Text>
+        <Button
+          title={t("storage.retry")}
+          onPress={() => {
+            void storageLocationsQuery.refetch();
+          }}
+          style={styles.retryButton}
+        />
+      </View>
+    );
+  } else if (isFirstTime || isAddingNew) {
+    const titleKey = isAddingNew ? "storage.addNew.title" : "storage.firstTime.title";
+    const subtitleKey = isAddingNew ? "storage.addNew.subtitle" : "storage.firstTime.subtitle";
+
+    content = (
+      <>
+        <View style={styles.headingBlock}>
+          <Text style={styles.title}>{t(titleKey)}</Text>
+          <Text style={styles.subtitle}>{t(subtitleKey)}</Text>
+        </View>
+
+        <Input
+          label={t("storage.customLabel")}
+          value={newName}
+          onChangeText={setNewName}
+          placeholder={t("storage.customPlaceholder")}
+          autoFocus={isAddingNew}
+          containerStyle={styles.customInput}
+        />
+
+        {isFirstTime && (
+          <>
+            <Text style={styles.suggestionsLabel}>{t("storage.suggestionsLabel")}</Text>
+            <View style={styles.suggestions}>
+              {SUGGESTED_LOCATIONS.map((location) => {
+                const label = t(location.key);
+                const active = newName.trim() === label;
+
+                return (
+                  <HapticPressable
+                    key={location.id}
+                    style={[styles.suggestionChip, active && styles.suggestionChipActive]}
+                    pressedOpacity={0.7}
+                    onPress={() => setNewName(label)}
+                  >
+                    <Text style={[styles.suggestionText, active && styles.suggestionTextActive]}>
+                      {label}
+                    </Text>
+                  </HapticPressable>
+                );
+              })}
+            </View>
+
+            <View style={styles.infoCard}>
+              <Feather name="map-pin" size={16} color={colors.muted} />
+              <View style={styles.infoCopy}>
+                <Text style={styles.infoTitle}>{t("storage.howItWorks.title")}</Text>
+                <Text style={styles.infoBody}>{t("storage.howItWorks.body")}</Text>
+              </View>
+            </View>
+          </>
+        )}
+      </>
+    );
+  } else {
+    content = (
+      <>
+        <View style={styles.headingBlock}>
+          <Text style={styles.title}>{t("storage.pickExisting.title")}</Text>
+          <Text style={styles.subtitle}>{t("storage.pickExisting.subtitle")}</Text>
+        </View>
+
+        <View style={styles.list}>
+          {storageLocations.map((location) => (
+            <SelectableRow
+              key={location.key}
+              label={location.name}
+              selected={selectedKey === location.key}
+              onPress={() => setSelectedKey(location.key)}
+              variant="radio"
+            />
+          ))}
+
+          <HapticPressable
+            style={styles.newLocationRow}
+            pressedOpacity={0.7}
+            onPress={() => {
+              setIsAddingNew(true);
+              setSelectedKey(null);
+              setNewName("");
+            }}
+          >
+            <Feather name="plus" size={16} color={colors.muted} />
+            <Text style={styles.newLocationText}>{t("storage.newLocation")}</Text>
+          </HapticPressable>
+        </View>
+      </>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar leftAccessory={showBackButton ? <BackButton onPress={handleBackPress} /> : undefined} />
+      <OnboardingTopBar
+        leftAccessory={showBackButton ? <BackButton onPress={handleBackPress} /> : undefined}
+        showLanguageSelector={!isPantryFlow}
+      />
 
       <KeyboardAvoidingContainer style={styles.keyboard}>
         <ScrollView
@@ -113,109 +229,7 @@ export default function Storage() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {shouldShowInitialLoading ? (
-            <View style={styles.loadingState}>
-              <ActivityIndicator size="small" color={colors.text} />
-              <Text style={styles.loadingText}>{t("storage.loading")}</Text>
-            </View>
-          ) : storageLocationsQuery.isError ? (
-            <View style={styles.errorState}>
-              <Text style={styles.title}>{t("storage.errorTitle")}</Text>
-              <Text style={styles.subtitle}>{t("storage.errorSubtitle")}</Text>
-              <Button
-                title={t("storage.retry")}
-                onPress={() => {
-                  void storageLocationsQuery.refetch();
-                }}
-                style={styles.retryButton}
-              />
-            </View>
-          ) : isFirstTime || isAddingNew ? (
-            <>
-              <View style={styles.headingBlock}>
-                <Text style={styles.title}>
-                  {isAddingNew ? t("storage.addNew.title") : t("storage.firstTime.title")}
-                </Text>
-                <Text style={styles.subtitle}>
-                  {isAddingNew ? t("storage.addNew.subtitle") : t("storage.firstTime.subtitle")}
-                </Text>
-              </View>
-
-              <Input
-                label={t("storage.customLabel")}
-                value={newName}
-                onChangeText={setNewName}
-                placeholder={t("storage.customPlaceholder")}
-                autoFocus={isAddingNew}
-                containerStyle={styles.customInput}
-              />
-
-              {isFirstTime && (
-                <>
-                  <Text style={styles.suggestionsLabel}>{t("storage.suggestionsLabel")}</Text>
-                  <View style={styles.suggestions}>
-                    {SUGGESTED_LOCATIONS.map((location) => {
-                      const label = t(location.key);
-                      const active = newName.trim() === label;
-
-                      return (
-                        <HapticPressable
-                          key={location.id}
-                          style={[styles.suggestionChip, active && styles.suggestionChipActive]}
-                          pressedOpacity={0.7}
-                          onPress={() => setNewName(label)}
-                        >
-                          <Text style={[styles.suggestionText, active && styles.suggestionTextActive]}>
-                            {label}
-                          </Text>
-                        </HapticPressable>
-                      );
-                    })}
-                  </View>
-
-                  <View style={styles.infoCard}>
-                    <Feather name="map-pin" size={16} color={colors.muted} />
-                    <View style={styles.infoCopy}>
-                      <Text style={styles.infoTitle}>{t("storage.howItWorks.title")}</Text>
-                      <Text style={styles.infoBody}>{t("storage.howItWorks.body")}</Text>
-                    </View>
-                  </View>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <View style={styles.headingBlock}>
-                <Text style={styles.title}>{t("storage.pickExisting.title")}</Text>
-                <Text style={styles.subtitle}>{t("storage.pickExisting.subtitle")}</Text>
-              </View>
-
-              <View style={styles.list}>
-                {storageLocations.map((location) => (
-                  <SelectableRow
-                    key={location.key}
-                    label={location.name}
-                    selected={selectedKey === location.key}
-                    onPress={() => setSelectedKey(location.key)}
-                    variant="radio"
-                  />
-                ))}
-
-                <HapticPressable
-                  style={styles.newLocationRow}
-                  pressedOpacity={0.7}
-                  onPress={() => {
-                    setIsAddingNew(true);
-                    setSelectedKey(null);
-                    setNewName("");
-                  }}
-                >
-                  <Feather name="plus" size={16} color={colors.muted} />
-                  <Text style={styles.newLocationText}>{t("storage.newLocation")}</Text>
-                </HapticPressable>
-              </View>
-            </>
-          )}
+          {content}
 
           <Button
             title={t("storage.cta")}

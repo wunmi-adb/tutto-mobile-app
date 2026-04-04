@@ -25,11 +25,16 @@ function getUrlParams(url: string) {
   return params;
 }
 
-export async function getGoogleAuthRedirectUrl(redirectUri: string, locale: string) {
+export async function getGoogleAuthRedirectUrl(
+  redirectUri: string,
+  locale: string,
+  timezone: string,
+) {
   const response = await apiClient.get<ApiResponse<GoogleRedirectData>>("/api/v1/auth/google", {
     params: {
       redirect_uri: redirectUri,
       locale,
+      timezone,
     },
   });
 

@@ -4,8 +4,8 @@ import { useSettingsState } from "@/components/settings/SettingsProvider";
 import { SettingsView } from "@/components/settings/types";
 import { useI18n } from "@/i18n";
 import { isTranslationKey } from "@/i18n/messages";
-import { clearLocalAppData } from "@/lib/app/reset";
-import { CURRENT_USER_QUERY_KEY, deleteCurrentUserAccount } from "@/lib/api/profile";
+import { clearAllClientState } from "@/lib/app/reset";
+import { deleteCurrentUserAccount } from "@/lib/api/profile";
 import { getApiErrorDetails } from "@/lib/api/types";
 import { useAuth } from "@/providers/AuthProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -76,8 +76,7 @@ export default function SettingsIndexScreen() {
       setShowDeleteConfirm(false);
       setDeleteEmail("");
       await clearSession();
-      await clearLocalAppData();
-      queryClient.clear();
+      await clearAllClientState(queryClient);
       router.replace("/");
     },
   });
@@ -122,7 +121,7 @@ export default function SettingsIndexScreen() {
         onConfirm={async () => {
           setShowLogoutConfirm(false);
           await clearSession();
-          queryClient.removeQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+          await clearAllClientState(queryClient);
           router.replace("/");
         }}
       />

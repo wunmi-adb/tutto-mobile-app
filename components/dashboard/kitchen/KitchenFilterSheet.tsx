@@ -22,10 +22,10 @@ type Props = {
   locationLabel: string;
   activeFilterCount: number;
   statusOptions: StatusOption[];
-  activeStatus: PantryStatusFilter;
+  activeStatus?: PantryStatusFilter;
   onSelectStatus: (key: PantryStatusFilter) => void;
   locationOptions: PantryLocationFilter[];
-  activeLocation: string;
+  activeLocation?: string;
   onSelectLocation: (key: string) => void;
   onClearAll: () => void;
 };
@@ -43,12 +43,13 @@ function FilterRow({
   active: boolean;
   onPress: () => void;
 }) {
-  const iconColor =
-    icon === "clock"
-      ? colors.danger
-      : icon === "alert-triangle"
-        ? colors.warning
-        : colors.muted;
+  let iconColor: string = colors.muted;
+
+  if (icon === "clock") {
+    iconColor = colors.danger;
+  } else if (icon === "alert-triangle") {
+    iconColor = colors.warning;
+  }
 
   return (
     <HapticPressable

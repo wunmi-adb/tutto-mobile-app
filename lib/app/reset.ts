@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { QueryClient } from "@tanstack/react-query";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
@@ -35,4 +36,10 @@ export async function clearLocalAppData() {
       await Notifications.deleteNotificationChannelAsync("default");
     } catch {}
   }
+}
+
+export async function clearAllClientState(queryClient: QueryClient) {
+  await queryClient.cancelQueries();
+  queryClient.clear();
+  await clearLocalAppData();
 }

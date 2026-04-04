@@ -34,6 +34,7 @@ export default function Detail() {
   const parsedCompleted: number[] = (() => {
     try { return completedIndices ? JSON.parse(completedIndices) : []; } catch { return []; }
   })();
+  const isPantryFlow = source === "pantry";
 
   return (
     <AddItemView
@@ -81,6 +82,11 @@ export default function Detail() {
             drafts,
             storageLocationKey: storageKey,
           });
+
+          if (isPantryFlow) {
+            router.replace("/dashboard/kitchen");
+            return;
+          }
 
           router.replace({
             pathname: "/onboarding/complete",

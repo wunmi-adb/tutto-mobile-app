@@ -54,6 +54,7 @@ export default function AddItemView({
   const [idx, setIdx] = useState(initialIndex);
   const [completed, setCompleted] = useState(new Set(initialCompleted));
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [pendingFinishedBatchId, setPendingFinishedBatchId] = useState<number | null>(null);
   const [drafts, setDrafts] = useState<ItemDraft[]>(() =>
     items.map((item) => makeItemDraftFromPrefill(item))
   );
@@ -61,6 +62,33 @@ export default function AddItemView({
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const currentDraft = drafts[idx];
+  const isEditMode = Boolean(onDelete);
+  const pendingFinishedBatch =
+    pendingFinishedBatchId == null
+      ? undefined
+      : currentDraft?.batches.find((batch) => batch.id === pendingFinishedBatchId);
+  let headerRight;
+
+  if (items.length > 1) {
+    headerRight = (
+      <View style={styles.locationBadge}>
+        <Feather name="map-pin" size={11} color={colors.muted} />
+        <Text style={styles.locationText}>{storageName}</Text>
+      </View>
+    );
+  } else if (onDelete) {
+    headerRight = (
+      <HapticPressable
+        style={styles.deleteBtn}
+        pressedOpacity={0.7}
+        onPress={() => setConfirmDeleteVisible(true)}
+      >
+        <Feather name="trash-2" size={15} color={colors.danger} />
+      </HapticPressable>
+    );
+  } else {
+    headerRight = <View style={styles.headerSpacer} />;
+  }
 
   const updateCurrentDraft = (updater: (draft: ItemDraft) => ItemDraft) => {
     setDrafts((prev) => prev.map((draft, draftIndex) => (draftIndex === idx ? updater(draft) : draft)));
@@ -136,6 +164,7 @@ export default function AddItemView({
 
   const isLast = idx === items.length - 1;
   const isIngredient = currentDraft.itemType === "ingredient";
+  const batchesEmpty = currentDraft.batches.length === 0;
   const addAnotherLabel = isIngredient
     ? t("addItems.detail.addAnotherItem", {
         name: currentDraft.name.trim() || t("addItems.detail.addAnotherItemFallback"),
@@ -182,22 +211,7 @@ export default function AddItemView({
           )}
         </View>
 
-        {items.length > 1 ? (
-          <View style={styles.locationBadge}>
-            <Feather name="map-pin" size={11} color={colors.muted} />
-            <Text style={styles.locationText}>{storageName}</Text>
-          </View>
-        ) : onDelete ? (
-          <HapticPressable
-            style={styles.deleteBtn}
-            pressedOpacity={0.7}
-            onPress={() => setConfirmDeleteVisible(true)}
-          >
-            <Feather name="trash-2" size={15} color={colors.danger} />
-          </HapticPressable>
-        ) : (
-          <View style={styles.headerSpacer} />
-        )}
+        {headerRight}
       </View>
 
       {/* Animated form content */}
@@ -234,7 +248,7 @@ export default function AddItemView({
 
           {/* Type toggle */}
           <View style={styles.typeToggle}>
-            {(["ingredient", "cooked"] as ItemType[]).map((typeOption) => (
+            {(["ingredient", "cooked_meal"] as ItemType[]).map((typeOption) => (
               <HapticPressable
                 key={typeOption}
                 style={[styles.typeBtn, currentDraft.itemType === typeOption && styles.typeBtnActive]}
@@ -312,6 +326,7 @@ export default function AddItemView({
                   isExpanded={currentDraft.expandedBatchId === batch.id}
                   isIngredient
                   countAsUnits={currentDraft.countAsUnits}
+                  isEditMode={isEditMode}
                   onToggle={() =>
                     updateCurrentDraft((draft) => ({
                       ...draft,
@@ -319,9 +334,22 @@ export default function AddItemView({
                     }))
                   }
                   onRemove={() => removeBatch(batch.id)}
+                  onMarkFinished={() => setPendingFinishedBatchId(batch.id)}
                   onUpdate={(u) => updateBatch(batch.id, u)}
                 />
               ))}
+
+              {batchesEmpty && isEditMode ? (
+                <View style={styles.finishedEmptyState}>
+                  <Feather name="check-circle" size={24} color={colors.muted + "66"} />
+                  <Text style={styles.finishedEmptyTitle}>
+                    {t("addItems.batch.finished.empty.ingredient.title")}
+                  </Text>
+                  <Text style={styles.finishedEmptySubtitle}>
+                    {t("addItems.batch.finished.empty.ingredient.subtitle")}
+                  </Text>
+                </View>
+              ) : null}
 
               <HapticPressable style={styles.addBatch} pressedOpacity={0.7} onPress={addBatch}>
                 <Feather name="plus" size={14} color={colors.muted} />
@@ -342,6 +370,7 @@ export default function AddItemView({
                   isExpanded={currentDraft.expandedBatchId === batch.id}
                   isIngredient={false}
                   countAsUnits={false}
+                  isEditMode={isEditMode}
                   onToggle={() =>
                     updateCurrentDraft((draft) => ({
                       ...draft,
@@ -349,9 +378,22 @@ export default function AddItemView({
                     }))
                   }
                   onRemove={() => removeBatch(batch.id)}
+                  onMarkFinished={() => setPendingFinishedBatchId(batch.id)}
                   onUpdate={(u) => updateBatch(batch.id, u)}
                 />
               ))}
+
+              {batchesEmpty && isEditMode ? (
+                <View style={styles.finishedEmptyState}>
+                  <Feather name="check-circle" size={24} color={colors.muted + "66"} />
+                  <Text style={styles.finishedEmptyTitle}>
+                    {t("addItems.batch.finished.empty.cooked.title")}
+                  </Text>
+                  <Text style={styles.finishedEmptySubtitle}>
+                    {t("addItems.batch.finished.empty.cooked.subtitle")}
+                  </Text>
+                </View>
+              ) : null}
 
               <HapticPressable style={styles.addBatch} pressedOpacity={0.7} onPress={addBatch}>
                 <Feather name="plus" size={14} color={colors.muted} />
@@ -388,6 +430,52 @@ export default function AddItemView({
         onConfirm={async () => {
           setConfirmDeleteVisible(false);
           await onDelete?.();
+        }}
+      />
+
+      <SettingsConfirmationSheet
+        visible={pendingFinishedBatchId != null}
+        title={t(
+          isIngredient
+            ? "addItems.batch.finished.title.ingredient"
+            : "addItems.batch.finished.title.cooked",
+        )}
+        subtitle={t(
+          isIngredient
+            ? "addItems.batch.finished.subtitle.ingredient"
+            : "addItems.batch.finished.subtitle.cooked",
+          {
+            target:
+              currentDraft.batches.length > 1
+                ? t(
+                    isIngredient
+                      ? "addItems.batch.finished.target.batch"
+                      : "addItems.batch.finished.target.portion",
+                    {
+                      index:
+                        (pendingFinishedBatch
+                          ? currentDraft.batches.findIndex((batch) => batch.id === pendingFinishedBatch.id)
+                          : -1) + 1,
+                    },
+                  )
+                : t(
+                    isIngredient
+                      ? "addItems.batch.finished.target.thisBatch"
+                      : "addItems.batch.finished.target.thisPortion",
+                  ),
+            name: currentDraft.name.trim() || t("addItems.detail.delete.fallbackName"),
+          },
+        )}
+        confirmLabel={t("addItems.batch.finished.confirm")}
+        cancelLabel={t("addItems.batch.finished.cancel")}
+        onCancel={() => setPendingFinishedBatchId(null)}
+        onConfirm={async () => {
+          if (pendingFinishedBatchId == null) {
+            return;
+          }
+
+          removeBatch(pendingFinishedBatchId);
+          setPendingFinishedBatchId(null);
         }}
       />
     </SafeAreaView>
@@ -588,5 +676,28 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 14,
     color: colors.muted,
+  },
+  finishedEmptyState: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: colors.border,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  finishedEmptyTitle: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.muted,
+  },
+  finishedEmptySubtitle: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: "center",
+    color: colors.muted + "AA",
   },
 });

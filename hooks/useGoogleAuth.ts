@@ -3,7 +3,7 @@ import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
-import { getDeviceLocaleTag } from "@/i18n/config";
+import { getDeviceLocaleTag, getDeviceTimezone } from "@/i18n/config";
 import { TranslationKey } from "@/i18n/messages";
 import { getGoogleAuthRedirectUrl, parseGoogleAuthCallback } from "@/lib/auth/google";
 import { useAuth } from "@/providers/AuthProvider";
@@ -44,9 +44,10 @@ export function useGoogleAuth({ onSuccess }: UseGoogleAuthOptions) {
     path: AUTH_CALLBACK_PATH,
   });
   const locale = getDeviceLocaleTag();
+  const timezone = getDeviceTimezone();
 
   const redirectMutation = useMutation({
-    mutationFn: () => getGoogleAuthRedirectUrl(redirectUri, locale),
+    mutationFn: () => getGoogleAuthRedirectUrl(redirectUri, locale, timezone),
     onError: () => {
       setError(t("auth.google.errors.generic"));
     },

@@ -15,11 +15,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const MEALS = [
   { id: "breakfast", labelKey: "meals.options.breakfast.label", timeKey: "meals.options.breakfast.time" },
-  { id: "brunch", labelKey: "meals.options.brunch.label", timeKey: "meals.options.brunch.time" },
   { id: "lunch", labelKey: "meals.options.lunch.label", timeKey: "meals.options.lunch.time" },
-  { id: "snacks", labelKey: "meals.options.snacks.label", timeKey: "meals.options.snacks.time" },
   { id: "dinner", labelKey: "meals.options.dinner.label", timeKey: "meals.options.dinner.time" },
-  { id: "supper", labelKey: "meals.options.supper.label", timeKey: "meals.options.supper.time" },
 ] as const;
 
 type MealId = (typeof MEALS)[number]["id"];

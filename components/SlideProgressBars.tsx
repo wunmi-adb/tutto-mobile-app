@@ -8,6 +8,21 @@ type Props = {
 };
 
 export default function SlideProgressBars({ count, current, progress }: Props) {
+  const getFillWidth = (index: number) => {
+    if (index < current) {
+      return "100%";
+    }
+
+    if (index === current) {
+      return progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: ["0%", "100%"],
+      });
+    }
+
+    return "0%";
+  };
+
   return (
     <View style={styles.row}>
       {Array.from({ length: count }).map((_, i) => (
@@ -16,15 +31,7 @@ export default function SlideProgressBars({ count, current, progress }: Props) {
             style={[
               styles.fill,
               {
-                width:
-                  i < current
-                    ? "100%"
-                    : i === current
-                      ? progress.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ["0%", "100%"],
-                        })
-                      : "0%",
+                width: getFillWidth(i),
               },
             ]}
           />

@@ -7,7 +7,6 @@ import {
   isItemExpiringSoon,
   isItemFinished,
   isItemRunningLow,
-  normalizeKitchenLocation,
 } from "@/components/dashboard/kitchen/helpers";
 import type {
   PantryItem,
@@ -35,6 +34,22 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+function getKitchenSummaryKey(itemCount: number, locationCount: number) {
+  if (itemCount === 1 && locationCount === 1) {
+    return "dashboard.kitchen.summary.singleItemSingleLocation" as const;
+  }
+
+  if (itemCount === 1) {
+    return "dashboard.kitchen.summary.singleItemMultipleLocations" as const;
+  }
+
+  if (locationCount === 1) {
+    return "dashboard.kitchen.summary.multipleItemsSingleLocation" as const;
+  }
+
+  return "dashboard.kitchen.summary.multipleItemsMultipleLocations" as const;
+}
+
 export default function KitchenScreen() {
   const router = useRouter();
   const { t } = useI18n();
@@ -43,8 +58,8 @@ export default function KitchenScreen() {
   const [items, setItems] = useState<PantryItem[]>([]);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState<PantryStatusFilter>("all");
+  const [selectedLocation, setSelectedLocation] = useState<string | undefined>();
+  const [selectedStatus, setSelectedStatus] = useState<PantryStatusFilter | undefined>();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,7 +74,7 @@ export default function KitchenScreen() {
   const inventoryQuery = useInfiniteInventoryItems({
     search: debouncedQuery,
     status: selectedStatus,
-    storageLocationKey: selectedLocation === "all" ? undefined : selectedLocation,
+    storageLocationKey: selectedLocation,
   });
 
   const fetchedItems = useMemo(
@@ -88,42 +103,50 @@ export default function KitchenScreen() {
   }, [fetchedItems]);
 
   const locationFilters = useMemo<PantryLocationFilter[]>(() => {
-    const locationLabels = Array.from(
-      new Set([
-        ...items.map((item) => item.location),
-        ...(storageLocationsQuery.data ?? []).map((location) => location.name),
-      ]),
-    );
+    const storageLocations = storageLocationsQuery.data ?? [];
+    const usedStorageLocationKeys = new Set<string>();
+
+    const storageLocationOptions = storageLocations.map((location) => {
+      usedStorageLocationKeys.add(location.key);
+
+      return {
+        key: location.key,
+        label: location.name,
+        count: items.filter((item) => item.storageLocationKey === location.key).length,
+      };
+    });
+
+    const orphanedLocationOptions = items
+      .filter((item) => item.storageLocationKey && !usedStorageLocationKeys.has(item.storageLocationKey))
+      .reduce<PantryLocationFilter[]>((acc, item) => {
+        if (!item.storageLocationKey || acc.some((option) => option.key === item.storageLocationKey)) {
+          return acc;
+        }
+
+        acc.push({
+          key: item.storageLocationKey,
+          label: item.location,
+          count: items.filter((candidate) => candidate.storageLocationKey === item.storageLocationKey)
+            .length,
+        });
+
+        return acc;
+      }, []);
 
     return [
-      {
-        key: "all",
-        label: t("kitchen.locations.all"),
-        count: items.length,
-      },
-      ...locationLabels.map((label) => ({
-        key: normalizeKitchenLocation(label),
-        label,
-        count: items.filter(
-          (item) => normalizeKitchenLocation(item.location) === normalizeKitchenLocation(label),
-        ).length,
-      })),
+      ...storageLocationOptions,
+      ...orphanedLocationOptions,
     ];
-  }, [items, storageLocationsQuery.data, t]);
+  }, [items, storageLocationsQuery.data]);
 
   useEffect(() => {
-    if (!locationFilters.some((location) => location.key === selectedLocation)) {
-      setSelectedLocation("all");
+    if (selectedLocation && !locationFilters.some((location) => location.key === selectedLocation)) {
+      setSelectedLocation(undefined);
     }
   }, [locationFilters, selectedLocation]);
 
   const statusOptions = useMemo(
     () => [
-      {
-        key: "all" as const,
-        label: t("dashboard.kitchen.status.allItems"),
-        count: items.length,
-      },
       {
         key: "expiring" as const,
         label: t("dashboard.kitchen.status.expiringSoon"),
@@ -146,8 +169,7 @@ export default function KitchenScreen() {
     [items, t],
   );
 
-  const activeFilterCount =
-    (selectedLocation !== "all" ? 1 : 0) + (selectedStatus !== "all" ? 1 : 0);
+  const activeFilterCount = (selectedLocation ? 1 : 0) + (selectedStatus ? 1 : 0);
 
   const handleAddItem = () => {
     router.push({
@@ -157,10 +179,13 @@ export default function KitchenScreen() {
   };
 
   const handleEditItem = (item: PantryItem, prefill: CapturedInventoryItem) => {
-    const matchedLocation = (storageLocationsQuery.data ?? []).find(
-      (location) =>
-        normalizeKitchenLocation(location.name) === normalizeKitchenLocation(item.location),
-    );
+    const matchedLocation = (storageLocationsQuery.data ?? []).find((location) => {
+      if (item.storageLocationKey) {
+        return location.key === item.storageLocationKey;
+      }
+
+      return location.name === item.location;
+    });
 
     if (!matchedLocation) {
       handleAddItem();
@@ -198,6 +223,7 @@ export default function KitchenScreen() {
   };
 
   const isInventoryLoading = inventoryQuery.isPending;
+  const summaryKey = getKitchenSummaryKey(items.length, locationFilters.length);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -226,9 +252,9 @@ export default function KitchenScreen() {
           <>
             <KitchenScreenHeader
               title={t("dashboard.kitchen.title")}
-              subtitle={t("dashboard.kitchen.summary", {
+              subtitle={t(summaryKey, {
                 count: items.length,
-                locations: Math.max(locationFilters.length - 1, 0),
+                locations: locationFilters.length,
               })}
               rightAction={
                 <HapticPressable style={styles.addButton} onPress={handleAddItem}>
@@ -297,13 +323,13 @@ export default function KitchenScreen() {
         activeFilterCount={activeFilterCount}
         statusOptions={statusOptions}
         activeStatus={selectedStatus}
-        onSelectStatus={setSelectedStatus}
+        onSelectStatus={(key) => setSelectedStatus((current) => (current === key ? undefined : key))}
         locationOptions={locationFilters}
         activeLocation={selectedLocation}
-        onSelectLocation={setSelectedLocation}
+        onSelectLocation={(key) => setSelectedLocation((current) => (current === key ? undefined : key))}
         onClearAll={() => {
-          setSelectedLocation("all");
-          setSelectedStatus("all");
+          setSelectedLocation(undefined);
+          setSelectedStatus(undefined);
         }}
       />
     </SafeAreaView>

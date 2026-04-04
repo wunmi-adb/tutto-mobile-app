@@ -32,13 +32,25 @@ export default function Input({ label, variant = "default", containerStyle, styl
   return (
     <View style={containerStyle}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <Animated.View style={[styles.inputWrapper, { borderColor }]}>
+      <Animated.View
+        style={[
+          styles.inputWrapper,
+          props.multiline ? styles.inputWrapperMultiline : styles.inputWrapperSingleLine,
+          { borderColor },
+        ]}
+      >
         <TextInput
           {...props}
-          style={[styles.input, variant === "code" && styles.inputCode, style]}
+          style={[
+            styles.input,
+            props.multiline ? styles.inputMultiline : styles.inputSingleLine,
+            variant === "code" && styles.inputCode,
+            style,
+          ]}
           placeholderTextColor={colors.muted + "80"}
           selectionColor={colors.text}
           cursorColor={colors.text}
+          textAlignVertical={props.multiline ? "top" : "center"}
           onFocus={handleFocus}
           onBlur={handleBlur}
         />
@@ -60,6 +72,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
+  },
+  inputWrapperSingleLine: {
+    minHeight: 52,
+    justifyContent: "center",
+    paddingVertical: 0,
+  },
+  inputWrapperMultiline: {
     paddingVertical: 14,
   },
   input: {
@@ -67,6 +86,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
     padding: 0,
+  },
+  inputSingleLine: {
+    height: 20,
+    includeFontPadding: false,
+  },
+  inputMultiline: {
+    minHeight: 96,
+    lineHeight: 20,
+    includeFontPadding: false,
   },
   inputCode: {
     textAlign: "center",

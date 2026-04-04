@@ -22,8 +22,11 @@ type Props = {
 };
 
 const JAR_HEIGHT = 96;
+const TRACK_HEIGHT = 6;
+const TOUCH_TARGET_HEIGHT = 44;
 const THUMB_SIZE = 24;
 const ANIMATION_DURATION = 220;
+const MIN_PROGRESS = 0.05;
 
 const DEFAULT_OPTIONS = INGREDIENT_FILL_OPTIONS.map((option) => ({
   ...option,
@@ -34,21 +37,21 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function indexToProgress(index: number, optionCount: number) {
-  if (optionCount <= 1) {
-    return 1;
-  }
-
-  return (optionCount - 1 - index) / (optionCount - 1);
+function fillLevelToProgress(level: FillLevel, options: FillOption[]): number {
+  const option = options.find((o) => o.key === level);
+  return option ? option.percent / 100 : 1;
 }
 
-function progressToIndex(progress: number, optionCount: number) {
-  if (optionCount <= 1) {
-    return 0;
+// Options are sorted highest percent → lowest. Uses midpoints between adjacent
+// options as zone boundaries so the user's exact thumb position determines the level.
+function progressToFillLevel(progress: number, options: FillOption[]): FillLevel {
+  for (let i = 0; i < options.length - 1; i++) {
+    const midpoint = (options[i].percent + options[i + 1].percent) / 200;
+    if (progress >= midpoint) {
+      return options[i].key;
+    }
   }
-
-  const rawIndex = Math.round((1 - progress) * (optionCount - 1));
-  return clamp(rawIndex, 0, optionCount - 1);
+  return options[options.length - 1].key;
 }
 
 function getProgressColor(progress: number) {
@@ -89,22 +92,25 @@ function getThumbBorder(progress: number) {
 
 export default function FillGauge({ level, onChange, options = DEFAULT_OPTIONS }: Props) {
   const reducedMotion = useReducedMotion();
-  const optionCount = options.length;
-  const currentIndex = Math.max(0, options.findIndex((option) => option.key === level));
-  const [previewIndex, setPreviewIndex] = useState(currentIndex);
+  const [liveProgress, setLiveProgress] = useState(() => fillLevelToProgress(level, options));
   const [trackWidth, setTrackWidth] = useState(0);
 
-  const current = options[previewIndex] ?? options[0];
-  const emptyLabel = options[optionCount - 1]?.label ?? "";
-  const fullLabel = options[0]?.label ?? "";
-
-  const progressAnim = useRef(new Animated.Value(indexToProgress(currentIndex, optionCount))).current;
-  const committedIndexRef = useRef(currentIndex);
+  const progressAnim = useRef(
+    new Animated.Value(fillLevelToProgress(level, options)),
+  ).current;
+  const liveProgressRef = useRef(liveProgress);
+  const committedLevelRef = useRef(level);
+  const grabOffsetRef = useRef(0);
 
   useEffect(() => {
-    const nextProgress = indexToProgress(currentIndex, optionCount);
-    committedIndexRef.current = currentIndex;
-    setPreviewIndex(currentIndex);
+    // Skip animation if this level change came from our own onChange call —
+    // the thumb is already in the correct position.
+    if (level === committedLevelRef.current) return;
+
+    const nextProgress = fillLevelToProgress(level, options);
+    committedLevelRef.current = level;
+    setLiveProgress(nextProgress);
+    liveProgressRef.current = nextProgress;
 
     if (reducedMotion) {
       progressAnim.setValue(nextProgress);
@@ -117,44 +123,22 @@ export default function FillGauge({ level, onChange, options = DEFAULT_OPTIONS }
       easing: Easing.bezier(0.22, 1, 0.36, 1),
       useNativeDriver: false,
     }).start();
-  }, [currentIndex, optionCount, progressAnim, reducedMotion]);
+  }, [level, options, progressAnim, reducedMotion]);
 
-  const moveToPoint = (locationX: number) => {
-    if (trackWidth <= 0) {
-      return currentIndex;
-    }
+  const updateProgress = (locationX: number) => {
+    if (trackWidth <= 0) return;
 
-    const normalized = clamp((locationX - THUMB_SIZE / 2) / trackWidth, 0, 1);
-    const nextIndex = progressToIndex(normalized, optionCount);
+    const raw = (locationX - THUMB_SIZE / 2) / trackWidth;
+    const progress = clamp(raw, MIN_PROGRESS, 1);
 
-    progressAnim.setValue(normalized);
+    progressAnim.setValue(progress);
+    setLiveProgress(progress);
+    liveProgressRef.current = progress;
 
-    if (nextIndex !== previewIndex) {
-      setPreviewIndex(nextIndex);
-    }
-
-    return nextIndex;
-  };
-
-  const settleAtIndex = (nextIndex: number) => {
-    const nextProgress = indexToProgress(nextIndex, optionCount);
-
-    if (reducedMotion) {
-      progressAnim.setValue(nextProgress);
-    } else {
-      Animated.timing(progressAnim, {
-        toValue: nextProgress,
-        duration: 180,
-        easing: Easing.bezier(0.22, 1, 0.36, 1),
-        useNativeDriver: false,
-      }).start();
-    }
-
-    setPreviewIndex(nextIndex);
-
-    if (nextIndex !== committedIndexRef.current && options[nextIndex]) {
-      committedIndexRef.current = nextIndex;
-      onChange(options[nextIndex].key);
+    const newLevel = progressToFillLevel(progress, options);
+    if (newLevel !== committedLevelRef.current) {
+      committedLevelRef.current = newLevel;
+      onChange(newLevel);
     }
   };
 
@@ -162,27 +146,39 @@ export default function FillGauge({ level, onChange, options = DEFAULT_OPTIONS }
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: (event) => {
-      moveToPoint(event.nativeEvent.locationX);
+      const { locationX } = event.nativeEvent;
+      // Thumb center in trackShell coords = left padding + progress * trackWidth
+      const thumbCenterX = THUMB_SIZE / 2 + liveProgressRef.current * trackWidth;
+      const distFromThumb = Math.abs(locationX - thumbCenterX);
+      // If the finger lands on or near the thumb, preserve the offset so it
+      // doesn't jump. If it's a deliberate tap elsewhere, jump normally.
+      grabOffsetRef.current = distFromThumb <= THUMB_SIZE * 1.5 ? thumbCenterX - locationX : 0;
+      updateProgress(locationX + grabOffsetRef.current);
     },
     onPanResponderMove: (event) => {
-      moveToPoint(event.nativeEvent.locationX);
+      updateProgress(event.nativeEvent.locationX + grabOffsetRef.current);
     },
     onPanResponderRelease: (event) => {
-      settleAtIndex(moveToPoint(event.nativeEvent.locationX));
+      updateProgress(event.nativeEvent.locationX + grabOffsetRef.current);
     },
     onPanResponderTerminate: () => {
-      settleAtIndex(previewIndex);
+      // Touch was stolen — stay at current position, no snap.
     },
+    onPanResponderTerminationRequest: () => false,
   });
 
   const handleTrackLayout = (event: LayoutChangeEvent) => {
     setTrackWidth(Math.max(0, event.nativeEvent.layout.width - THUMB_SIZE));
   };
 
-  const currentProgress = indexToProgress(previewIndex, optionCount);
-  const jarColor = getProgressColor(currentProgress);
-  const thumbColor = getThumbFill(currentProgress);
-  const thumbBorder = getThumbBorder(currentProgress);
+  const currentLevel = progressToFillLevel(liveProgress, options);
+  const current = options.find((o) => o.key === currentLevel) ?? options[0];
+  const emptyLabel = options[options.length - 1]?.label ?? "";
+  const fullLabel = options[0]?.label ?? "";
+
+  const jarColor = getProgressColor(liveProgress);
+  const thumbColor = getThumbFill(liveProgress);
+  const thumbBorder = getThumbBorder(liveProgress);
 
   const fillHeight = progressAnim.interpolate({
     inputRange: [0, 1],
@@ -220,7 +216,6 @@ export default function FillGauge({ level, onChange, options = DEFAULT_OPTIONS }
 
         <View style={styles.copy}>
           <Text style={styles.valueLabel}>{current.label}</Text>
-          <Text style={styles.valuePercent}>{current.percent}%</Text>
         </View>
       </View>
 
@@ -239,7 +234,6 @@ export default function FillGauge({ level, onChange, options = DEFAULT_OPTIONS }
               },
             ]}
           />
-
           <View style={styles.dragLayer} {...panResponder.panHandlers} />
           <Animated.View
             pointerEvents="none"
@@ -323,19 +317,12 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: colors.text,
   },
-  valuePercent: {
-    marginTop: 4,
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    lineHeight: 16,
-    color: colors.muted,
-  },
   sliderArea: {
     paddingTop: 2,
   },
   trackShell: {
     position: "relative",
-    height: THUMB_SIZE,
+    height: TOUCH_TARGET_HEIGHT,
     justifyContent: "center",
     paddingHorizontal: THUMB_SIZE / 2,
   },
@@ -343,8 +330,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: THUMB_SIZE / 2,
     right: "66%",
-    top: 9,
-    height: 6,
+    top: (TOUCH_TARGET_HEIGHT - TRACK_HEIGHT) / 2,
+    height: TRACK_HEIGHT,
     borderTopLeftRadius: 999,
     borderBottomLeftRadius: 999,
     backgroundColor: "#f6d4cf",
@@ -353,16 +340,16 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: "33%",
     right: "33%",
-    top: 9,
-    height: 6,
+    top: (TOUCH_TARGET_HEIGHT - TRACK_HEIGHT) / 2,
+    height: TRACK_HEIGHT,
     backgroundColor: "#f3e1b0",
   },
   trackSegmentSuccess: {
     position: "absolute",
     left: "66%",
     right: THUMB_SIZE / 2,
-    top: 9,
-    height: 6,
+    top: (TOUCH_TARGET_HEIGHT - TRACK_HEIGHT) / 2,
+    height: TRACK_HEIGHT,
     borderTopRightRadius: 999,
     borderBottomRightRadius: 999,
     backgroundColor: "#d2eadb",
@@ -370,8 +357,8 @@ const styles = StyleSheet.create({
   activeTrack: {
     position: "absolute",
     left: THUMB_SIZE / 2,
-    top: 9,
-    height: 6,
+    top: (TOUCH_TARGET_HEIGHT - TRACK_HEIGHT) / 2,
+    height: TRACK_HEIGHT,
     borderRadius: 999,
   },
   dragLayer: {
@@ -379,7 +366,7 @@ const styles = StyleSheet.create({
   },
   thumb: {
     position: "absolute",
-    top: 0,
+    top: (TOUCH_TARGET_HEIGHT - THUMB_SIZE) / 2,
     left: 0,
     width: THUMB_SIZE,
     height: THUMB_SIZE,

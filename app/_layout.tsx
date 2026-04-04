@@ -24,7 +24,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/instrument-serif";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Href, Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -105,26 +105,39 @@ function RootNavigator({
       (storedCurrentUser !== undefined &&
         !currentUserQuery.isPending));
   const shouldRedirectAuthenticatedRoot = requiresSessionResolution && !!resolvedCurrentUser;
-  const redirectHref =
-    shouldRedirectAuthenticatedRoot && resolvedEntryRoute ? resolvedEntryRoute : null;
   const [storageRedirectReady, setStorageRedirectReady] = useState(false);
+  const [shouldResumeAtStorage, setShouldResumeAtStorage] = useState(false);
   const lastRedirectRef = useRef<string | null>(null);
+  const needsStorageResumeResolution =
+    shouldRedirectAuthenticatedRoot && resolvedEntryRoute !== null && resolvedEntryRoute !== "/dashboard";
 
   useEffect(() => {
     let cancelled = false;
 
     const prepareStorageRedirect = async () => {
-      if (!shouldRedirectAuthenticatedRoot || resolvedEntryRoute !== "/onboarding/storage") {
+      if (
+        !shouldRedirectAuthenticatedRoot ||
+        !resolvedCurrentUser ||
+        resolvedEntryRoute === "/dashboard"
+      ) {
         if (!cancelled) {
           setStorageRedirectReady(false);
+          setShouldResumeAtStorage(false);
         }
         return;
       }
 
       try {
-        await prefetchStorageLocations(queryClient);
+        const storageLocations = await prefetchStorageLocations(queryClient);
+
+        if (!cancelled) {
+          setShouldResumeAtStorage(storageLocations.length > 0);
+        }
       } catch {
         // Let the storage screen handle query errors if prefetch fails.
+        if (!cancelled) {
+          setShouldResumeAtStorage(false);
+        }
       } finally {
         if (!cancelled) {
           setStorageRedirectReady(true);
@@ -137,7 +150,13 @@ function RootNavigator({
     return () => {
       cancelled = true;
     };
-  }, [queryClient, resolvedEntryRoute, shouldRedirectAuthenticatedRoot]);
+  }, [queryClient, resolvedCurrentUser, resolvedEntryRoute, shouldRedirectAuthenticatedRoot]);
+
+  let redirectHref: Href | null = null;
+
+  if (shouldRedirectAuthenticatedRoot && resolvedEntryRoute) {
+    redirectHref = shouldResumeAtStorage ? "/onboarding/storage" : resolvedEntryRoute;
+  }
 
   useEffect(() => {
     if (!redirectHref) {
@@ -145,7 +164,7 @@ function RootNavigator({
       return;
     }
 
-    if (redirectHref === "/onboarding/storage" && !storageRedirectReady) {
+    if (needsStorageResumeResolution && !storageRedirectReady) {
       return;
     }
 
@@ -155,13 +174,13 @@ function RootNavigator({
 
     lastRedirectRef.current = redirectHref;
     router.replace(redirectHref);
-  }, [redirectHref, router, storageRedirectReady]);
+  }, [needsStorageResumeResolution, redirectHref, router, storageRedirectReady]);
 
   if (!appReady) {
     return null;
   }
 
-  if (redirectHref === "/onboarding/storage" && !storageRedirectReady) {
+  if (needsStorageResumeResolution && !storageRedirectReady) {
     return null;
   }
 

@@ -1,4 +1,4 @@
-export type ItemType = "ingredient" | "cooked";
+export type ItemType = "ingredient" | "cooked_meal";
 export type TrackingMode = "quantity" | "fill_level";
 export type FillLevel = "sealed" | "just_opened" | "half" | "almost_empty";
 
@@ -60,16 +60,24 @@ function isFillLevel(value: unknown): value is FillLevel {
   );
 }
 
+function normalizeItemType(value: unknown): ItemType {
+  if (value === "cooked" || value === "cooked_meal") {
+    return "cooked_meal";
+  }
+
+  return "ingredient";
+}
+
 function normalizeFillLevel(value: unknown, itemType: ItemType): FillLevel {
   if (isFillLevel(value)) {
-    if (itemType === "cooked" && value === "sealed") {
+    if (itemType === "cooked_meal" && value === "sealed") {
       return "just_opened";
     }
 
     return value;
   }
 
-  return itemType === "cooked" ? "just_opened" : "sealed";
+  return itemType === "cooked_meal" ? "just_opened" : "sealed";
 }
 
 function makeBatchFromPrefill(batch: PrefillableBatch | undefined, itemType: ItemType): Batch {
@@ -97,7 +105,7 @@ export const makeItemDraft = (name = ""): ItemDraft => {
 };
 
 export const makeItemDraftFromPrefill = (item: PrefillableItem): ItemDraft => {
-  const itemType = item.item_type ?? "ingredient";
+  const itemType = normalizeItemType(item.item_type);
   const countAsUnits = item.tracking_mode === "quantity";
   const batches =
     Array.isArray(item.batches) && item.batches.length > 0

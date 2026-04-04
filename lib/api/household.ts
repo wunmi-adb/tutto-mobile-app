@@ -96,7 +96,7 @@ export function useCreateHousehold() {
     mutationFn: createHousehold,
     onSuccess: async (household) => {
       await updateCurrentUserHouseholdCache(queryClient, household);
-      router.replace("/onboarding/notifications");
+      router.replace("/onboarding/household/invite");
     },
     onError: (error) => {
       const errorDetails = getApiErrorDetails(error);

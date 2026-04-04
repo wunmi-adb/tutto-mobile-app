@@ -22,14 +22,18 @@ type Props = {
   storageName: string;
   initialItems: DetectedItem[];
   onContinue: (items: DetectedItem[]) => void;
+  onSaveAll: (items: DetectedItem[]) => Promise<void> | void;
   onBack: () => void;
+  savingAll?: boolean;
 };
 
 export default function ReviewItemsView({
   storageName,
   initialItems,
   onContinue,
+  onSaveAll,
   onBack,
+  savingAll = false,
 }: Props) {
   const { t } = useI18n();
   const [items, setItems] = useState<DetectedItem[]>(initialItems);
@@ -90,10 +94,15 @@ export default function ReviewItemsView({
         </View>
 
         <View style={styles.headingBlock}>
-          <Text style={styles.title}>{t("addItems.review.title")}</Text>
-          <Text style={styles.subtitle}>
-            {t("addItems.review.subtitle")}
+          <Text style={styles.title}>
+            {t(
+              items.length === 1
+                ? "addItems.review.found.singular"
+                : "addItems.review.found.plural",
+              { count: items.length },
+            )}
           </Text>
+          <Text style={styles.subtitle}>{t("addItems.review.subtitle")}</Text>
         </View>
 
         <View style={styles.list}>
@@ -127,6 +136,9 @@ export default function ReviewItemsView({
 
             return (
               <View key={index} style={styles.row}>
+                <View style={styles.indexBubble}>
+                  <Text style={styles.indexBubbleText}>{index + 1}</Text>
+                </View>
                 <Text style={styles.itemName} numberOfLines={1}>
                   {item.name}
                 </Text>
@@ -179,22 +191,40 @@ export default function ReviewItemsView({
             </View>
           )}
         </View>
-
-        <Button
-          title={
-            items.length > 0
-              ? t(
-                  items.length === 1
-                    ? "addItems.review.continue.singular"
-                    : "addItems.review.continue.plural",
-                  { count: items.length },
-                )
-              : t("addItems.review.continue.empty")
-          }
-          disabled={items.length === 0}
-          onPress={() => onContinue(items)}
-        />
         </ScrollView>
+
+        <View style={styles.ctaBlock}>
+          <Button
+            title={
+              items.length > 0
+                ? t(
+                    items.length === 1
+                      ? "addItems.review.saveAll.singular"
+                      : "addItems.review.saveAll.plural",
+                    { count: items.length },
+                  )
+                : t("addItems.review.saveAll.empty")
+            }
+            leftIcon={<Feather name="check-circle" size={18} color={colors.background} />}
+            disabled={items.length === 0}
+            loading={savingAll}
+            onPress={() => {
+              void onSaveAll(items);
+            }}
+            style={styles.ctaButton}
+          />
+
+          <Button
+            title={t("addItems.review.reviewEach")}
+            variant="secondary"
+            leftIcon={<Feather name="list" size={18} color={colors.text} />}
+            disabled={items.length === 0 || savingAll}
+            onPress={() => onContinue(items)}
+            style={styles.ctaButton}
+          />
+
+          <Text style={styles.reviewHint}>{t("addItems.review.reviewHint")}</Text>
+        </View>
       </KeyboardAvoidingContainer>
     </SafeAreaView>
   );
@@ -228,7 +258,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingTop: 8,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   locationBadge: {
     alignSelf: "flex-start",
@@ -248,7 +278,7 @@ const styles = StyleSheet.create({
     color: colors.muted,
   },
   headingBlock: {
-    marginBottom: 28,
+    marginBottom: 24,
   },
   title: {
     fontFamily: fonts.serif,
@@ -280,6 +310,19 @@ const styles = StyleSheet.create({
   rowEditing: {
     borderColor: colors.text + "4d",
     backgroundColor: colors.text + "05",
+  },
+  indexBubble: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.brand + "14",
+  },
+  indexBubbleText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 12,
+    color: colors.brand,
   },
   input: {
     flex: 1,
@@ -337,6 +380,26 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: fonts.sans,
     fontSize: 14,
+    color: colors.muted,
+  },
+  ctaBlock: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.border + "80",
+    gap: 12,
+  },
+  ctaButton: {
+    marginTop: 0,
+  },
+  reviewHint: {
+    marginTop: 12,
+    textAlign: "center",
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    lineHeight: 18,
     color: colors.muted,
   },
 });

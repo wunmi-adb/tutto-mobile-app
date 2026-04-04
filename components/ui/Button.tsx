@@ -82,6 +82,15 @@ export default function Button({
   const isDanger = variant === "danger";
   const textColor = isSecondary || isMuted || isSoft ? colors.text : colors.background;
   const isDisabled = disabled || loading;
+  const resolvedHapticType = hapticType ?? (isSecondary || isSoft ? "selection" : "medium");
+
+  let leftContent: ReactNode = null;
+
+  if (loading) {
+    leftContent = <ButtonSpinner color={textColor} />;
+  } else if (leftIcon) {
+    leftContent = <View>{leftIcon}</View>;
+  }
 
   return (
     <HapticPressable
@@ -97,12 +106,12 @@ export default function Button({
       ]}
       disabled={isDisabled}
       pressedOpacity={pressedOpacity}
-      hapticType={hapticType ?? (isSecondary || isSoft ? "selection" : "medium")}
+      hapticType={resolvedHapticType}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       {...props}
     >
-      {loading ? <ButtonSpinner color={textColor} /> : leftIcon ? <View>{leftIcon}</View> : null}
+      {leftContent}
       <Text style={[styles.text, (isSecondary || isMuted || isSoft) && styles.textSecondary]}>
         {title}
       </Text>

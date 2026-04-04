@@ -45,10 +45,12 @@ export function mapItemDraftToCreateInventoryItemInput(
 ): CreateInventoryItemInput {
   const trackingMode: TrackingMode =
     draft.itemType === "ingredient" && draft.countAsUnits ? "quantity" : "fill_level";
+  const normalizedItemType: ItemType =
+    String(draft.itemType) === "cooked" ? "cooked_meal" : draft.itemType;
 
   return {
     name: draft.name.trim(),
-    item_type: draft.itemType,
+    item_type: normalizedItemType,
     tracking_mode: trackingMode,
     batches: draft.batches.map((batch) => {
       const bestBefore = batch.bestBefore || undefined;
@@ -85,6 +87,8 @@ export async function createInventoryItems({
   const payload = {
     items: drafts.map((draft) => mapItemDraftToCreateInventoryItemInput(draft)),
   };
+
+  console.log("Create inventory items payload", JSON.stringify(payload));
 
   const response = await apiClient.post<ApiResponse<InventoryItem[]>>(
     `/api/v1/storage-locations/${storageLocationKey}/items`,

@@ -45,11 +45,8 @@ export const CUISINE_OPTIONS = [
 
 export const MEAL_SLOT_OPTIONS = [
   { valueKey: "meals.options.breakfast.label", sublabelKey: "meals.options.breakfast.time" },
-  { valueKey: "meals.options.brunch.label", sublabelKey: "meals.options.brunch.time" },
   { valueKey: "meals.options.lunch.label", sublabelKey: "meals.options.lunch.time" },
-  { valueKey: "meals.options.snacks.label", sublabelKey: "meals.options.snacks.time" },
   { valueKey: "meals.options.dinner.label", sublabelKey: "meals.options.dinner.time" },
-  { valueKey: "meals.options.supper.label", sublabelKey: "meals.options.supper.time" },
 ] as const satisfies readonly {
   valueKey: TranslationKey;
   sublabelKey: TranslationKey;

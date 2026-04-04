@@ -68,7 +68,6 @@ function mapStatusFilter(status?: PantryStatusFilter) {
       return "running_low";
     case "finished":
       return "finished";
-    case "all":
     case undefined:
     default:
       return undefined;
@@ -108,13 +107,22 @@ export function mapInventoryItemResponseToPantryItem(
     name: item.name,
     type: item.item_type ?? "ingredient",
     location: item.storage_location?.name ?? "",
+    storageLocationKey: item.storage_location?.key,
     countAsUnits: item.tracking_mode === "quantity",
     batches: (item.batches ?? []).map((batch, index) => mapInventoryBatch(batch, index, status)),
   };
 }
 
 function getRawInventoryItems(data: InventoryListResponse | null | undefined) {
-  return Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data?.items)) {
+    return data.items;
+  }
+
+  return [];
 }
 
 function getInventoryPagination(data: InventoryListResponse | null | undefined) {
@@ -126,15 +134,21 @@ export async function getInventoryItemsPage(
   page = 0,
   perPage = INVENTORY_PAGE_SIZE,
 ) {
+  const requestParams = {
+    ...(params.search?.trim() ? { search: params.search.trim() } : {}),
+    ...(mapStatusFilter(params.status) ? { status: mapStatusFilter(params.status) } : {}),
+    ...(params.storageLocationKey ? { storage_location_key: params.storageLocationKey } : {}),
+    page,
+    per_page: perPage,
+  };
+
+  console.log("Inventory request params", requestParams);
+
   const response = await apiClient.get<ApiResponse<InventoryListResponse>>("/api/v1/items", {
-    params: {
-      ...(params.search?.trim() ? { search: params.search.trim() } : {}),
-      ...(mapStatusFilter(params.status) ? { status: mapStatusFilter(params.status) } : {}),
-      ...(params.storageLocationKey ? { storage_location_key: params.storageLocationKey } : {}),
-      page,
-      per_page: perPage,
-    },
+    params: requestParams,
   });
+  console.log("Inventory response payload", response.data.data);
+
   const rawItems = getRawInventoryItems(response.data.data);
   const pagination = getInventoryPagination(response.data.data);
   const pageCount = pagination?.page_count;

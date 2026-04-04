@@ -1,4 +1,5 @@
 import { useI18n } from "@/i18n";
+import { translations } from "@/i18n/messages";
 import { CURRENT_USER_QUERY_KEY, CurrentUser, getCurrentUser } from "@/lib/api/profile";
 import { MEAL_SLOT_OPTIONS } from "./data";
 import { useQuery } from "@tanstack/react-query";
@@ -43,8 +44,12 @@ function splitCommaSeparated(value: string | null | undefined) {
     .filter(Boolean);
 }
 
-function getMealSlotLabels(user: CurrentUser | undefined, t: ReturnType<typeof useI18n>["t"]) {
+function getMealSlotLabels(
+  user: CurrentUser | undefined,
+  language: ReturnType<typeof useI18n>["language"],
+) {
   const mealKeys = splitCommaSeparated(user?.household?.meals);
+  const dictionary = translations[language] ?? translations.en;
 
   return mealKeys.map((mealKey) => {
     const option = MEAL_SLOT_OPTIONS.find((item) => {
@@ -52,12 +57,12 @@ function getMealSlotLabels(user: CurrentUser | undefined, t: ReturnType<typeof u
       return labelKey === mealKey;
     });
 
-    return option ? t(option.valueKey) : mealKey;
+    return option ? dictionary[option.valueKey] : mealKey;
   });
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const { t } = useI18n();
+  const { language } = useI18n();
   const currentUserQuery = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: getCurrentUser,
@@ -88,6 +93,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!currentUser) {
+      setProfileName("");
+      setEmail("");
+      setKitchenName("");
+      setInviteCode("");
+      setAppliances([]);
+      setDietary([]);
+      setAllergies([]);
+      setDislikes([]);
+      setCuisines([]);
+      setMealSlots([]);
+      setAnythingElse("");
+      setCopied(false);
       return;
     }
 
@@ -100,8 +117,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setAllergies(splitCommaSeparated(currentUser.household?.allergies));
     setDislikes(splitCommaSeparated(currentUser.household?.dislike));
     setCuisines(splitCommaSeparated(currentUser.household?.love));
-    setMealSlots(getMealSlotLabels(currentUser, t));
-  }, [currentUser, t]);
+    setMealSlots(getMealSlotLabels(currentUser, language));
+  }, [currentUser, language]);
 
   return (
     <SettingsContext.Provider
