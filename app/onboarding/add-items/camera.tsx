@@ -1,4 +1,8 @@
-import * as ImagePicker from "expo-image-picker";
+import {
+  captureImage,
+  getProcessingParams,
+  requestCameraPermission,
+} from "@/lib/utils/add-items-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { View } from "react-native";
@@ -12,33 +16,34 @@ export default function Camera() {
   }>();
 
   useEffect(() => {
-    (async () => {
-      const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+    const openCamera = async () => {
+      const granted = await requestCameraPermission();
+
       if (!granted) {
         router.back();
         return;
       }
 
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ["images"],
-        quality: 0.85,
-      });
+      const result = await captureImage();
+      const selectedAsset = result.assets?.[0];
 
-      if (result.canceled || !result.assets[0]) {
+      if (result.canceled || !selectedAsset) {
         router.back();
-      } else {
-        router.replace({
-          pathname: "/onboarding/add-items/processing",
-          params: {
-            photoUri: result.assets[0].uri,
-            type: "image",
-            ...(location ? { location } : {}),
-            ...(storageKey ? { storageKey } : {}),
-            ...(source ? { source } : {}),
-          },
-        });
+        return;
       }
-    })();
+
+      router.replace({
+        pathname: "/onboarding/add-items/processing",
+        params: getProcessingParams({
+          location,
+          photoUri: selectedAsset.uri,
+          source,
+          storageKey,
+        }),
+      });
+    };
+
+    void openCamera();
   }, [location, router, source, storageKey]);
 
   return <View style={{ flex: 1, backgroundColor: "#000000" }} />;

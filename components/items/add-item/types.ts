@@ -28,6 +28,7 @@ export type PrefillableItem = {
   item_type?: ItemType;
   tracking_mode?: TrackingMode;
   batches?: PrefillableBatch[];
+  preserve_empty_batches?: boolean;
 };
 
 export const INGREDIENT_FILL_OPTIONS: { key: FillLevel; percent: number }[] = [
@@ -107,10 +108,16 @@ export const makeItemDraft = (name = ""): ItemDraft => {
 export const makeItemDraftFromPrefill = (item: PrefillableItem): ItemDraft => {
   const itemType = normalizeItemType(item.item_type);
   const countAsUnits = item.tracking_mode === "quantity";
-  const batches =
-    Array.isArray(item.batches) && item.batches.length > 0
-      ? item.batches.map((batch) => makeBatchFromPrefill(batch, itemType))
-      : [makeBatchFromPrefill(undefined, itemType)];
+  const shouldPreserveEmptyBatches = item.preserve_empty_batches && Array.isArray(item.batches);
+  let batches: Batch[];
+
+  if (Array.isArray(item.batches) && item.batches.length > 0) {
+    batches = item.batches.map((batch) => makeBatchFromPrefill(batch, itemType));
+  } else if (shouldPreserveEmptyBatches) {
+    batches = [];
+  } else {
+    batches = [makeBatchFromPrefill(undefined, itemType)];
+  }
 
   return {
     name: item.name,

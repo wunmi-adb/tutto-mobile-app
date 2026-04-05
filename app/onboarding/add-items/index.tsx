@@ -1,6 +1,8 @@
 import MethodSelection from "@/components/items/MethodSelection";
 import { useI18n } from "@/i18n";
+import { getSingleParamValue } from "@/lib/utils/add-items";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback } from "react";
 
 export default function AddItemsIndex() {
   const router = useRouter();
@@ -10,30 +12,52 @@ export default function AddItemsIndex() {
     storageKey: string;
     source?: string;
   }>();
-  const storageName = location ?? t("addItems.defaultStorage");
+  const normalizedLocation = getSingleParamValue(location);
+  const normalizedStorageKey = getSingleParamValue(storageKey);
+  const normalizedSource = getSingleParamValue(source);
+  const storageName = normalizedLocation ?? t("addItems.defaultStorage");
+
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  const getSelectionParams = useCallback(
+    () => ({
+      location: storageName,
+      ...(normalizedStorageKey ? { storageKey: normalizedStorageKey } : {}),
+      ...(normalizedSource ? { source: normalizedSource } : {}),
+    }),
+    [normalizedSource, normalizedStorageKey, storageName],
+  );
+
+  const handleSelectCamera = useCallback(() => {
+    router.push({
+      pathname: "/onboarding/add-items/camera",
+      params: getSelectionParams(),
+    });
+  }, [getSelectionParams, router]);
+
+  const handleSelectVoice = useCallback(() => {
+    router.push({
+      pathname: "/onboarding/add-items/voice",
+      params: getSelectionParams(),
+    });
+  }, [getSelectionParams, router]);
+
+  const handleSelectManual = useCallback(() => {
+    router.push({
+      pathname: "/onboarding/add-items/manual",
+      params: getSelectionParams(),
+    });
+  }, [getSelectionParams, router]);
 
   return (
     <MethodSelection
       storageName={storageName}
-      onBack={() => router.back()}
-      onSelectCamera={() =>
-        router.push({
-          pathname: "/onboarding/add-items/camera",
-          params: { location: storageName, storageKey, ...(source ? { source } : {}) },
-        })
-      }
-      onSelectVoice={() =>
-        router.push({
-          pathname: "/onboarding/add-items/voice",
-          params: { location: storageName, storageKey, ...(source ? { source } : {}) },
-        })
-      }
-      onSelectManual={() =>
-        router.push({
-          pathname: "/onboarding/add-items/manual",
-          params: { location: storageName, storageKey, ...(source ? { source } : {}) },
-        })
-      }
+      onBack={handleBack}
+      onSelectCamera={handleSelectCamera}
+      onSelectVoice={handleSelectVoice}
+      onSelectManual={handleSelectManual}
     />
   );
 }

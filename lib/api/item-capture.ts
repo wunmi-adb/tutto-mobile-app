@@ -19,6 +19,7 @@ export type CapturedInventoryItem = {
   batches?: CapturedInventoryBatch[];
   item_type?: ItemType;
   name: string;
+  preserve_empty_batches?: boolean;
   tracking_mode?: TrackingMode;
 };
 

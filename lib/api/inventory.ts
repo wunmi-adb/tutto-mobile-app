@@ -131,7 +131,7 @@ function getInventoryPagination(data: InventoryListResponse | null | undefined) 
 
 export async function getInventoryItemsPage(
   params: InventoryListParams = {},
-  page = 0,
+  page = 1,
   perPage = INVENTORY_PAGE_SIZE,
 ) {
   const requestParams = {
@@ -163,7 +163,7 @@ export async function getInventoryItemsPage(
   return {
     hasMore:
       hasUsablePagination && typeof pageCount === "number" && pageCount > 0
-        ? currentPage + 1 < pageCount
+        ? currentPage < pageCount
         : rawItems.length === perPage,
     items: rawItems.map((item) => mapInventoryItemResponseToPantryItem(item, params.status)),
     page: currentPage,
@@ -178,7 +178,7 @@ export function useInfiniteInventoryItems(params: InventoryListParams = {}) {
       params.status ?? "all",
       params.storageLocationKey ?? "",
     ],
-    initialPageParam: 0,
+    initialPageParam: 1,
     queryFn: ({ pageParam }) => getInventoryItemsPage(params, pageParam, INVENTORY_PAGE_SIZE),
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
     staleTime: 30_000,

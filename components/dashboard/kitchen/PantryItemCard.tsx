@@ -49,11 +49,14 @@ export default function PantryItemCard({ item, onEdit }: Props) {
       name: item.name,
       item_type: item.type,
       tracking_mode: item.countAsUnits ? "quantity" : "fill_level",
-      batches: editableBatches.map((batch) => ({
-        best_before: batch.bestBefore,
-        fill_level: batch.fillLevel,
-        quantity: batch.qty,
-      })),
+      batches: allFinished
+        ? []
+        : editableBatches.map((batch) => ({
+            best_before: batch.bestBefore,
+            fill_level: batch.fillLevel,
+            quantity: batch.qty,
+          })),
+      preserve_empty_batches: allFinished,
     });
   };
 

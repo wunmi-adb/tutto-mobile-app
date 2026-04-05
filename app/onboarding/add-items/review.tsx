@@ -3,7 +3,13 @@ import { makeItemDraftFromPrefill } from "@/components/items/add-item/types";
 import { useI18n } from "@/i18n";
 import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useCreateInventoryItems } from "@/lib/api/items";
+import {
+  getCompleteRouteParams,
+  getSingleParamValue,
+  parseJsonParam,
+} from "@/lib/utils/add-items";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useMemo } from "react";
 
 export default function ReviewItems() {
   const router = useRouter();
@@ -15,57 +21,74 @@ export default function ReviewItems() {
     items: string;
     source?: string;
   }>();
-  const storageName = location ?? t("addItems.defaultStorage");
-  const isPantryFlow = source === "pantry";
+  const normalizedLocation = getSingleParamValue(location);
+  const normalizedStorageKey = getSingleParamValue(storageKey) ?? "";
+  const normalizedItems = getSingleParamValue(items);
+  const normalizedSource = getSingleParamValue(source);
+  const storageName = normalizedLocation ?? t("addItems.defaultStorage");
+  const isPantryFlow = normalizedSource === "pantry";
+  const parsedItems = useMemo(
+    () => parseJsonParam<DetectedItem[]>(normalizedItems, []),
+    [normalizedItems],
+  );
 
-  const parsedItems: DetectedItem[] = (() => {
-    try {
-      const parsed = items ? JSON.parse(items) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  })();
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  const handleSaveAll = useCallback(
+    async (confirmedItems: DetectedItem[]) => {
+      try {
+        await createInventoryItemsMutation.mutateAsync({
+          drafts: confirmedItems.map((item) => makeItemDraftFromPrefill(item)),
+          storageLocationKey: normalizedStorageKey,
+        });
+
+        if (isPantryFlow) {
+          router.replace("/dashboard/kitchen");
+          return;
+        }
+
+        router.replace(getCompleteRouteParams(storageName, normalizedSource));
+      } catch (error) {
+        handleCaughtApiError(error);
+      }
+    },
+    [
+      createInventoryItemsMutation,
+      isPantryFlow,
+      normalizedSource,
+      normalizedStorageKey,
+      router,
+      storageName,
+    ],
+  );
+
+  const handleContinue = useCallback(
+    (confirmedItems: DetectedItem[]) => {
+      router.push({
+        pathname: "/onboarding/add-items/detail",
+        params: {
+          location: storageName,
+          storageKey: normalizedStorageKey,
+          items: JSON.stringify(confirmedItems),
+          currentIndex: "0",
+          completedIndices: "[]",
+          ...(normalizedSource ? { source: normalizedSource } : {}),
+        },
+      });
+    },
+    [normalizedSource, normalizedStorageKey, router, storageName],
+  );
 
   return (
     <ReviewItemsView
       storageName={storageName}
       initialItems={parsedItems}
       savingAll={createInventoryItemsMutation.isPending}
-      onSaveAll={async (confirmedItems) => {
-        try {
-          await createInventoryItemsMutation.mutateAsync({
-            drafts: confirmedItems.map((item) => makeItemDraftFromPrefill(item)),
-            storageLocationKey: storageKey,
-          });
-
-          if (isPantryFlow) {
-            router.replace("/dashboard/kitchen");
-            return;
-          }
-
-          router.replace({
-            pathname: "/onboarding/complete",
-            params: { location: storageName, ...(source ? { source } : {}) },
-          });
-        } catch (error) {
-          handleCaughtApiError(error);
-        }
-      }}
-      onContinue={(confirmedItems) =>
-        router.push({
-          pathname: "/onboarding/add-items/detail",
-          params: {
-            location: storageName,
-            storageKey,
-            items: JSON.stringify(confirmedItems),
-            currentIndex: "0",
-            completedIndices: "[]",
-            ...(source ? { source } : {}),
-          },
-        })
-      }
-      onBack={() => router.back()}
+      onSaveAll={handleSaveAll}
+      onContinue={handleContinue}
+      onBack={handleBack}
     />
   );
 }

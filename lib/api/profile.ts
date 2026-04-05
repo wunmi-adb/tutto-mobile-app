@@ -230,12 +230,14 @@ export async function deleteCurrentUserAccount(email: string) {
 }
 
 export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
-
-
   const household = user.household;
 
   if (!household) {
     return "/onboarding/household";
+  }
+
+  if (household.has_item || user.has_item) {
+    return "/dashboard";
   }
 
   if (!hasCompletedStep(household.kitchen_appliances)) {
@@ -256,10 +258,6 @@ export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
 
   if (!hasCompletedStep(household.meals)) {
     return "/onboarding/meals";
-  }
-
-  if (household.has_item || user.has_item) {
-    return "/dashboard";
   }
 
   return "/onboarding/storage";

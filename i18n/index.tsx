@@ -3,6 +3,7 @@ import {
   createContext,
   ReactNode,
   startTransition,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -96,11 +97,11 @@ export function useI18nController(): I18nController {
     }
   };
 
-  const t = (key: TranslationKey, params?: TranslationParams) => {
+  const t = useCallback((key: TranslationKey, params?: TranslationParams) => {
     const template = translations[language][key] ?? translations.en[key] ?? key;
 
     return interpolate(template, params);
-  };
+  }, [language]);
 
   return {
     ready,

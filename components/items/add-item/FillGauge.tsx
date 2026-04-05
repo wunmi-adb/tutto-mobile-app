@@ -123,7 +123,7 @@ export default function FillGauge({ level, onChange, options = DEFAULT_OPTIONS }
       easing: Easing.bezier(0.22, 1, 0.36, 1),
       useNativeDriver: false,
     }).start();
-  }, [level, options, progressAnim, reducedMotion]);
+  }, [level, progressAnim, reducedMotion]);
 
   const updateProgress = (locationX: number) => {
     if (trackWidth <= 0) return;

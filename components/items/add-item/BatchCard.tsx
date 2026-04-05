@@ -3,6 +3,7 @@ import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import HapticPressable from "@/components/ui/HapticPressable";
+import { useCallback, useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import DatePickerField from "./DatePickerField";
 import FillGauge from "./FillGauge";
@@ -38,7 +39,7 @@ export default function BatchCard({
 }: Props) {
   const { t } = useI18n();
 
-  const getIngredientFillLabel = (level: FillLevel) => {
+  const getIngredientFillLabel = useCallback((level: FillLevel) => {
     switch (level) {
       case "sealed":
         return t("addItems.batch.fill.full");
@@ -50,9 +51,9 @@ export default function BatchCard({
       default:
         return t("addItems.batch.fill.nearlyEmpty");
     }
-  };
+  }, [t]);
 
-  const getCookedFillLabel = (level: FillLevel) => {
+  const getCookedFillLabel = useCallback((level: FillLevel) => {
     switch (level) {
       case "just_opened":
         return t("addItems.batch.fill.full");
@@ -63,24 +64,37 @@ export default function BatchCard({
       default:
         return t("addItems.batch.fill.nearlyEmpty");
     }
-  };
+  }, [t]);
 
-  const ingredientFillOptions = INGREDIENT_FILL_OPTIONS.map((option) => ({
-    ...option,
-    label: getIngredientFillLabel(option.key),
-  }));
+  const ingredientFillOptions = useMemo(
+    () =>
+      INGREDIENT_FILL_OPTIONS.map((option) => ({
+        ...option,
+        label: getIngredientFillLabel(option.key),
+      })),
+    [getIngredientFillLabel],
+  );
 
-  const cookedFillOptions = COOKED_FILL_OPTIONS.map((option) => ({
-    ...option,
-    label: getCookedFillLabel(option.key),
-  }));
+  const cookedFillOptions = useMemo(
+    () =>
+      COOKED_FILL_OPTIONS.map((option) => ({
+        ...option,
+        label: getCookedFillLabel(option.key),
+      })),
+    [getCookedFillLabel],
+  );
 
-  const fillLabels: Record<FillLevel, string> = {
-    sealed: t("addItems.batch.fill.full"),
-    just_opened: isIngredient ? t("addItems.batch.fill.justOpened") : t("addItems.batch.fill.full"),
-    half: t("addItems.batch.fill.half"),
-    almost_empty: t("addItems.batch.fill.nearlyEmpty"),
-  };
+  const fillLabels = useMemo<Record<FillLevel, string>>(
+    () => ({
+      sealed: t("addItems.batch.fill.full"),
+      just_opened: isIngredient
+        ? t("addItems.batch.fill.justOpened")
+        : t("addItems.batch.fill.full"),
+      half: t("addItems.batch.fill.half"),
+      almost_empty: t("addItems.batch.fill.nearlyEmpty"),
+    }),
+    [isIngredient, t],
+  );
 
   let label = t("addItems.batch.label.details");
 

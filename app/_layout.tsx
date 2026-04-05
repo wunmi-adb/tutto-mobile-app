@@ -42,7 +42,13 @@ function RootNavigator({
   const router = useRouter();
   const segments = useSegments();
   const isRootIndex = segments[0] == null;
-  const requiresSessionResolution = isRootIndex && isAuthenticated;
+  const isOnOnboardingRoute = segments[0] === "onboarding";
+  // Don't resolve session on add-items routes — these are reached mid-flow (both
+  // regular onboarding and the pantry "edit item" flow) and must not trigger a redirect.
+  const isOnAddItemsRoute = isOnOnboardingRoute && segments[1] === "add-items";
+  const currentPath = isRootIndex ? "/" : `/${segments.join("/")}`;
+  const shouldResolveSession =
+    (isRootIndex || (isOnOnboardingRoute && !isOnAddItemsRoute)) && isAuthenticated;
   const [storedCurrentUser, setStoredCurrentUser] = useState<Awaited<
     ReturnType<typeof getStoredCurrentUser>
   > | undefined>(undefined);
@@ -52,7 +58,7 @@ function RootNavigator({
     enabled:
       assetsReady &&
       authReady &&
-      requiresSessionResolution,
+      shouldResolveSession,
     retry: 1,
   });
 
@@ -60,9 +66,9 @@ function RootNavigator({
     let cancelled = false;
 
     const hydrateStoredCurrentUser = async () => {
-      if (!assetsReady || !authReady || !requiresSessionResolution) {
+      if (!assetsReady || !authReady || !shouldResolveSession) {
         if (!cancelled) {
-          setStoredCurrentUser(null);
+          setStoredCurrentUser((currentValue) => (currentValue === null ? currentValue : null));
         }
         return;
       }
@@ -87,13 +93,7 @@ function RootNavigator({
     return () => {
       cancelled = true;
     };
-  }, [assetsReady, authReady, requiresSessionResolution]);
-
-  useEffect(() => {
-    if (currentUserQuery.data) {
-      setStoredCurrentUser(currentUserQuery.data);
-    }
-  }, [currentUserQuery.data]);
+  }, [assetsReady, authReady, shouldResolveSession]);
 
   const resolvedCurrentUser = storedCurrentUser ?? currentUserQuery.data ?? null;
   const resolvedEntryRoute = resolvedCurrentUser ? getAppEntryRoute(resolvedCurrentUser) : null;
@@ -101,22 +101,22 @@ function RootNavigator({
   const appReady =
     assetsReady &&
     authReady &&
-    (!requiresSessionResolution ||
+    (!shouldResolveSession ||
       (storedCurrentUser !== undefined &&
         !currentUserQuery.isPending));
-  const shouldRedirectAuthenticatedRoot = requiresSessionResolution && !!resolvedCurrentUser;
+  const shouldRedirectAuthenticatedRoute = shouldResolveSession && !!resolvedCurrentUser;
   const [storageRedirectReady, setStorageRedirectReady] = useState(false);
   const [shouldResumeAtStorage, setShouldResumeAtStorage] = useState(false);
   const lastRedirectRef = useRef<string | null>(null);
   const needsStorageResumeResolution =
-    shouldRedirectAuthenticatedRoot && resolvedEntryRoute !== null && resolvedEntryRoute !== "/dashboard";
+    shouldRedirectAuthenticatedRoute && resolvedEntryRoute !== null && resolvedEntryRoute !== "/dashboard";
 
   useEffect(() => {
     let cancelled = false;
 
     const prepareStorageRedirect = async () => {
       if (
-        !shouldRedirectAuthenticatedRoot ||
+        !shouldRedirectAuthenticatedRoute ||
         !resolvedCurrentUser ||
         resolvedEntryRoute === "/dashboard"
       ) {
@@ -150,13 +150,18 @@ function RootNavigator({
     return () => {
       cancelled = true;
     };
-  }, [queryClient, resolvedCurrentUser, resolvedEntryRoute, shouldRedirectAuthenticatedRoot]);
+  }, [queryClient, resolvedCurrentUser, resolvedEntryRoute, shouldRedirectAuthenticatedRoute]);
 
   let redirectHref: Href | null = null;
 
-  if (shouldRedirectAuthenticatedRoot && resolvedEntryRoute) {
-    redirectHref = shouldResumeAtStorage ? "/onboarding/storage" : resolvedEntryRoute;
+  if (shouldRedirectAuthenticatedRoute && resolvedEntryRoute) {
+    redirectHref =
+      needsStorageResumeResolution && shouldResumeAtStorage
+        ? "/onboarding/storage"
+        : resolvedEntryRoute;
   }
+
+  const shouldRedirectToDifferentRoute = !!redirectHref && redirectHref !== currentPath;
 
   useEffect(() => {
     if (!redirectHref) {
@@ -168,13 +173,25 @@ function RootNavigator({
       return;
     }
 
+    if (!shouldRedirectToDifferentRoute) {
+      lastRedirectRef.current = redirectHref;
+      return;
+    }
+
     if (lastRedirectRef.current === redirectHref) {
       return;
     }
 
     lastRedirectRef.current = redirectHref;
     router.replace(redirectHref);
-  }, [needsStorageResumeResolution, redirectHref, router, storageRedirectReady]);
+  }, [
+    currentPath,
+    needsStorageResumeResolution,
+    redirectHref,
+    router,
+    shouldRedirectToDifferentRoute,
+    storageRedirectReady,
+  ]);
 
   if (!appReady) {
     return null;
@@ -184,11 +201,11 @@ function RootNavigator({
     return null;
   }
 
-  if (redirectHref) {
+  if (shouldRedirectToDifferentRoute) {
     return null;
   }
 
-  if (requiresSessionResolution && storedCurrentUser === null && currentUserQuery.isError) {
+  if (shouldResolveSession && storedCurrentUser === null && currentUserQuery.isError) {
     return (
       <View style={styles.authenticatedState}>
         <Text style={styles.sessionTitle}>{t("welcome.session.error")}</Text>

@@ -1,6 +1,8 @@
 import VoiceView from "@/components/items/VoiceView";
 import { useI18n } from "@/i18n";
+import { getSingleParamValue } from "@/lib/utils/add-items";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback } from "react";
 
 export default function Voice() {
   const router = useRouter();
@@ -10,24 +12,36 @@ export default function Voice() {
     storageKey: string;
     source?: string;
   }>();
-  const storageName = location ?? t("addItems.defaultStorage");
+  const normalizedLocation = getSingleParamValue(location);
+  const normalizedStorageKey = getSingleParamValue(storageKey);
+  const normalizedSource = getSingleParamValue(source);
+  const storageName = normalizedLocation ?? t("addItems.defaultStorage");
+
+  const handleDone = useCallback(
+    (recordingUri: string) => {
+      router.replace({
+        pathname: "/onboarding/add-items/processing",
+        params: {
+          location: storageName,
+          ...(normalizedStorageKey ? { storageKey: normalizedStorageKey } : {}),
+          recordingUri,
+          type: "voice",
+          ...(normalizedSource ? { source: normalizedSource } : {}),
+        },
+      });
+    },
+    [normalizedSource, normalizedStorageKey, router, storageName],
+  );
+
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
 
   return (
     <VoiceView
       storageName={storageName}
-      onDone={(recordingUri) =>
-        router.replace({
-          pathname: "/onboarding/add-items/processing",
-          params: {
-            location: storageName,
-            storageKey,
-            recordingUri,
-            type: "voice",
-            ...(source ? { source } : {}),
-          },
-        })
-      }
-      onBack={() => router.back()}
+      onDone={handleDone}
+      onBack={handleBack}
     />
   );
 }
