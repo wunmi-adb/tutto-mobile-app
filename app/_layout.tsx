@@ -1,14 +1,5 @@
-import { I18nProvider, useI18n, useI18nController } from "@/i18n";
-import {
-  CURRENT_USER_QUERY_KEY,
-  getAppEntryRoute,
-  getCurrentUser,
-  getStoredCurrentUser,
-} from "@/lib/api/profile";
-import { prefetchStorageLocations } from "@/lib/api/storage-locations";
+import { I18nProvider, useI18nController } from "@/i18n";
 import { AppProviders } from "@/providers/AppProviders";
-import { useAuth } from "@/providers/AuthProvider";
-import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import {
   DMSans_400Regular,
@@ -23,202 +14,11 @@ import {
   InstrumentSerif_400Regular_Italic,
   useFonts,
 } from "@expo-google-fonts/instrument-serif";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Href, Stack, useRouter, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
-
-function RootNavigator({
-  assetsReady,
-}: {
-  assetsReady: boolean;
-}) {
-  const { t } = useI18n();
-  const { ready: authReady, isAuthenticated } = useAuth();
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  const segments = useSegments();
-  const isRootIndex = segments[0] == null;
-  const isOnOnboardingRoute = segments[0] === "onboarding";
-  // Don't resolve session on add-items routes — these are reached mid-flow (both
-  // regular onboarding and the pantry "edit item" flow) and must not trigger a redirect.
-  const isOnAddItemsRoute = isOnOnboardingRoute && segments[1] === "add-items";
-  const currentPath = isRootIndex ? "/" : `/${segments.join("/")}`;
-  const shouldResolveSession =
-    (isRootIndex || (isOnOnboardingRoute && !isOnAddItemsRoute)) && isAuthenticated;
-  const [storedCurrentUser, setStoredCurrentUser] = useState<Awaited<
-    ReturnType<typeof getStoredCurrentUser>
-  > | undefined>(undefined);
-  const currentUserQuery = useQuery({
-    queryKey: CURRENT_USER_QUERY_KEY,
-    queryFn: getCurrentUser,
-    enabled:
-      assetsReady &&
-      authReady &&
-      shouldResolveSession,
-    retry: 1,
-  });
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const hydrateStoredCurrentUser = async () => {
-      if (!assetsReady || !authReady || !shouldResolveSession) {
-        if (!cancelled) {
-          setStoredCurrentUser((currentValue) => (currentValue === null ? currentValue : null));
-        }
-        return;
-      }
-
-      try {
-        const user = await getStoredCurrentUser();
-
-        if (!cancelled) {
-          setStoredCurrentUser(user);
-        }
-      } catch (error) {
-        console.warn("Failed to hydrate stored current user.", error);
-
-        if (!cancelled) {
-          setStoredCurrentUser(null);
-        }
-      }
-    };
-
-    hydrateStoredCurrentUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [assetsReady, authReady, shouldResolveSession]);
-
-  const resolvedCurrentUser = storedCurrentUser ?? currentUserQuery.data ?? null;
-  const resolvedEntryRoute = resolvedCurrentUser ? getAppEntryRoute(resolvedCurrentUser) : null;
-
-  const appReady =
-    assetsReady &&
-    authReady &&
-    (!shouldResolveSession ||
-      (storedCurrentUser !== undefined &&
-        !currentUserQuery.isPending));
-  const shouldRedirectAuthenticatedRoute = shouldResolveSession && !!resolvedCurrentUser;
-  const [storageRedirectReady, setStorageRedirectReady] = useState(false);
-  const [shouldResumeAtStorage, setShouldResumeAtStorage] = useState(false);
-  const lastRedirectRef = useRef<string | null>(null);
-  const needsStorageResumeResolution =
-    shouldRedirectAuthenticatedRoute && resolvedEntryRoute !== null && resolvedEntryRoute !== "/dashboard";
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const prepareStorageRedirect = async () => {
-      if (
-        !shouldRedirectAuthenticatedRoute ||
-        !resolvedCurrentUser ||
-        resolvedEntryRoute === "/dashboard"
-      ) {
-        if (!cancelled) {
-          setStorageRedirectReady(false);
-          setShouldResumeAtStorage(false);
-        }
-        return;
-      }
-
-      try {
-        const storageLocations = await prefetchStorageLocations(queryClient);
-
-        if (!cancelled) {
-          setShouldResumeAtStorage(storageLocations.length > 0);
-        }
-      } catch {
-        // Let the storage screen handle query errors if prefetch fails.
-        if (!cancelled) {
-          setShouldResumeAtStorage(false);
-        }
-      } finally {
-        if (!cancelled) {
-          setStorageRedirectReady(true);
-        }
-      }
-    };
-
-    void prepareStorageRedirect();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [queryClient, resolvedCurrentUser, resolvedEntryRoute, shouldRedirectAuthenticatedRoute]);
-
-  let redirectHref: Href | null = null;
-
-  if (shouldRedirectAuthenticatedRoute && resolvedEntryRoute) {
-    redirectHref =
-      needsStorageResumeResolution && shouldResumeAtStorage
-        ? "/onboarding/storage"
-        : resolvedEntryRoute;
-  }
-
-  const shouldRedirectToDifferentRoute = !!redirectHref && redirectHref !== currentPath;
-
-  useEffect(() => {
-    if (!redirectHref) {
-      lastRedirectRef.current = null;
-      return;
-    }
-
-    if (needsStorageResumeResolution && !storageRedirectReady) {
-      return;
-    }
-
-    if (!shouldRedirectToDifferentRoute) {
-      lastRedirectRef.current = redirectHref;
-      return;
-    }
-
-    if (lastRedirectRef.current === redirectHref) {
-      return;
-    }
-
-    lastRedirectRef.current = redirectHref;
-    router.replace(redirectHref);
-  }, [
-    currentPath,
-    needsStorageResumeResolution,
-    redirectHref,
-    router,
-    shouldRedirectToDifferentRoute,
-    storageRedirectReady,
-  ]);
-
-  if (!appReady) {
-    return null;
-  }
-
-  if (needsStorageResumeResolution && !storageRedirectReady) {
-    return null;
-  }
-
-  if (shouldRedirectToDifferentRoute) {
-    return null;
-  }
-
-  if (shouldResolveSession && storedCurrentUser === null && currentUserQuery.isError) {
-    return (
-      <View style={styles.authenticatedState}>
-        <Text style={styles.sessionTitle}>{t("welcome.session.error")}</Text>
-        <Text style={styles.sessionSubtitle}>{t("welcome.session.errorSubtitle")}</Text>
-        <TouchableOpacity onPress={() => currentUserQuery.refetch()} activeOpacity={0.7}>
-          <Text style={styles.retryText}>{t("welcome.session.retry")}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  return <Stack screenOptions={{ headerShown: false }} />;
-}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -241,7 +41,7 @@ export default function RootLayout() {
       <GestureHandlerRootView style={styles.root}>
         <AppProviders>
           <StatusBar style="dark" backgroundColor="#ffffff" />
-          <RootNavigator assetsReady={assetsReady} />
+          <Stack screenOptions={{ headerShown: false }} />
           <Toaster
             position="top-center"
             theme="light"
@@ -263,34 +63,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  authenticatedState: {
-    flex: 1,
-    paddingHorizontal: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    backgroundColor: colors.background,
-  },
-  sessionTitle: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 16,
-    lineHeight: 24,
-    color: colors.text,
-    textAlign: "center",
-  },
-  sessionSubtitle: {
-    maxWidth: 320,
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    lineHeight: 22,
-    color: colors.muted,
-    textAlign: "center",
-  },
-  retryText: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 14,
-    color: colors.brand,
   },
   toast: {
     borderRadius: 16,

@@ -8,12 +8,11 @@ import {
   CURRENT_USER_QUERY_KEY,
   CurrentUser,
   getCurrentUser,
-  getStoredCurrentUser,
 } from "@/lib/api/profile";
 import { Feather } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { ActivityIndicator, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
@@ -29,16 +28,6 @@ export default function HouseholdInvite() {
     placeholderData: (previousData) => previousData,
     staleTime: 60_000,
   });
-
-  useEffect(() => {
-    if (!currentUserQuery.data && !currentUserQuery.isPending) {
-      void getStoredCurrentUser().then((user) => {
-        if (user) {
-          queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user);
-        }
-      });
-    }
-  }, [currentUserQuery.data, currentUserQuery.isPending, queryClient]);
 
   const inviteCode = currentUserQuery.data?.household?.invite_code?.trim() ?? "";
   const householdName = currentUserQuery.data?.household?.name?.trim() ?? t("household.invite.defaultName");

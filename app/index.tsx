@@ -6,7 +6,13 @@ import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useI18n } from "@/i18n";
+import {
+  CURRENT_USER_QUERY_KEY,
+  getAppEntryRoute,
+  getCurrentUser,
+} from "@/lib/api/profile";
 import { useAuth } from "@/providers/AuthProvider";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Animated, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -22,8 +28,15 @@ export default function Welcome() {
   const { isAuthenticated, ready } = useAuth();
   const [current, setCurrent] = useState(0);
   const progress = useRef(new Animated.Value(0)).current;
+  const lastRedirectRef = useRef<string | null>(null);
   const googleAuth = useGoogleAuth({
     onSuccess: () => {},
+  });
+  const currentUserQuery = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: getCurrentUser,
+    enabled: ready && isAuthenticated,
+    retry: 1,
   });
 
   const slides = [
@@ -60,13 +73,41 @@ export default function Welcome() {
     };
   }, [current, progress, slides.length]);
 
+  useEffect(() => {
+    if (!ready || !isAuthenticated || !currentUserQuery.data) {
+      lastRedirectRef.current = null;
+      return;
+    }
+
+    const nextRoute = getAppEntryRoute(currentUserQuery.data);
+
+    if (lastRedirectRef.current === nextRoute) {
+      return;
+    }
+
+    lastRedirectRef.current = nextRoute;
+    router.replace(nextRoute);
+  }, [currentUserQuery.data, isAuthenticated, ready, router]);
+
   if (!ready || isAuthenticated) {
+    const statusText = currentUserQuery.isError
+      ? t("welcome.session.error")
+      : t("welcome.session.loading");
+    const subtitleText = currentUserQuery.isError
+      ? t("welcome.session.errorSubtitle")
+      : t("welcome.session.loadingSubtitle");
+
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.authenticatedState}>
           <ActivityIndicator size="small" color={colors.brand} />
-          <Text style={styles.sessionTitle}>{t("welcome.session.loading")}</Text>
-          <Text style={styles.sessionSubtitle}>{t("welcome.session.loadingSubtitle")}</Text>
+          <Text style={styles.sessionTitle}>{statusText}</Text>
+          <Text style={styles.sessionSubtitle}>{subtitleText}</Text>
+          {currentUserQuery.isError ? (
+            <TouchableOpacity onPress={() => currentUserQuery.refetch()} activeOpacity={0.7}>
+              <Text style={styles.authRetryText}>{t("welcome.session.retry")}</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
       </SafeAreaView>
     );
