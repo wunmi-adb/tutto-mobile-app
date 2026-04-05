@@ -48,7 +48,7 @@ export default function DashboardTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="library"
+        name="recipes/index"
         options={{
           title: t("dashboard.tabs.library"),
           tabBarIcon: ({ color }) => <Feather name="book-open" size={20} color={color} />,

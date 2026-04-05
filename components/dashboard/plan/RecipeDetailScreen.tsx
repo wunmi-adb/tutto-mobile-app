@@ -1,5 +1,7 @@
 import { getMealTypeLabel, type MealTypeId } from "@/components/dashboard/data";
 import { resolveMealRecipe } from "@/components/dashboard/plan/helpers";
+import RecipeSourceBadge from "@/components/dashboard/recipes/RecipeSourceBadge";
+import type { RecipeSource } from "@/components/dashboard/recipes/types";
 import type { MealRecipe } from "@/components/dashboard/plan/types";
 import type { EditableStep } from "@/stores/recipeDetailStore";
 import { serializeEditableStep, useRecipeDetailState } from "@/stores/recipeDetailStore";
@@ -14,6 +16,7 @@ import { Feather } from "@expo/vector-icons";
 import { useMemo } from "react";
 import {
   KeyboardAvoidingView,
+  Image,
   Platform,
   ScrollView,
   StyleSheet,
@@ -23,12 +26,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
+  heroImage?: string;
   mealType: MealTypeId;
   onBack: () => void;
   onCookedThis: (recipe: MealRecipe) => void;
   onSave: (recipe: MealRecipe) => void;
   onStartCooking: (recipe: MealRecipe) => void;
   recipe: MealRecipe;
+  source?: RecipeSource;
 };
 
 function getNutritionItems(
@@ -51,12 +56,14 @@ function getKeyboardBehavior() {
 }
 
 export default function RecipeDetailScreen({
+  heroImage,
   mealType,
   onBack,
   onCookedThis,
   onSave,
   onStartCooking,
   recipe,
+  source,
 }: Props) {
   const { t } = useI18n();
   const recipeDetails = useMemo(() => resolveMealRecipe(recipe, t), [recipe, t]);
@@ -115,18 +122,63 @@ export default function RecipeDetailScreen({
   };
 
   const renderHeaderAction = () => {
+    const actionStyle = heroImage ? styles.heroHeaderAction : styles.headerAction;
+    const actionActiveStyle = heroImage ? styles.heroHeaderActionActive : styles.headerActionActive;
+    const iconColor = heroImage ? colors.text : colors.text;
+    const activeIconColor = heroImage ? colors.text : colors.background;
+
     if (editing) {
       return (
-        <HapticPressable style={styles.headerActionActive} onPress={handleSave} pressedOpacity={0.82}>
-          <Feather name="check" size={16} color={colors.background} />
+        <HapticPressable style={actionActiveStyle} onPress={handleSave} pressedOpacity={0.82}>
+          <Feather name="check" size={16} color={activeIconColor} />
         </HapticPressable>
       );
     }
 
     return (
-      <HapticPressable style={styles.headerAction} onPress={startEditing} pressedOpacity={0.82}>
-        <Feather name="edit-2" size={14} color={colors.text} />
+      <HapticPressable style={actionStyle} onPress={startEditing} pressedOpacity={0.82}>
+        <Feather name="edit-2" size={14} color={iconColor} />
       </HapticPressable>
+    );
+  };
+
+  const renderHero = () => {
+    if (!heroImage) {
+      return null;
+    }
+
+    return (
+      <View style={styles.heroWrap}>
+        <Image source={{ uri: heroImage }} style={styles.heroImage} resizeMode="cover" />
+        <View style={styles.heroOverlay} />
+        <View style={styles.heroTopRow}>
+          <BackButton style={styles.heroBackButton} onPress={onBack} />
+          {renderHeaderAction()}
+        </View>
+        {source ? (
+          <View style={styles.heroBadgeWrap}>
+            <RecipeSourceBadge source={source} />
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderHeader = () => {
+    if (heroImage) {
+      return (
+        <View style={styles.headerNoHeroSpacer}>
+          <Text style={styles.eyebrow}>{getMealTypeLabel(t, mealType)}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.header}>
+        <BackButton onPress={onBack} />
+        <Text style={styles.eyebrow}>{getMealTypeLabel(t, mealType)}</Text>
+        {renderHeaderAction()}
+      </View>
     );
   };
 
@@ -278,22 +330,19 @@ export default function RecipeDetailScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+    <SafeAreaView style={styles.container} edges={heroImage ? ["bottom"] : ["top", "bottom"]}>
       <KeyboardAvoidingView
         style={styles.keyboardAvoider}
         behavior={getKeyboardBehavior()}
       >
+        {renderHero()}
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <BackButton onPress={onBack} />
-            <Text style={styles.eyebrow}>{getMealTypeLabel(t, mealType)}</Text>
-            {renderHeaderAction()}
-          </View>
+          {renderHeader()}
 
           {renderTitle()}
 
@@ -362,10 +411,44 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 128,
   },
+  heroWrap: {
+    height: 276,
+    position: "relative",
+    marginBottom: 10,
+  },
+  heroImage: {
+    width: "100%",
+    height: "100%",
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(26, 18, 8, 0.14)",
+  },
+  heroTopRow: {
+    position: "absolute",
+    top: 58,
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  heroBackButton: {
+    backgroundColor: "rgba(255,255,255,0.9)",
+  },
+  heroBadgeWrap: {
+    position: "absolute",
+    left: 20,
+    bottom: 18,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  headerNoHeroSpacer: {
+    alignItems: "flex-start",
     marginBottom: 24,
   },
   eyebrow: {
@@ -389,6 +472,22 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: colors.text,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroHeaderAction: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroHeaderActionActive: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.95)",
     alignItems: "center",
     justifyContent: "center",
   },
