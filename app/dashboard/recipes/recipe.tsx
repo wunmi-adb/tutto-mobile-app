@@ -40,6 +40,7 @@ export default function RecipeDetailRoute() {
         router.push({
           pathname: "/dashboard/plan/update-usage",
           params: {
+            origin: "recipes",
             mealType,
             recipe: serializeMealRecipe(nextRecipe),
             recipeName: nextRecipe.kind === "custom" ? nextRecipe.name : undefined,
@@ -50,6 +51,7 @@ export default function RecipeDetailRoute() {
         router.push({
           pathname: "/dashboard/plan/cook",
           params: {
+            origin: "recipes",
             mealType,
             recipe: serializeMealRecipe(nextRecipe),
           },

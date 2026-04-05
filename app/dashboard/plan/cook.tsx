@@ -8,6 +8,7 @@ export default function PlanCookScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
     mealType?: MealTypeId;
+    origin?: "plan" | "recipes";
     recipe?: string;
   }>();
 
@@ -33,6 +34,7 @@ export default function PlanCookScreen() {
           pathname: "/dashboard/plan/update-usage",
           params: {
             mealType: params.mealType,
+            origin: params.origin,
             recipe: serializeMealRecipe(recipe),
           },
         })

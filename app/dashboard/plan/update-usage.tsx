@@ -81,9 +81,11 @@ export default function PlanUpdateUsageRoute() {
     mealName?: string;
     mealType?: MealTypeId;
     mode?: "cooked_meal";
+    origin?: "plan" | "recipes";
     recipe?: string;
     storageLocationKey?: string;
   }>();
+  const returnRoute = params.origin === "recipes" ? "/dashboard/recipes" : "/dashboard/plan";
   const isCookedMealMode = params.mode === "cooked_meal";
   const parsedRecipe = parseMealRecipe(params.recipe);
   const mealId = params.mealId;
@@ -99,14 +101,14 @@ export default function PlanUpdateUsageRoute() {
 
   useEffect(() => {
     if (isCookedMealMode && !hasCookedMealParams) {
-      router.replace("/dashboard/plan");
+      router.replace(returnRoute);
       return;
     }
 
     if (!isCookedMealMode && !parsedRecipe) {
-      router.replace("/dashboard/plan");
+      router.replace(returnRoute);
     }
-  }, [hasCookedMealParams, isCookedMealMode, parsedRecipe, router]);
+  }, [hasCookedMealParams, isCookedMealMode, parsedRecipe, returnRoute, router]);
 
   if (isCookedMealMode) {
     if (!hasCookedMealParams) {
@@ -165,7 +167,7 @@ export default function PlanUpdateUsageRoute() {
         });
       }
 
-      router.replace("/dashboard/plan");
+      router.replace(returnRoute);
     };
 
     return (
@@ -174,7 +176,7 @@ export default function PlanUpdateUsageRoute() {
         mealName={mealName}
         location={location}
         initialFillLevel={params.fillLevel}
-        onSkip={() => router.replace("/dashboard/plan")}
+        onSkip={() => router.replace(returnRoute)}
         onDone={handleCookedMealDone}
         saving={updateInventoryItemMutation.isPending}
       />
@@ -203,7 +205,7 @@ export default function PlanUpdateUsageRoute() {
         });
       }
 
-      router.replace("/dashboard/plan");
+      router.replace(returnRoute);
     } catch (error) {
       handleCaughtApiError(error);
     }
@@ -213,7 +215,7 @@ export default function PlanUpdateUsageRoute() {
     <UpdateUsageScreen
       mode="recipe"
       recipe={parsedRecipe}
-      onSkip={() => router.replace("/dashboard/plan")}
+      onSkip={() => router.replace(returnRoute)}
       onDone={handleRecipeDone}
       saving={updateInventoryItemMutation.isPending}
     />

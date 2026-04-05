@@ -93,6 +93,7 @@ export default function PlanMealScreen() {
         router.push({
           pathname: "/dashboard/plan/update-usage",
           params: {
+            origin: "plan",
             recipe: serializeMealRecipe(nextRecipe),
             mealType: params.mealType,
             recipeName: nextRecipe.kind === "preset" ? undefined : nextRecipe.name,
@@ -106,6 +107,7 @@ export default function PlanMealScreen() {
             dayIdx: params.dayIdx,
             mealId: params.mealId,
             mealType: params.mealType,
+            origin: "plan",
             recipe: serializeMealRecipe(nextRecipe),
           },
         })
