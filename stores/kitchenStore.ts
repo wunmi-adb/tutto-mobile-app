@@ -142,10 +142,7 @@ export function useKitchenState() {
   const summaryKey = getKitchenSummaryKey(items.length, locationFilters.length);
 
   const handleAddItem = () => {
-    router.push({
-      pathname: "/onboarding/storage",
-      params: { source: source ?? "pantry" },
-    });
+    router.push("/onboarding/storage");
   };
 
   const handleEditItem = (item: PantryItem, prefill: CapturedInventoryItem) => {

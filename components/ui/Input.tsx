@@ -1,6 +1,6 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
-import { useRef } from "react";
+import { forwardRef, useRef } from "react";
 import { Animated, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from "react-native";
 
 type Props = TextInputProps & {
@@ -9,7 +9,10 @@ type Props = TextInputProps & {
   containerStyle?: ViewStyle;
 };
 
-export default function Input({ label, variant = "default", containerStyle, style, onFocus, onBlur, ...props }: Props) {
+const Input = forwardRef<TextInput, Props>(function Input(
+  { label, variant = "default", containerStyle, style, onFocus, onBlur, ...props },
+  ref,
+) {
   const focusAnim = useRef(new Animated.Value(0)).current;
 
   const borderColor = focusAnim.interpolate({
@@ -40,6 +43,7 @@ export default function Input({ label, variant = "default", containerStyle, styl
         ]}
       >
         <TextInput
+          ref={ref}
           {...props}
           style={[
             styles.input,
@@ -57,7 +61,9 @@ export default function Input({ label, variant = "default", containerStyle, styl
       </Animated.View>
     </View>
   );
-}
+});
+
+export default Input;
 
 const styles = StyleSheet.create({
   label: {

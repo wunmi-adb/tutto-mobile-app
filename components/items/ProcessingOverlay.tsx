@@ -6,49 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const DEFAULT_EARLY_WORD_KEYS = [
-  "addItems.processing.words.listening",
-  "addItems.processing.words.tuningIn",
-  "addItems.processing.words.hearingPantry",
-  "addItems.processing.words.catching",
-  "addItems.processing.words.gotIt",
-  "addItems.processing.words.eggsBreadButter",
-  "addItems.processing.words.piecingItTogether",
-] as const satisfies readonly TranslationKey[];
-
-const DEFAULT_MID_WORD_KEYS = [
-  "addItems.processing.words.sorting",
-  "addItems.processing.words.matching",
-  "addItems.processing.words.finding",
-  "addItems.processing.words.checkingDuplicates",
-  "addItems.processing.words.organising",
-  "addItems.processing.words.readingBetweenLists",
-  "addItems.processing.words.stockingShelves",
-  "addItems.processing.words.kitchenMemory",
-  "addItems.processing.words.makingSpace",
-] as const satisfies readonly TranslationKey[];
-
-const DEFAULT_LATE_WORD_KEYS = [
-  "addItems.processing.words.almostThere",
-  "addItems.processing.words.saveTime",
-  "addItems.processing.words.noMoreForgotten",
-  "addItems.processing.words.excitedFridge",
-  "addItems.processing.words.finalCheck",
-  "addItems.processing.words.fewMoreSeconds",
-  "addItems.processing.words.oneLastListen",
-  "addItems.processing.words.wrappingUp",
-] as const satisfies readonly TranslationKey[];
-
 export type ProcessingWordStage = {
   maxElapsedMs: number;
   keys: readonly TranslationKey[];
 };
-
-export const DEFAULT_PROCESSING_WORD_STAGES: readonly ProcessingWordStage[] = [
-  { maxElapsedMs: 4500, keys: DEFAULT_EARLY_WORD_KEYS },
-  { maxElapsedMs: 10500, keys: DEFAULT_MID_WORD_KEYS },
-  { maxElapsedMs: Number.POSITIVE_INFINITY, keys: DEFAULT_LATE_WORD_KEYS },
-] as const;
 
 function getWordPool(wordStages: readonly ProcessingWordStage[], elapsedMs: number) {
   return wordStages.find((stage) => elapsedMs < stage.maxElapsedMs)?.keys ?? wordStages[wordStages.length - 1]?.keys ?? [];
@@ -76,30 +37,29 @@ function getNextRandomWordKey(
 
 type Props = {
   subtitle?: string | null;
-  wordStages?: readonly ProcessingWordStage[];
+  wordStages: readonly ProcessingWordStage[];
   wordCycleMs?: number;
 };
 
 export default function ProcessingOverlay({
   subtitle,
-  wordStages = DEFAULT_PROCESSING_WORD_STAGES,
+  wordStages,
   wordCycleMs = 1800,
 }: Props) {
   const { t } = useI18n();
+  const initialWordKey = wordStages[0]?.keys[0] ?? ("common.language" as TranslationKey);
   const outerSpin = useRef(new Animated.Value(0)).current;
   const innerSpin = useRef(new Animated.Value(0)).current;
   const dotsPulse = useRef(new Animated.Value(0)).current;
   const wordOpacity = useRef(new Animated.Value(1)).current;
   const wordTranslateY = useRef(new Animated.Value(0)).current;
   const startedAtRef = useRef(Date.now());
-  const [wordKey, setWordKey] = useState<TranslationKey>(
-    wordStages[0]?.keys[0] ?? DEFAULT_EARLY_WORD_KEYS[0],
-  );
+  const [wordKey, setWordKey] = useState<TranslationKey>(initialWordKey);
 
   useEffect(() => {
     startedAtRef.current = Date.now();
-    setWordKey(wordStages[0]?.keys[0] ?? DEFAULT_EARLY_WORD_KEYS[0]);
-  }, [wordStages]);
+    setWordKey(initialWordKey);
+  }, [initialWordKey]);
 
   useEffect(() => {
     const outerLoop = Animated.loop(

@@ -17,13 +17,3 @@ export function parseJsonParam<T>(value: string | undefined, fallback: T) {
     return fallback;
   }
 }
-
-export function getCompleteRouteParams(location: string, source?: string) {
-  return {
-    pathname: "/onboarding/complete" as const,
-    params: {
-      location,
-      ...(source ? { source } : {}),
-    },
-  };
-}

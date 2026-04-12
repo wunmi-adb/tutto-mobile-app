@@ -1,6 +1,5 @@
 import AddItemView from "@/components/items/AddItemView";
-import type { ItemDraft } from "@/components/items/add-item/types";
-import { DetectedItem } from "@/components/items/ReviewItemsView";
+import type { ItemDraft, PrefillableItem } from "@/components/items/add-item/types";
 import { useI18n } from "@/i18n";
 import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import {
@@ -8,11 +7,7 @@ import {
   useDeleteInventoryItem,
   useUpdateInventoryItem,
 } from "@/lib/api/items";
-import {
-  getCompleteRouteParams,
-  getSingleParamValue,
-  parseJsonParam,
-} from "@/lib/utils/add-items";
+import { getSingleParamValue, parseJsonParam } from "@/lib/utils/search-params";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo } from "react";
 
@@ -32,6 +27,7 @@ export default function Detail() {
       completedIndices: string;
       source?: string;
     }>();
+
   const normalizedItemKey = getSingleParamValue(itemKey);
   const normalizedLocation = getSingleParamValue(location);
   const normalizedStorageKey = getSingleParamValue(storageKey);
@@ -39,12 +35,12 @@ export default function Detail() {
   const normalizedCurrentIndex = getSingleParamValue(currentIndex);
   const normalizedCompletedIndices = getSingleParamValue(completedIndices);
   const normalizedSource = getSingleParamValue(source);
-  const storageName = normalizedLocation ?? t("addItems.defaultStorage");
+  const storageName = normalizedLocation ?? t("dashboard.tabs.kitchen");
   const parsedCurrentIndex = Number.parseInt(normalizedCurrentIndex ?? "0", 10);
   const isPantryFlow = normalizedSource === "pantry";
 
   const parsedItems = useMemo(
-    () => parseJsonParam<DetectedItem[]>(normalizedItems, []),
+    () => parseJsonParam<PrefillableItem[]>(normalizedItems, []),
     [normalizedItems],
   );
   const parsedCompleted = useMemo(
@@ -79,35 +75,41 @@ export default function Detail() {
       return;
     }
 
-    router.replace(getCompleteRouteParams(storageName, normalizedSource));
-  }, [isPantryFlow, normalizedSource, router, storageName]);
+    router.replace("/dashboard");
+  }, [isPantryFlow, router]);
 
-  const updateExistingItem = useCallback(async (drafts: ItemDraft[]) => {
-    if (!normalizedItemKey || !normalizedStorageKey || !drafts[0]) {
-      return;
-    }
+  const updateExistingItem = useCallback(
+    async (drafts: ItemDraft[]) => {
+      if (!normalizedItemKey || !normalizedStorageKey || !drafts[0]) {
+        return;
+      }
 
-    await updateInventoryItemMutation.mutateAsync({
-      draft: drafts[0],
-      itemKey: normalizedItemKey,
-      storageLocationKey: normalizedStorageKey,
-    });
+      await updateInventoryItemMutation.mutateAsync({
+        draft: drafts[0],
+        itemKey: normalizedItemKey,
+        storageLocationKey: normalizedStorageKey,
+      });
 
-    router.back();
-  }, [normalizedItemKey, normalizedStorageKey, router, updateInventoryItemMutation]);
+      router.back();
+    },
+    [normalizedItemKey, normalizedStorageKey, router, updateInventoryItemMutation],
+  );
 
-  const createNewItems = useCallback(async (drafts: ItemDraft[]) => {
-    if (!normalizedStorageKey) {
-      return;
-    }
+  const createNewItems = useCallback(
+    async (drafts: ItemDraft[]) => {
+      if (!normalizedStorageKey) {
+        return;
+      }
 
-    await createInventoryItemsMutation.mutateAsync({
-      drafts,
-      storageLocationKey: normalizedStorageKey,
-    });
+      await createInventoryItemsMutation.mutateAsync({
+        drafts,
+        storageLocationKey: normalizedStorageKey,
+      });
 
-    navigateAfterCreate();
-  }, [createInventoryItemsMutation, navigateAfterCreate, normalizedStorageKey]);
+      navigateAfterCreate();
+    },
+    [createInventoryItemsMutation, navigateAfterCreate, normalizedStorageKey],
+  );
 
   const handleFinish = useCallback(
     async (drafts: ItemDraft[]) => {
@@ -122,11 +124,7 @@ export default function Detail() {
         handleCaughtApiError(error);
       }
     },
-    [
-      createNewItems,
-      normalizedItemKey,
-      updateExistingItem,
-    ],
+    [createNewItems, normalizedItemKey, updateExistingItem],
   );
 
   return (

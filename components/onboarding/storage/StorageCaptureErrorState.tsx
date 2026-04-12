@@ -7,14 +7,11 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
-  message?: string;
-  type: "image" | "voice";
   onTryAgain: () => void;
 };
 
-export default function CaptureErrorState({ message, type, onTryAgain }: Props) {
+export default function StorageCaptureErrorState({ onTryAgain }: Props) {
   const { t } = useI18n();
-  const title = message ?? t("addItems.captureError.title");
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,16 +23,12 @@ export default function CaptureErrorState({ message, type, onTryAgain }: Props) 
         </View>
 
         <View style={styles.textBlock}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>
-            {type === "image"
-              ? t("addItems.captureError.subtitle.image")
-              : t("addItems.captureError.subtitle.voice")}
-          </Text>
+          <Text style={styles.title}>{t("storage.onboarding.voice.errorTitle")}</Text>
+          <Text style={styles.subtitle}>{t("storage.onboarding.voice.errorSubtitle")}</Text>
         </View>
 
         <Button
-          title={t("addItems.captureError.retry")}
+          title={t("storage.onboarding.voice.retry")}
           onPress={onTryAgain}
           style={styles.retryButton}
         />
@@ -61,11 +54,11 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: colors.danger + "10",
+    backgroundColor: `${colors.danger}10`,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.danger + "16",
+    borderColor: `${colors.danger}16`,
     marginBottom: 24,
   },
   iconInner: {

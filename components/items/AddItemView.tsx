@@ -13,7 +13,10 @@ import AddItemHeader from "./add-item/AddItemHeader";
 import AddItemTypeToggle from "./add-item/AddItemTypeToggle";
 import {
   Batch,
-  ItemDraft, PrefillableItem, makeItemDraft, makeItemDraftFromPrefill,
+  ItemDraft,
+  PrefillableItem,
+  makeItemDraft,
+  makeItemDraftFromPrefill,
 } from "./add-item/types";
 
 type Props = {
@@ -63,31 +66,41 @@ export default function AddItemView({
     pendingFinishedBatchId == null
       ? undefined
       : currentDraft?.batches.find((batch) => batch.id === pendingFinishedBatchId);
-  const updateCurrentDraft = useCallback((updater: (draft: ItemDraft) => ItemDraft) => {
-    setDrafts((prev) =>
-      prev.map((draft, draftIndex) => (draftIndex === safeIndex ? updater(draft) : draft)),
-    );
-  }, [safeIndex]);
 
-  const updateBatch = useCallback((id: number, updates: Partial<Batch>) => {
-    updateCurrentDraft((draft) => ({
-      ...draft,
-      batches: draft.batches.map((batch) => (batch.id === id ? { ...batch, ...updates } : batch)),
-    }));
-  }, [updateCurrentDraft]);
+  const updateCurrentDraft = useCallback(
+    (updater: (draft: ItemDraft) => ItemDraft) => {
+      setDrafts((prev) =>
+        prev.map((draft, draftIndex) => (draftIndex === safeIndex ? updater(draft) : draft)),
+      );
+    },
+    [safeIndex],
+  );
 
-  const removeBatch = useCallback((id: number) => {
-    updateCurrentDraft((draft) => {
-      const nextBatches = draft.batches.filter((batch) => batch.id !== id);
-
-      return {
+  const updateBatch = useCallback(
+    (id: number, updates: Partial<Batch>) => {
+      updateCurrentDraft((draft) => ({
         ...draft,
-        batches: nextBatches,
-        expandedBatchId:
-          draft.expandedBatchId === id ? (nextBatches[0]?.id ?? -1) : draft.expandedBatchId,
-      };
-    });
-  }, [updateCurrentDraft]);
+        batches: draft.batches.map((batch) => (batch.id === id ? { ...batch, ...updates } : batch)),
+      }));
+    },
+    [updateCurrentDraft],
+  );
+
+  const removeBatch = useCallback(
+    (id: number) => {
+      updateCurrentDraft((draft) => {
+        const nextBatches = draft.batches.filter((batch) => batch.id !== id);
+
+        return {
+          ...draft,
+          batches: nextBatches,
+          expandedBatchId:
+            draft.expandedBatchId === id ? (nextBatches[0]?.id ?? -1) : draft.expandedBatchId,
+        };
+      });
+    },
+    [updateCurrentDraft],
+  );
 
   const addBatch = useCallback(() => {
     updateCurrentDraft((draft) => {
@@ -136,7 +149,7 @@ export default function AddItemView({
 
         <View style={styles.finishedEmptyState}>
           <Feather name="package" size={20} color={colors.muted} />
-          <Text style={styles.finishedEmptyTitle}>{t("addItems.review.empty")}</Text>
+          <Text style={styles.finishedEmptyTitle}>{t("dashboard.kitchen.empty.noItems")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -165,66 +178,65 @@ export default function AddItemView({
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            <TextInput
+              style={styles.nameInput}
+              value={currentDraft.name}
+              onChangeText={(value) =>
+                updateCurrentDraft((draft) => ({
+                  ...draft,
+                  name: value,
+                }))
+              }
+              placeholder={
+                isIngredient
+                  ? t("addItems.detail.namePlaceholder.ingredient")
+                  : t("addItems.detail.namePlaceholder.cooked")
+              }
+              placeholderTextColor={`${colors.muted}66`}
+              autoCapitalize="words"
+              returnKeyType="done"
+              selectionColor={colors.text}
+            />
 
-          <TextInput
-            style={styles.nameInput}
-            value={currentDraft.name}
-            onChangeText={(value) =>
-              updateCurrentDraft((draft) => ({
-                ...draft,
-                name: value,
-              }))
-            }
-            placeholder={
-              isIngredient
-                ? t("addItems.detail.namePlaceholder.ingredient")
-                : t("addItems.detail.namePlaceholder.cooked")
-            }
-            placeholderTextColor={colors.muted + "66"}
-            autoCapitalize="words"
-            returnKeyType="done"
-            selectionColor={colors.text}
-          />
+            <AddItemTypeToggle
+              itemType={currentDraft.itemType}
+              onChange={(itemType) =>
+                updateCurrentDraft((draft) => ({
+                  ...draft,
+                  itemType,
+                }))
+              }
+            />
 
-          <AddItemTypeToggle
-            itemType={currentDraft.itemType}
-            onChange={(itemType) =>
-              updateCurrentDraft((draft) => ({
-                ...draft,
-                itemType,
-              }))
-            }
-          />
+            <AddItemBatchSection
+              draft={currentDraft}
+              isEditMode={isEditMode}
+              onAddBatch={addBatch}
+              onMarkFinished={(batchId) => setPendingFinishedBatchId(batchId)}
+              onRemoveBatch={removeBatch}
+              onToggleBatch={(batchId) =>
+                updateCurrentDraft((draft) => ({
+                  ...draft,
+                  expandedBatchId: draft.expandedBatchId === batchId ? -1 : batchId,
+                }))
+              }
+              onToggleTracking={() =>
+                updateCurrentDraft((draft) => ({
+                  ...draft,
+                  countAsUnits: !draft.countAsUnits,
+                }))
+              }
+              onUpdateBatch={updateBatch}
+            />
 
-          <AddItemBatchSection
-            draft={currentDraft}
-            isEditMode={isEditMode}
-            onAddBatch={addBatch}
-            onMarkFinished={(batchId) => setPendingFinishedBatchId(batchId)}
-            onRemoveBatch={removeBatch}
-            onToggleBatch={(batchId) =>
-              updateCurrentDraft((draft) => ({
-                ...draft,
-                expandedBatchId: draft.expandedBatchId === batchId ? -1 : batchId,
-              }))
-            }
-            onToggleTracking={() =>
-              updateCurrentDraft((draft) => ({
-                ...draft,
-                countAsUnits: !draft.countAsUnits,
-              }))
-            }
-            onUpdateBatch={updateBatch}
-          />
-
-          <Button
-            title={isLast ? t("addItems.detail.saveFinish") : t("addItems.detail.saveNext")}
-            disabled={!currentDraft.name.trim()}
-            loading={isLast && saving}
-            onPress={() => {
-              void handleSave();
-            }}
-          />
+            <Button
+              title={isLast ? t("addItems.detail.saveFinish") : t("addItems.detail.saveNext")}
+              disabled={!currentDraft.name.trim()}
+              loading={isLast && saving}
+              onPress={() => {
+                void handleSave();
+              }}
+            />
           </ScrollView>
         </View>
       </KeyboardAvoidingContainer>
@@ -272,7 +284,9 @@ export default function AddItemView({
                       {
                         index:
                           (pendingFinishedBatch
-                            ? currentDraft.batches.findIndex((batch) => batch.id === pendingFinishedBatch.id)
+                            ? currentDraft.batches.findIndex(
+                                (batch) => batch.id === pendingFinishedBatch.id,
+                              )
                             : -1) + 1,
                       },
                     )
@@ -330,12 +344,5 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansMedium,
     fontSize: 14,
     color: colors.muted,
-  },
-  finishedEmptySubtitle: {
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: "center",
-    color: colors.muted + "AA",
   },
 });

@@ -1,7 +1,7 @@
 import { getSavedRecipeMealType, mapSavedRecipeToMealRecipe } from "@/components/dashboard/recipes/helpers";
 import RecipeDetailScreen from "@/components/dashboard/plan/RecipeDetailScreen";
 import { serializeMealRecipe } from "@/components/dashboard/plan/helpers";
-import { getSingleParamValue } from "@/lib/utils/add-items";
+import { getSingleParamValue } from "@/lib/utils/search-params";
 import { useRecipeDetailState } from "@/stores/recipesStore";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { colors } from "@/constants/colors";
