@@ -38,8 +38,6 @@ const ja = {
   "household.create.namePlaceholder": "例: 田中ファミリー",
   "household.create.cityLabel": "都市",
   "household.create.cityPlaceholder": "例: ロンドン、ラゴス、ニューヨーク",
-  "household.create.cityHint":
-    "お住まいの地域で人気の店舗、旬の食材、レシピを提案するのに役立ちます。",
   "household.create.peopleLabel": "世帯の人数",
   "household.create.cta": "世帯を作成",
   "household.create.error": "現在、世帯を作成できませんでした。もう一度お試しください。",

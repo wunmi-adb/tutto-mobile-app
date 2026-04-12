@@ -39,8 +39,6 @@ const fr = {
   "household.create.namePlaceholder": "ex. Les Martin",
   "household.create.cityLabel": "VILLE",
   "household.create.cityPlaceholder": "ex. Lagos, Londres, New York",
-  "household.create.cityHint":
-    "Cela nous aide à suggérer des magasins, des produits de saison et des recettes populaires dans votre région.",
   "household.create.peopleLabel": "PERSONNES DANS LE FOYER",
   "household.create.cta": "Créer le foyer",
   "household.create.error": "Nous n'avons pas pu créer votre foyer pour le moment. Veuillez réessayer.",

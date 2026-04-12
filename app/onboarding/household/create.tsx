@@ -62,15 +62,12 @@ export default function HouseholdCreate() {
               placeholder={t("household.create.namePlaceholder")}
             />
 
-            <View>
-              <Input
-                label={t("household.create.cityLabel")}
-                value={city}
-                onChangeText={setCity}
-                placeholder={t("household.create.cityPlaceholder")}
-              />
-              <Text style={styles.helperText}>{t("household.create.cityHint")}</Text>
-            </View>
+            <Input
+              label={t("household.create.cityLabel")}
+              value={city}
+              onChangeText={setCity}
+              placeholder={t("household.create.cityPlaceholder")}
+            />
 
             <View>
               <Text style={styles.label}>{t("household.create.peopleLabel")}</Text>
@@ -159,13 +156,6 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginBottom: 8,
     textTransform: "uppercase",
-  },
-  helperText: {
-    marginTop: 8,
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    lineHeight: 18,
-    color: colors.muted,
   },
   stepper: {
     flexDirection: "row",

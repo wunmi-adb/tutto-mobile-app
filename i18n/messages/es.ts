@@ -39,8 +39,6 @@ const es = {
   "household.create.namePlaceholder": "p. ej. Los García",
   "household.create.cityLabel": "CIUDAD",
   "household.create.cityPlaceholder": "p. ej. Lagos, Londres, Nueva York",
-  "household.create.cityHint":
-    "Esto nos ayuda a sugerir tiendas, productos de temporada y recetas populares en tu zona.",
   "household.create.peopleLabel": "PERSONAS EN EL HOGAR",
   "household.create.cta": "Crear hogar",
   "household.create.error": "No pudimos crear tu hogar ahora mismo. Vuelve a intentarlo.",

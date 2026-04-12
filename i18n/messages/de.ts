@@ -39,8 +39,6 @@ const de = {
   "household.create.namePlaceholder": "z. B. Familie Schmidt",
   "household.create.cityLabel": "STADT",
   "household.create.cityPlaceholder": "z. B. Berlin, London, Lagos",
-  "household.create.cityHint":
-    "So können wir Geschäfte, saisonale Zutaten und beliebte Rezepte aus deiner Gegend empfehlen.",
   "household.create.peopleLabel": "PERSONEN IM HAUSHALT",
   "household.create.cta": "Haushalt erstellen",
   "household.create.error": "Dein Haushalt konnte gerade nicht erstellt werden. Bitte versuche es erneut.",

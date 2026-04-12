@@ -39,8 +39,6 @@ const tr = {
   "household.create.namePlaceholder": "ör. Yılmaz Ailesi",
   "household.create.cityLabel": "ŞEHİR",
   "household.create.cityPlaceholder": "örn. Lagos, Londra, New York",
-  "household.create.cityHint":
-    "Bu, bölgendeki mağazaları, mevsimlik ürünleri ve popüler tarifleri önermemize yardımcı olur.",
   "household.create.peopleLabel": "HANEDEKİ KİŞİ SAYISI",
   "household.create.cta": "Hane oluştur",
   "household.create.error": "Hanen şu anda oluşturulamadı. Lütfen tekrar dene.",

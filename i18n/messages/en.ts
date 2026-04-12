@@ -34,8 +34,6 @@ const en = {
   "household.create.namePlaceholder": "e.g. The Johnsons",
   "household.create.cityLabel": "CITY",
   "household.create.cityPlaceholder": "e.g. Paris, London, New York",
-  "household.create.cityHint":
-    "This helps us suggest stores, seasonal produce, and recipes popular in your area.",
   "household.create.peopleLabel": "PEOPLE IN HOUSEHOLD",
   "household.create.cta": "Create household",
   "household.create.error": "We couldn't create your household right now. Please try again.",
