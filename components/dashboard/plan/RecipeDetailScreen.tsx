@@ -1,7 +1,6 @@
-import { getMealTypeLabel, type MealTypeId } from "@/components/dashboard/data";
 import { resolveMealRecipe } from "@/components/dashboard/plan/helpers";
 import RecipeSourceBadge from "@/components/dashboard/recipes/RecipeSourceBadge";
-import type { RecipeSource } from "@/components/dashboard/recipes/types";
+import type { RecipeCreator, RecipeSource } from "@/components/dashboard/recipes/types";
 import type { MealRecipe } from "@/components/dashboard/plan/types";
 import type { EditableStep } from "@/stores/recipeDetailStore";
 import { serializeEditableStep, useRecipeDetailState } from "@/stores/recipeDetailStore";
@@ -13,27 +12,65 @@ import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  KeyboardAvoidingView,
   Image,
+  KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
 type Props = {
+  creator?: RecipeCreator;
   heroImage?: string;
-  mealType: MealTypeId;
+  mealType: string;
   onBack: () => void;
   onCookedThis: (recipe: MealRecipe) => void;
   onSave: (recipe: MealRecipe) => void;
   onStartCooking: (recipe: MealRecipe) => void;
   recipe: MealRecipe;
   source?: RecipeSource;
+};
+
+const KITCHEN_INVENTORY = [
+  "plain flour",
+  "flour",
+  "eggs",
+  "egg",
+  "milk",
+  "butter",
+  "salt",
+  "sugar",
+  "olive oil",
+  "garlic",
+  "onion",
+  "onions",
+  "pepper",
+  "black pepper",
+  "spaghetti",
+  "pasta",
+  "rice",
+  "soy sauce",
+  "ginger",
+  "chilli flakes",
+  "lemon",
+  "lemon juice",
+  "paprika",
+  "cumin",
+  "vegetable oil",
+] as const;
+
+const PLATFORM_LABELS: Record<RecipeCreator["platform"], string> = {
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  youtube: "YouTube",
 };
 
 function getNutritionItems(
@@ -55,11 +92,24 @@ function getKeyboardBehavior() {
   return "height" as const;
 }
 
+function isInKitchen(ingredient: string) {
+  const lower = ingredient.toLowerCase();
+  return KITCHEN_INVENTORY.some((item) => lower.includes(item));
+}
+
+function getIngredientStatusMap(ingredients: string[]) {
+  return ingredients.reduce<Record<number, boolean>>((acc, ingredient, index) => {
+    acc[index] = isInKitchen(ingredient);
+    return acc;
+  }, {});
+}
+
 export default function RecipeDetailScreen({
+  creator,
   heroImage,
-  mealType,
+  mealType: _mealType,
   onBack,
-  onCookedThis,
+  onCookedThis: _onCookedThis,
   onSave,
   onStartCooking,
   recipe,
@@ -87,18 +137,47 @@ export default function RecipeDetailScreen({
     updateStepMinutes,
     updateStepText,
   } = useRecipeDetailState(recipeDetails);
+  const [ingredientStatus, setIngredientStatus] = useState<Record<number, boolean>>(() =>
+    getIngredientStatusMap(recipeDetails.ingredients),
+  );
+
+  useEffect(() => {
+    setIngredientStatus(getIngredientStatusMap(ingredients));
+  }, [ingredients]);
 
   const handleSave = () => {
     onSave(serializedRecipe);
     finishEditing();
   };
 
-  const handleCookedThis = () => {
-    onCookedThis(serializedRecipe);
-  };
-
   const handleStartCooking = () => {
     onStartCooking(serializedRecipe);
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        title: recipeDetails.name,
+        message: `Check out this recipe: ${recipeDetails.name}`,
+      });
+    } catch {
+      // Ignore cancelled or unsupported share flows.
+    }
+  };
+
+  const handleOpenCreator = () => {
+    if (!creator) {
+      return;
+    }
+
+    void Linking.openURL(creator.url);
+  };
+
+  const toggleIngredientStatus = (index: number) => {
+    setIngredientStatus((current) => ({
+      ...current,
+      [index]: !current[index],
+    }));
   };
 
   const createIngredientChangeHandler = (index: number) => {
@@ -121,6 +200,9 @@ export default function RecipeDetailScreen({
     return () => removeStep(index);
   };
 
+  const haveCount = ingredients.filter((_, index) => ingredientStatus[index]).length;
+  const needCount = ingredients.length - haveCount;
+
   const renderHeaderAction = () => {
     const actionStyle = heroImage ? styles.heroHeaderAction : styles.headerAction;
     const actionActiveStyle = heroImage ? styles.heroHeaderActionActive : styles.headerActionActive;
@@ -129,14 +211,14 @@ export default function RecipeDetailScreen({
 
     if (editing) {
       return (
-        <HapticPressable style={actionActiveStyle} onPress={handleSave} pressedOpacity={0.82}>
+        <HapticPressable style={actionActiveStyle} onPress={handleSave} pressedOpacity={1} hapticType="medium">
           <Feather name="check" size={16} color={activeIconColor} />
         </HapticPressable>
       );
     }
 
     return (
-      <HapticPressable style={actionStyle} onPress={startEditing} pressedOpacity={0.82}>
+      <HapticPressable style={actionStyle} onPress={startEditing} pressedOpacity={1} hapticType="selection">
         <Feather name="edit-2" size={14} color={iconColor} />
       </HapticPressable>
     );
@@ -151,6 +233,18 @@ export default function RecipeDetailScreen({
       <View style={styles.heroWrap}>
         <Image source={{ uri: heroImage }} style={styles.heroImage} resizeMode="cover" />
         <View style={styles.heroOverlay} />
+        <View pointerEvents="none" style={styles.heroFadeWrap}>
+          <Svg width="100%" height="100%" preserveAspectRatio="none">
+            <Defs>
+              <LinearGradient id="recipeHeroFade" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="#ffffff" stopOpacity="0" />
+                <Stop offset="0.5" stopColor="#ffffff" stopOpacity="0.4" />
+                <Stop offset="1" stopColor="#ffffff" stopOpacity="1" />
+              </LinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100%" height="100%" fill="url(#recipeHeroFade)" />
+          </Svg>
+        </View>
         <View style={styles.heroTopRow}>
           <BackButton style={styles.heroBackButton} onPress={onBack} />
           {renderHeaderAction()}
@@ -166,17 +260,13 @@ export default function RecipeDetailScreen({
 
   const renderHeader = () => {
     if (heroImage) {
-      return (
-        <View style={styles.headerNoHeroSpacer}>
-          <Text style={styles.eyebrow}>{getMealTypeLabel(t, mealType)}</Text>
-        </View>
-      );
+      return <View style={styles.headerNoHeroSpacer} />;
     }
 
     return (
       <View style={styles.header}>
         <BackButton onPress={onBack} />
-        <Text style={styles.eyebrow}>{getMealTypeLabel(t, mealType)}</Text>
+        {source ? <RecipeSourceBadge source={source} /> : <View style={styles.headerBadgeSpacer} />}
         {renderHeaderAction()}
       </View>
     );
@@ -197,18 +287,6 @@ export default function RecipeDetailScreen({
     return <Text style={styles.title}>{name.trim() || recipeDetails.name}</Text>;
   };
 
-  const renderCookedThisAction = () => {
-    if (editing) {
-      return null;
-    }
-
-    return (
-      <HapticPressable onPress={handleCookedThis} pressedOpacity={0.8}>
-        <Text style={styles.inlineAction}>{t("kitchen.plan.cookedThis")}</Text>
-      </HapticPressable>
-    );
-  };
-
   const renderIngredientRow = (ingredient: string, index: number) => {
     if (editing) {
       return (
@@ -221,7 +299,8 @@ export default function RecipeDetailScreen({
           <HapticPressable
             style={styles.removeButton}
             onPress={createIngredientRemoveHandler(index)}
-            pressedOpacity={0.8}
+            pressedOpacity={1}
+            hapticType="selection"
           >
             <Feather name="trash-2" size={15} color={colors.muted} />
           </HapticPressable>
@@ -229,11 +308,33 @@ export default function RecipeDetailScreen({
       );
     }
 
+    if (ingredientStatus[index]) {
+      return (
+        <HapticPressable
+          key={`${ingredient}-${index}`}
+          style={styles.ingredientToggleRow}
+          onPress={() => toggleIngredientStatus(index)}
+          pressedOpacity={1}
+          hapticType="selection"
+        >
+          <Feather name="check-circle" size={15} color={colors.brand} />
+          <Text style={styles.ingredientToggleText}>{ingredient}</Text>
+        </HapticPressable>
+      );
+    }
+
     return (
-      <View key={`${ingredient}-${index}`} style={styles.ingredientRow}>
-        <View style={styles.bullet} />
-        <Text style={styles.bodyText}>{ingredient}</Text>
-      </View>
+      <HapticPressable
+        key={`${ingredient}-${index}`}
+        style={styles.ingredientToggleRow}
+        onPress={() => toggleIngredientStatus(index)}
+        pressedOpacity={1}
+        hapticType="selection"
+      >
+        <View style={styles.ingredientNeedIndicator} />
+        <Text style={styles.ingredientNeedText}>{ingredient}</Text>
+        <Text style={styles.ingredientNeedLabel}>NEED</Text>
+      </HapticPressable>
     );
   };
 
@@ -250,7 +351,7 @@ export default function RecipeDetailScreen({
           placeholder={t("kitchen.plan.ingredientPlaceholder")}
           containerStyle={styles.editorInput}
         />
-        <HapticPressable style={styles.addButtonSmall} onPress={addIngredient} pressedOpacity={0.8}>
+        <HapticPressable style={styles.addButtonSmall} onPress={addIngredient} pressedOpacity={1} hapticType="selection">
           <Feather name="plus" size={15} color={colors.text} />
         </HapticPressable>
       </View>
@@ -265,7 +366,7 @@ export default function RecipeDetailScreen({
             <View style={styles.stepNumber}>
               <Text style={styles.stepNumberText}>{index + 1}</Text>
             </View>
-            <HapticPressable onPress={createStepRemoveHandler(index)} pressedOpacity={0.8}>
+            <HapticPressable onPress={createStepRemoveHandler(index)} pressedOpacity={1} hapticType="selection">
               <Feather name="trash-2" size={15} color={colors.muted} />
             </HapticPressable>
           </View>
@@ -307,7 +408,7 @@ export default function RecipeDetailScreen({
     }
 
     return (
-      <HapticPressable style={styles.addStepButton} onPress={addStep} pressedOpacity={0.82}>
+      <HapticPressable style={styles.addStepButton} onPress={addStep} pressedOpacity={1} hapticType="selection">
         <Feather name="plus" size={14} color={colors.muted} />
         <Text style={styles.addStepText}>{t("kitchen.plan.addStep")}</Text>
       </HapticPressable>
@@ -320,22 +421,26 @@ export default function RecipeDetailScreen({
     }
 
     return (
-      <Button
-        title={t("kitchen.plan.startCooking")}
-        onPress={handleStartCooking}
-        leftIcon={<Feather name="play" size={16} color={colors.background} />}
-        style={styles.primaryButton}
-      />
+      <View style={styles.footerActions}>
+        <Button
+          title={t("kitchen.plan.startCooking")}
+          onPress={handleStartCooking}
+          leftIcon={<Feather name="play" size={16} color={colors.background} />}
+          style={styles.primaryButton}
+        />
+        <HapticPressable style={styles.shareButton} onPress={handleShare} pressedOpacity={1} hapticType="selection">
+          <Feather name="share-2" size={16} color={colors.text} />
+          <Text style={styles.shareButtonText}>Share</Text>
+        </HapticPressable>
+      </View>
     );
   };
 
   return (
     <SafeAreaView style={styles.container} edges={heroImage ? ["bottom"] : ["top", "bottom"]}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoider}
-        behavior={getKeyboardBehavior()}
-      >
+      <KeyboardAvoidingView style={styles.keyboardAvoider} behavior={getKeyboardBehavior()}>
         {renderHero()}
+
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
@@ -343,7 +448,6 @@ export default function RecipeDetailScreen({
           keyboardShouldPersistTaps="handled"
         >
           {renderHeader()}
-
           {renderTitle()}
 
           <View style={styles.metaRow}>
@@ -361,6 +465,21 @@ export default function RecipeDetailScreen({
             </View>
           </View>
 
+          {creator ? (
+            <HapticPressable style={styles.creatorCard} onPress={handleOpenCreator} pressedOpacity={1} hapticType="selection">
+              <View style={styles.creatorAvatar}>
+                <Text style={styles.creatorAvatarText}>{creator.name.charAt(0)}</Text>
+              </View>
+              <View style={styles.creatorCopy}>
+                <Text numberOfLines={1} style={styles.creatorName}>{creator.name}</Text>
+                <Text style={styles.creatorMeta}>
+                  {creator.handle} · {PLATFORM_LABELS[creator.platform]}
+                </Text>
+              </View>
+              <Feather name="external-link" size={14} color={colors.muted} />
+            </HapticPressable>
+          ) : null}
+
           <View style={styles.nutritionRow}>
             {nutritionItems.map((item) => (
               <View key={item.label} style={styles.nutritionCard}>
@@ -372,8 +491,24 @@ export default function RecipeDetailScreen({
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t("kitchen.common.ingredients")}</Text>
-            {renderCookedThisAction()}
           </View>
+
+          {!editing ? (
+            <>
+              <View style={styles.ingredientsSummary}>
+                <View style={styles.ingredientsSummaryItem}>
+                  <Feather name="check-circle" size={14} color={colors.brand} />
+                  <Text style={styles.ingredientsSummaryText}>{haveCount} in kitchen</Text>
+                </View>
+                <View style={styles.ingredientsDivider} />
+                <View style={styles.ingredientsSummaryItem}>
+                  <Feather name="alert-circle" size={14} color="#f97316" />
+                  <Text style={styles.ingredientsSummaryText}>{needCount} to get</Text>
+                </View>
+              </View>
+              <Text style={styles.ingredientsHint}>Tap an ingredient to toggle have / need</Text>
+            </>
+          ) : null}
 
           <View style={styles.ingredientsList}>
             {ingredients.map(renderIngredientRow)}
@@ -387,9 +522,7 @@ export default function RecipeDetailScreen({
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
-          {renderFooterAction()}
-        </View>
+        <View style={styles.footer}>{renderFooterAction()}</View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -412,9 +545,9 @@ const styles = StyleSheet.create({
     paddingBottom: 128,
   },
   heroWrap: {
-    height: 276,
+    height: 224,
     position: "relative",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   heroImage: {
     width: "100%",
@@ -423,6 +556,13 @@ const styles = StyleSheet.create({
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(26, 18, 8, 0.14)",
+  },
+  heroFadeWrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 88,
   },
   heroTopRow: {
     position: "absolute",
@@ -435,6 +575,7 @@ const styles = StyleSheet.create({
   },
   heroBackButton: {
     backgroundColor: "rgba(255,255,255,0.9)",
+    borderColor: "transparent",
   },
   heroBadgeWrap: {
     position: "absolute",
@@ -448,15 +589,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   headerNoHeroSpacer: {
-    alignItems: "flex-start",
-    marginBottom: 24,
+    marginBottom: 12,
   },
-  eyebrow: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 11,
-    color: colors.muted,
-    letterSpacing: 1,
-    textTransform: "uppercase",
+  headerBadgeSpacer: {
+    width: 36,
   },
   headerAction: {
     width: 36,
@@ -471,7 +607,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.text,
+    backgroundColor: colors.brand,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -487,25 +623,25 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: colors.brand,
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
     fontFamily: fonts.serif,
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 28,
+    lineHeight: 32,
     color: colors.text,
-    marginBottom: 18,
+    marginBottom: 16,
   },
   titleInput: {
-    marginBottom: 18,
+    marginBottom: 16,
   },
   metaRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 16,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   metaItem: {
     flexDirection: "row",
@@ -517,15 +653,54 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.muted,
   },
+  creatorCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    backgroundColor: `${colors.secondary}80`,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 20,
+  },
+  creatorAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: `${colors.brand}14`,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  creatorAvatarText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 14,
+    color: colors.brand,
+  },
+  creatorCopy: {
+    flex: 1,
+  },
+  creatorName: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 2,
+  },
+  creatorMeta: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    color: colors.muted,
+  },
   nutritionRow: {
     flexDirection: "row",
-    gap: 10,
+    gap: 12,
     marginBottom: 28,
   },
   nutritionCard: {
     flex: 1,
     borderRadius: 14,
-    backgroundColor: colors.secondary,
+    backgroundColor: `${colors.secondary}cc`,
     paddingVertical: 12,
     alignItems: "center",
   },
@@ -541,9 +716,6 @@ const styles = StyleSheet.create({
     color: colors.muted,
   },
   sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     marginBottom: 12,
   },
   sectionTitle: {
@@ -552,26 +724,77 @@ const styles = StyleSheet.create({
     color: colors.muted,
     letterSpacing: 1,
     marginBottom: 12,
+    textTransform: "uppercase",
   },
-  inlineAction: {
+  ingredientsSummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 14,
+    backgroundColor: `${colors.secondary}80`,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+  },
+  ingredientsSummaryItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  ingredientsSummaryText: {
     fontFamily: fonts.sansMedium,
     fontSize: 12,
-    color: colors.brand,
+    color: colors.text,
+  },
+  ingredientsDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: colors.border,
+  },
+  ingredientsHint: {
+    fontFamily: fonts.sans,
+    fontSize: 10,
+    color: colors.muted,
+    marginBottom: 10,
+    paddingHorizontal: 12,
   },
   ingredientsList: {
-    gap: 10,
+    gap: 4,
     marginBottom: 28,
   },
-  ingredientRow: {
+  ingredientToggleRow: {
     flexDirection: "row",
     gap: 10,
     alignItems: "center",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
   },
-  bullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.text + "55",
+  ingredientToggleText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.text,
+  },
+  ingredientNeedIndicator: {
+    width: 15,
+    height: 15,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: `${colors.muted}4d`,
+  },
+  ingredientNeedText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.muted,
+  },
+  ingredientNeedLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 10,
+    color: "#f97316cc",
+    letterSpacing: 0.6,
   },
   bodyText: {
     flex: 1,
@@ -690,8 +913,30 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
+  footerActions: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+  },
   primaryButton: {
     marginTop: 0,
     backgroundColor: colors.text,
+    flex: 1,
+  },
+  shareButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    minHeight: 52,
+  },
+  shareButtonText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.text,
   },
 });

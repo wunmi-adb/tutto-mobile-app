@@ -10,6 +10,7 @@ type Props = {
   image?: string;
   onPress: () => void;
   onLongPress?: () => void;
+  onPressOptions?: () => void;
 };
 
 export default function RecipeCollectionCard({
@@ -18,17 +19,30 @@ export default function RecipeCollectionCard({
   image,
   onPress,
   onLongPress,
+  onPressOptions,
 }: Props) {
   return (
     <HapticPressable
-      style={[
-        styles.card,
-      ]}
+      style={styles.card}
       onPress={onPress}
       onLongPress={onLongPress}
       hapticType="medium"
-      pressedOpacity={0.88}
+      pressedOpacity={1}
     >
+      {onPressOptions ? (
+        <HapticPressable
+          style={styles.optionsButton}
+          onPress={(event) => {
+            event.stopPropagation();
+            onPressOptions();
+          }}
+          hapticType="selection"
+          pressedOpacity={1}
+        >
+          <Feather name="more-horizontal" size={14} color={colors.text} />
+        </HapticPressable>
+      ) : null}
+
       {image ? (
         <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
       ) : (
@@ -51,11 +65,25 @@ const styles = StyleSheet.create({
   card: {
     width: "48%",
     minHeight: 188,
-    borderRadius: 24,
+    borderRadius: 16,
+    position: "relative",
     overflow: "hidden",
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.background,
+    boxShadow: "0 2px 10px rgba(26, 18, 8, 0.04)",
+  },
+  optionsButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 1,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.92)",
   },
   image: {
     width: "100%",

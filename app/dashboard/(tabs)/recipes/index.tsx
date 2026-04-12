@@ -32,6 +32,13 @@ export default function RecipesHomeScreen() {
     deleteCollection,
   } = useRecipesHomeState();
 
+  const handleOpenImportTutorial = () => {
+    router.push({
+      pathname: "/onboarding/share-tutorial",
+      params: { returnTo: "/dashboard/recipes" },
+    });
+  };
+
   const openCollection = (collectionId: string) => {
     router.push(`/dashboard/recipes/${collectionId}`);
   };
@@ -77,7 +84,32 @@ export default function RecipesHomeScreen() {
           </HapticPressable>
         </View>
 
-        {filteredCollections.length > 0 ? (
+        <HapticPressable
+          style={styles.importCard}
+          onPress={handleOpenImportTutorial}
+          hapticType="light"
+          pressedOpacity={1}
+        >
+          <View style={styles.importIconWrap}>
+            <Feather name="video" size={18} color={colors.brand} />
+          </View>
+          <View style={styles.importCopy}>
+            <Text style={styles.importTitle}>Import from IG, TikTok & more</Text>
+            <Text style={styles.importSubtitle} numberOfLines={2}>
+              Learn how to send recipes to Tutto
+            </Text>
+          </View>
+          <Feather name="chevron-right" size={16} color={colors.muted} />
+        </HapticPressable>
+
+        <View style={styles.section}>
+          {filteredCollections.length === 0 ? (
+            <RecipesEmptyState
+              title={t("recipes.home.empty.title")}
+              subtitle={t("recipes.home.empty.subtitle")}
+            />
+          ) : null}
+
           <View style={styles.grid}>
             {filteredCollections.map((collection) => (
               <RecipeCollectionCard
@@ -87,6 +119,7 @@ export default function RecipesHomeScreen() {
                 image={collection.image}
                 onPress={() => openCollection(collection.id)}
                 onLongPress={() => setActiveCollectionActions(collection)}
+                onPressOptions={() => setActiveCollectionActions(collection)}
               />
             ))}
             <RecipeAddCollectionCard
@@ -94,12 +127,7 @@ export default function RecipesHomeScreen() {
               label={t("recipes.home.newCollection")}
             />
           </View>
-        ) : (
-          <RecipesEmptyState
-            title={t("recipes.home.empty.title")}
-            subtitle={t("recipes.home.empty.subtitle")}
-          />
-        )}
+        </View>
       </ScrollView>
 
       <RecipeCollectionEditorSheet
@@ -144,17 +172,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 32,
+    gap: 20,
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    marginBottom: 20,
+    gap: 16,
   },
   title: {
     fontFamily: fonts.serif,
-    fontSize: 32,
-    lineHeight: 36,
+    fontSize: 28,
+    lineHeight: 32,
     color: colors.text,
   },
   subtitle: {
@@ -171,6 +200,43 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.brand,
     marginTop: 4,
+  },
+  importCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: 14,
+    backgroundColor: colors.background,
+    boxShadow: "0 2px 10px rgba(26, 18, 8, 0.04)",
+  },
+  importIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: `${colors.brand}12`,
+  },
+  importCopy: {
+    flex: 1,
+  },
+  importTitle: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 4,
+  },
+  importSubtitle: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.muted,
+  },
+  section: {
+    gap: 14,
   },
   grid: {
     flexDirection: "row",

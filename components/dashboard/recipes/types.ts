@@ -2,6 +2,14 @@ import type { RecipeId } from "@/components/dashboard/data";
 
 export type RecipeSource = "manual" | "link" | "document" | "video" | "ai";
 export type RecipeTone = "tomato" | "sage" | "butter" | "berry";
+export type RecipeCreatorPlatform = "instagram" | "tiktok" | "youtube";
+
+export type RecipeCreator = {
+  name: string;
+  handle: string;
+  platform: RecipeCreatorPlatform;
+  url: string;
+};
 
 export type PresetSavedRecipe = {
   id: string;
@@ -27,6 +35,7 @@ export type CustomSavedRecipe = {
   source: RecipeSource;
   tone: RecipeTone;
   image?: string;
+  creator?: RecipeCreator;
 };
 
 export type SavedRecipe = PresetSavedRecipe | CustomSavedRecipe;

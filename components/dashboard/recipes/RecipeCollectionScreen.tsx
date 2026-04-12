@@ -1,5 +1,4 @@
 import RecipeAddFlowScreen from "@/components/dashboard/recipes/RecipeAddFlowScreen";
-import RecipesEmptyState from "@/components/dashboard/recipes/RecipesEmptyState";
 import RecipeListItem from "@/components/dashboard/recipes/RecipeListItem";
 import RecipeSearchField from "@/components/dashboard/recipes/RecipeSearchField";
 import HapticPressable from "@/components/ui/HapticPressable";
@@ -100,19 +99,23 @@ export default function RecipeCollectionScreen({ collectionId }: Props) {
             ))
           ) : (
             <View style={styles.emptyWrap}>
-              <RecipesEmptyState
-                title={t("recipes.collection.empty.title")}
-                subtitle={t("recipes.collection.empty.subtitle")}
-              />
-              <HapticPressable
-                style={styles.emptyAction}
-                onPress={openAddRecipe}
-                hapticType="medium"
-                pressedOpacity={0.82}
-              >
-                <Feather name="plus" size={14} color={colors.brand} />
-                <Text style={styles.emptyActionLabel}>{t("recipes.collection.addFirstRecipe")}</Text>
-              </HapticPressable>
+              <View style={styles.emptyIconWrap}>
+                <Feather name="book-open" size={24} color={colors.muted} />
+              </View>
+              <Text style={styles.emptyTitle}>
+                {collectionSearchQuery.trim() ? "No recipes match your search" : "No recipes yet"}
+              </Text>
+              {!collectionSearchQuery.trim() ? (
+                <HapticPressable
+                  style={styles.emptyAction}
+                  onPress={openAddRecipe}
+                  hapticType="medium"
+                  pressedOpacity={1}
+                >
+                  <Feather name="plus" size={16} color={colors.brand} />
+                  <Text style={styles.emptyActionLabel}>{t("recipes.collection.addFirstRecipe")}</Text>
+                </HapticPressable>
+              ) : null}
             </View>
           )}
         </View>
@@ -170,8 +173,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.serif,
-    fontSize: 32,
-    lineHeight: 36,
+    fontSize: 28,
+    lineHeight: 32,
     color: colors.text,
     marginBottom: 4,
   },
@@ -187,13 +190,30 @@ const styles = StyleSheet.create({
   },
   emptyWrap: {
     alignItems: "center",
-    gap: 14,
+    justifyContent: "center",
+    paddingVertical: 48,
+  },
+  emptyIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.muted,
+    textAlign: "center",
   },
   emptyAction: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     paddingVertical: 10,
+    marginTop: 12,
   },
   emptyActionLabel: {
     fontFamily: fonts.sansMedium,

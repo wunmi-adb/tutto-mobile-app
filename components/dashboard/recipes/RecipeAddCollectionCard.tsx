@@ -15,7 +15,7 @@ export default function RecipeAddCollectionCard({ onPress, label }: Props) {
       style={styles.card}
       onPress={onPress}
       hapticType="medium"
-      pressedOpacity={0.82}
+      pressedOpacity={1}
     >
       <Feather name="plus" size={24} color={colors.muted} />
       <Text style={styles.label}>{label}</Text>
@@ -26,14 +26,15 @@ export default function RecipeAddCollectionCard({ onPress, label }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: "48%",
-    minHeight: 190,
-    borderRadius: 24,
+    minHeight: 188,
+    borderRadius: 16,
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
+    backgroundColor: colors.background,
   },
   label: {
     fontFamily: fonts.sansMedium,

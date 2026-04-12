@@ -230,6 +230,7 @@ export function updateSavedRecipe(recipeId: string, nextRecipe: MealRecipe) {
       source: currentRecipe.source,
       tone: currentRecipe.tone,
       image: currentRecipe.image,
+      creator: currentRecipe.kind === "custom" ? currentRecipe.creator : undefined,
     },
   });
 }

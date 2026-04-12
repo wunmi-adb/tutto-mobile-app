@@ -16,7 +16,13 @@ import {
 } from "./share-tutorial-config";
 import { TutorialVisual } from "./share-tutorial-visuals";
 
-export default function ShareTutorialPlatformScreen({ platform }: { platform: Platform }) {
+export default function ShareTutorialPlatformScreen({
+  platform,
+  returnTo,
+}: {
+  platform: Platform;
+  returnTo?: string;
+}) {
   const router = useRouter();
   const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(0);
@@ -50,7 +56,7 @@ export default function ShareTutorialPlatformScreen({ platform }: { platform: Pl
   }, [contentOpacity, contentTranslateX, currentStep]);
 
   const finishTutorial = () => {
-    router.replace("/dashboard");
+    router.replace(returnTo ?? "/dashboard");
   };
 
   const handleBack = () => {
@@ -59,7 +65,7 @@ export default function ShareTutorialPlatformScreen({ platform }: { platform: Pl
       return;
     }
 
-    router.replace("/onboarding/share-tutorial");
+    router.back();
   };
 
   const handleNext = () => {

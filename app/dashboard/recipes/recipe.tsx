@@ -6,6 +6,7 @@ import { useRecipeDetailState } from "@/stores/recipesStore";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import type { RecipeCreator } from "@/components/dashboard/recipes/types";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function RecipeDetailRoute() {
@@ -28,9 +29,11 @@ export default function RecipeDetailRoute() {
 
   const mealType = getSavedRecipeMealType(recipe);
   const mealRecipe = mapSavedRecipeToMealRecipe(recipe);
+  const creator: RecipeCreator | undefined = recipe.kind === "custom" ? recipe.creator : undefined;
 
   return (
     <RecipeDetailScreen
+      creator={creator}
       heroImage={getRecipeImage(recipe)}
       mealType={mealType}
       onBack={() => router.back()}

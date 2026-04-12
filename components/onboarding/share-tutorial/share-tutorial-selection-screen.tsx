@@ -10,7 +10,7 @@ import { Animated, Easing, ScrollView, StyleSheet, Text, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PLATFORMS } from "./share-tutorial-config";
 
-export default function ShareTutorialSelectionScreen() {
+export default function ShareTutorialSelectionScreen({ returnTo }: { returnTo?: string }) {
   const router = useRouter();
   const { t } = useI18n();
   const contentOpacity = useRef(new Animated.Value(1)).current;
@@ -37,7 +37,7 @@ export default function ShareTutorialSelectionScreen() {
   }, [contentOpacity, contentTranslateY]);
 
   const finishTutorial = () => {
-    router.replace("/dashboard");
+    router.replace(returnTo ?? "/dashboard");
   };
 
   return (
@@ -76,7 +76,12 @@ export default function ShareTutorialSelectionScreen() {
                 key={platform.id}
                 style={styles.platformCard}
                 pressedOpacity={0.97}
-                onPress={() => router.push(`/onboarding/share-tutorial/${platform.id}`)}
+                onPress={() =>
+                  router.push({
+                    pathname: `/onboarding/share-tutorial/${platform.id}`,
+                    params: returnTo ? { returnTo } : undefined,
+                  })
+                }
               >
                 <View style={styles.platformIconWrap}>
                   <platform.Icon />
