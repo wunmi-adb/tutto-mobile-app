@@ -4,7 +4,6 @@ import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
-import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
@@ -24,7 +23,6 @@ const COMMON_ALLERGIES = [
   { id: "shellfish", key: "allergies.options.shellfish" },
   { id: "gluten", key: "allergies.options.gluten" },
   { id: "mustard", key: "allergies.options.mustard" },
-
 ] as const;
 
 type CommonAllergyId = (typeof COMMON_ALLERGIES)[number]["id"];
@@ -35,29 +33,46 @@ export default function Allergies() {
   const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selectedAllergies, setSelectedAllergies] = useState<CommonAllergyId[]>([]);
   const [customAllergies, setCustomAllergies] = useState<string[]>([]);
+  const [hasNoAllergies, setHasNoAllergies] = useState(false);
 
   const isSelected = (id: CommonAllergyId) => selectedAllergies.includes(id);
 
   const toggleChip = (id: CommonAllergyId) => {
     if (isSelected(id)) {
-      setSelectedAllergies(selectedAllergies.filter((value) => value !== id));
+      setSelectedAllergies((prev) => prev.filter((value) => value !== id));
     } else {
-      setSelectedAllergies([...selectedAllergies, id]);
+      setSelectedAllergies((prev) => [...prev, id]);
     }
+
+    setHasNoAllergies(false);
+  };
+
+  const toggleNoAllergies = () => {
+    setHasNoAllergies((prev) => {
+      const nextValue = !prev;
+
+      if (nextValue) {
+        setSelectedAllergies([]);
+        setCustomAllergies([]);
+      }
+
+      return nextValue;
+    });
   };
 
   const addCustom = (value: string) => {
     const exists = customAllergies.some((allergy) => allergy.toLowerCase() === value.toLowerCase());
 
     if (!exists) {
+      setHasNoAllergies(false);
       setCustomAllergies((prev) => [...prev, value]);
     }
   };
 
   const removeCustom = (chip: string) => {
-    setCustomAllergies(customAllergies.filter((allergy) => allergy !== chip));
+    setCustomAllergies((prev) => prev.filter((allergy) => allergy !== chip));
   };
-  const canContinue = selectedAllergies.length > 0 || customAllergies.length > 0;
+  const canContinue = hasNoAllergies || selectedAllergies.length > 0 || customAllergies.length > 0;
 
   const handleContinue = async () => {
     if (updateHouseholdMutation.isPending) {
@@ -71,7 +86,7 @@ export default function Allergies() {
 
     try {
       await updateHouseholdMutation.mutateAsync({
-        allergies: [...selectedValues, ...customValues].join(", "),
+        allergies: hasNoAllergies ? "" : [...selectedValues, ...customValues].join(", "),
       });
 
       router.replace("/onboarding/cuisines");
@@ -82,12 +97,7 @@ export default function Allergies() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar
-        leftAccessory={<OnboardingBackButton />}
-        rightAccessory={
-          <SkipButton label={t("allergies.skip")} onPress={() => router.replace("/onboarding/cuisines")} />
-        }
-      />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <KeyboardAvoidingContainer style={styles.keyboard}>
         <ScrollView
@@ -102,6 +112,11 @@ export default function Allergies() {
           </View>
 
           <View style={styles.chipGrid}>
+            <Chip
+              label={t("allergies.options.none")}
+              selected={hasNoAllergies}
+              onPress={toggleNoAllergies}
+            />
             {COMMON_ALLERGIES.map((allergy) => (
               <Chip
                 key={allergy.id}

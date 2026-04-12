@@ -4,7 +4,6 @@ import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
-import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
@@ -32,29 +31,46 @@ export default function Dietary() {
   const updateHouseholdMutation = useUpdateHouseholdProfile();
   const [selectedDiets, setSelectedDiets] = useState<CommonDietId[]>([]);
   const [customDiets, setCustomDiets] = useState<string[]>([]);
+  const [hasNoDietaryNeeds, setHasNoDietaryNeeds] = useState(false);
 
   const isSelected = (id: CommonDietId) => selectedDiets.includes(id);
 
   const toggleChip = (id: CommonDietId) => {
     if (isSelected(id)) {
-      setSelectedDiets(selectedDiets.filter((value) => value !== id));
+      setSelectedDiets((prev) => prev.filter((value) => value !== id));
     } else {
-      setSelectedDiets([...selectedDiets, id]);
+      setSelectedDiets((prev) => [...prev, id]);
     }
+
+    setHasNoDietaryNeeds(false);
+  };
+
+  const toggleNoDietaryNeeds = () => {
+    setHasNoDietaryNeeds((prev) => {
+      const nextValue = !prev;
+
+      if (nextValue) {
+        setSelectedDiets([]);
+        setCustomDiets([]);
+      }
+
+      return nextValue;
+    });
   };
 
   const addCustom = (value: string) => {
     const exists = customDiets.some((diet) => diet.toLowerCase() === value.toLowerCase());
 
     if (!exists) {
+      setHasNoDietaryNeeds(false);
       setCustomDiets((prev) => [...prev, value]);
     }
   };
 
   const removeCustom = (chip: string) => {
-    setCustomDiets(customDiets.filter((diet) => diet !== chip));
+    setCustomDiets((prev) => prev.filter((diet) => diet !== chip));
   };
-  const canContinue = selectedDiets.length > 0 || customDiets.length > 0;
+  const canContinue = hasNoDietaryNeeds || selectedDiets.length > 0 || customDiets.length > 0;
 
   const handleContinue = async () => {
     if (updateHouseholdMutation.isPending) {
@@ -68,7 +84,7 @@ export default function Dietary() {
 
     try {
       await updateHouseholdMutation.mutateAsync({
-        dietary: [...selectedValues, ...customValues].join(", "),
+        dietary: hasNoDietaryNeeds ? "" : [...selectedValues, ...customValues].join(", "),
       });
 
       router.replace("/onboarding/allergies");
@@ -79,12 +95,7 @@ export default function Dietary() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar
-        leftAccessory={<OnboardingBackButton />}
-        rightAccessory={
-          <SkipButton label={t("dietary.skip")} onPress={() => router.replace("/onboarding/allergies")} />
-        }
-      />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <KeyboardAvoidingContainer style={styles.keyboard}>
         <ScrollView
@@ -99,6 +110,11 @@ export default function Dietary() {
           </View>
 
           <View style={styles.chipGrid}>
+            <Chip
+              label={t("dietary.options.none")}
+              selected={hasNoDietaryNeeds}
+              onPress={toggleNoDietaryNeeds}
+            />
             {COMMON_DIETS.map((diet) => (
               <Chip
                 key={diet.id}
