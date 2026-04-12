@@ -4,7 +4,6 @@ import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import ChipInput from "@/components/ui/ChipInput";
 import KeyboardAvoidingContainer from "@/components/ui/KeyboardAvoidingContainer";
-import SkipButton from "@/components/ui/SkipButton";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
@@ -87,12 +86,7 @@ export default function Cuisines() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <OnboardingTopBar
-        leftAccessory={<OnboardingBackButton />}
-        rightAccessory={
-          <SkipButton label={t("cuisines.skip")} onPress={() => router.replace("/onboarding/meals")} />
-        }
-      />
+      <OnboardingTopBar leftAccessory={<OnboardingBackButton />} />
 
       <KeyboardAvoidingContainer style={styles.keyboard}>
         <ScrollView
