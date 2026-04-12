@@ -3,28 +3,14 @@ import HapticPressable from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
-import { useAuth } from "@/providers/AuthProvider";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HouseholdChoose() {
   const router = useRouter();
   const { t } = useI18n();
-  const { ready, isAuthenticated, session } = useAuth();
-
-  useEffect(() => {
-    console.log("Household auth state", {
-      ready,
-      isAuthenticated,
-      hasAccessToken: session?.access_token,
-      hasRefreshToken: session?.refresh_token,
-      expiresAt: session?.expires_at ?? null,
-      refreshExpiresAt: session?.refresh_expires_at ?? null,
-    });
-  }, [isAuthenticated, ready, session]);
 
   return (
     <SafeAreaView style={styles.container}>

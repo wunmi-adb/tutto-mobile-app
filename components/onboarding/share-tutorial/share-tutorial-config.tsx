@@ -1,9 +1,11 @@
 import { colors } from "@/constants/colors";
+import type { Href } from "expo-router";
 import type { TranslationKey } from "@/i18n/messages";
 import Svg, { Path } from "react-native-svg";
 
 export type Platform = "instagram" | "youtube" | "tiktok";
 export type VisualKey = "find-recipe" | "share-tray" | "more-apps" | "find-tutto" | "pin-tutto";
+export type ShareTutorialReturnTo = "/dashboard" | "/dashboard/recipes";
 
 export type StepDefinition = {
   titleKey: TranslationKey;
@@ -122,6 +124,35 @@ export const PLATFORM_STEPS: Record<Platform, StepDefinition[]> = {
     },
   ],
 };
+
+export const SHARE_TUTORIAL_DEFAULT_ROUTE: ShareTutorialReturnTo = "/dashboard";
+
+export const SHARE_TUTORIAL_PLATFORM_ROUTES: Record<Platform, Href> = {
+  instagram: "/onboarding/share-tutorial/instagram",
+  youtube: "/onboarding/share-tutorial/youtube",
+  tiktok: "/onboarding/share-tutorial/tiktok",
+};
+
+export function getShareTutorialPlatformHref(
+  platform: Platform,
+  returnTo?: ShareTutorialReturnTo,
+): Href {
+  const route = SHARE_TUTORIAL_PLATFORM_ROUTES[platform];
+
+  if (!returnTo) {
+    return route;
+  }
+
+  return `${route}?returnTo=${encodeURIComponent(returnTo)}` as Href;
+}
+
+export function parseShareTutorialReturnTo(value?: string): ShareTutorialReturnTo | undefined {
+  if (value === "/dashboard" || value === "/dashboard/recipes") {
+    return value;
+  }
+
+  return undefined;
+}
 
 export function getPlatformDefinition(platform: Platform) {
   return PLATFORMS.find((item) => item.id === platform) ?? null;

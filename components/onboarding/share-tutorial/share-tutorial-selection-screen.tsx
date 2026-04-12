@@ -8,9 +8,18 @@ import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Animated, Easing, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PLATFORMS } from "./share-tutorial-config";
+import {
+  getShareTutorialPlatformHref,
+  PLATFORMS,
+  SHARE_TUTORIAL_DEFAULT_ROUTE,
+  type ShareTutorialReturnTo,
+} from "./share-tutorial-config";
 
-export default function ShareTutorialSelectionScreen({ returnTo }: { returnTo?: string }) {
+export default function ShareTutorialSelectionScreen({
+  returnTo,
+}: {
+  returnTo?: ShareTutorialReturnTo;
+}) {
   const router = useRouter();
   const { t } = useI18n();
   const contentOpacity = useRef(new Animated.Value(1)).current;
@@ -37,7 +46,7 @@ export default function ShareTutorialSelectionScreen({ returnTo }: { returnTo?: 
   }, [contentOpacity, contentTranslateY]);
 
   const finishTutorial = () => {
-    router.replace(returnTo ?? "/dashboard");
+    router.replace(returnTo ?? SHARE_TUTORIAL_DEFAULT_ROUTE);
   };
 
   return (
@@ -76,12 +85,7 @@ export default function ShareTutorialSelectionScreen({ returnTo }: { returnTo?: 
                 key={platform.id}
                 style={styles.platformCard}
                 pressedOpacity={0.97}
-                onPress={() =>
-                  router.push({
-                    pathname: `/onboarding/share-tutorial/${platform.id}`,
-                    params: returnTo ? { returnTo } : undefined,
-                  })
-                }
+                onPress={() => router.push(getShareTutorialPlatformHref(platform.id, returnTo))}
               >
                 <View style={styles.platformIconWrap}>
                   <platform.Icon />

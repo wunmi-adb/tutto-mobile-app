@@ -1,11 +1,11 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { getLocationLabel } from "@/components/dashboard/data";
+import { EXPIRING_ITEMS, expiryColor, getExpiryLabel } from "@/components/dashboard/data";
 import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { EXPIRING_ITEMS, expiryColor, getExpiryLabel } from "./data";
 
 const dotColor = (days: number) => {
   if (days <= 1) return colors.danger;

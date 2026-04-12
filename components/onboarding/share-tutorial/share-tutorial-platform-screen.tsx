@@ -11,8 +11,10 @@ import { Animated, Easing, ScrollView, StyleSheet, Text, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   PLATFORM_STEPS,
+  SHARE_TUTORIAL_DEFAULT_ROUTE,
   getPlatformDefinition,
   type Platform,
+  type ShareTutorialReturnTo,
 } from "./share-tutorial-config";
 import { TutorialVisual } from "./share-tutorial-visuals";
 
@@ -21,7 +23,7 @@ export default function ShareTutorialPlatformScreen({
   returnTo,
 }: {
   platform: Platform;
-  returnTo?: string;
+  returnTo?: ShareTutorialReturnTo;
 }) {
   const router = useRouter();
   const { t } = useI18n();
@@ -56,7 +58,7 @@ export default function ShareTutorialPlatformScreen({
   }, [contentOpacity, contentTranslateX, currentStep]);
 
   const finishTutorial = () => {
-    router.replace(returnTo ?? "/dashboard");
+    router.replace(returnTo ?? SHARE_TUTORIAL_DEFAULT_ROUTE);
   };
 
   const handleBack = () => {

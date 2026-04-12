@@ -1,5 +1,5 @@
 import { ImageSourcePropType } from "react-native";
-import { FoodCategory } from "./data";
+import type { FoodCategory } from "@/components/dashboard/data";
 
 export const CATEGORY_IMAGES: Record<FoodCategory, ImageSourcePropType> = {
   dairy: require("@/assets/images/category-dairy.png"),

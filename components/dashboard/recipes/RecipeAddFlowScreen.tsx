@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type SourceOption = {
-  source: RecipeSource;
+  source: Exclude<RecipeSource, "manual">;
   icon: keyof typeof Feather.glyphMap;
 };
 
@@ -106,7 +106,7 @@ export function RecipeAddSourceScreen({
   onSelectSource,
 }: {
   onBack: () => void;
-  onSelectSource: (source: RecipeSource) => void;
+  onSelectSource: (source: Exclude<RecipeSource, "manual">) => void;
 }) {
   const { t } = useI18n();
 

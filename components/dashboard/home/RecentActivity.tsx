@@ -1,10 +1,9 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { CATEGORY_IMAGES } from "@/components/dashboard/home/categoryIcons";
-import { getActivityText, getRelativeTimeLabel } from "@/components/dashboard/data";
+import { RECENT_ACTIVITY, getActivityText, getRelativeTimeLabel } from "@/components/dashboard/data";
 import { useI18n } from "@/i18n";
 import { Image, StyleSheet, Text, View } from "react-native";
-import { RECENT_ACTIVITY } from "./data";
 
 export default function RecentActivity() {
   const { t } = useI18n();
