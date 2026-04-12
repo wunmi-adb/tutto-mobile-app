@@ -40,15 +40,7 @@ export default function RecipeDetailRoute() {
       onSave={updateRecipe}
       onCookedThis={(nextRecipe) => {
         updateRecipe(nextRecipe);
-        router.push({
-          pathname: "/dashboard/plan/update-usage",
-          params: {
-            origin: "recipes",
-            mealType,
-            recipe: serializeMealRecipe(nextRecipe),
-            recipeName: nextRecipe.kind === "custom" ? nextRecipe.name : undefined,
-          },
-        });
+        router.replace("/dashboard/recipes");
       }}
       onStartCooking={(nextRecipe) =>
         router.push({

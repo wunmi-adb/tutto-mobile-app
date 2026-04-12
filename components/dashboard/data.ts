@@ -309,12 +309,6 @@ export type ActivityItem =
       count: number;
       locationId: Exclude<KitchenLocationId, "all" | "other">;
       time: RelativeTime;
-    }
-  | {
-      id: string;
-      kind: "generatedMealPlan";
-      category: FoodCategory;
-      time: RelativeTime;
     };
 
 export const RECENT_ACTIVITY: ActivityItem[] = [
@@ -352,12 +346,6 @@ export const RECENT_ACTIVITY: ActivityItem[] = [
     count: 2,
     locationId: "freezer",
     time: { kind: "daysAgo", value: 2 },
-  },
-  {
-    id: "5",
-    kind: "generatedMealPlan",
-    category: "grains",
-    time: { kind: "daysAgo", value: 3 },
   },
 ];
 
@@ -436,8 +424,6 @@ export function getActivityText(t: TranslationFn, activity: ActivityItem) {
         count: activity.count,
         location: getLocationLabel(t, activity.locationId),
       });
-    case "generatedMealPlan":
-      return t("kitchen.home.activity.generatedMealPlan");
   }
 }
 
