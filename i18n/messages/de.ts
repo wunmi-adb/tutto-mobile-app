@@ -217,6 +217,56 @@ const de = {
   "storage.onboarding.success.title.singular": "{{count}} Artikel hinzugefugt!",
   "storage.onboarding.success.title.plural": "{{count}} Artikel hinzugefugt!",
   "storage.onboarding.success.subtitle": "Du kannst jederzeit mehr hinzufugen",
+  "shareTutorial.title": "Speichere Rezepte von uberall",
+  "shareTutorial.subtitle":
+    "Du hast ein Rezept in Social Media gesehen? Teile es mit Tutto und wir speichern es fur dich. Lass es uns ausprobieren.",
+  "shareTutorial.heroHint":
+    "Wahle die App, die du am meisten nutzt, und wir zeigen dir genau, wo du tippen musst.",
+  "shareTutorial.platformPrompt": "Wo findest du Rezepte?",
+  "shareTutorial.learnHow": "So funktioniert das Teilen",
+  "shareTutorial.later": "Ich mache das spater",
+  "shareTutorial.skip": "Uberspringen",
+  "shareTutorial.stepProgress": "Schritt {{current}} von {{total}}",
+  "shareTutorial.next": "Weiter",
+  "shareTutorial.done": "Alles klar, los geht's!",
+  "shareTutorial.platform.instagram": "Instagram",
+  "shareTutorial.platform.youtube": "YouTube",
+  "shareTutorial.platform.tiktok": "TikTok",
+  "shareTutorial.steps.find.title": "Finde ein Rezept, das dir gefallt",
+  "shareTutorial.steps.find.subtitle.instagram":
+    "Offne ein Reel oder einen Beitrag mit einem Rezept, das du speichern mochtest.",
+  "shareTutorial.steps.find.subtitle.youtube":
+    "Offne ein YouTube-Video mit einem Rezept, das du speichern mochtest.",
+  "shareTutorial.steps.find.subtitle.tiktok":
+    "Offne ein TikTok mit einem Rezept, das du speichern mochtest.",
+  "shareTutorial.steps.share.title": "Tippe auf Teilen",
+  "shareTutorial.steps.share.subtitle.instagram":
+    "Tippe auf das Papierflieger-Symbol unter dem Beitrag oder Reel.",
+  "shareTutorial.steps.share.subtitle.youtube":
+    "Tippe unter dem Video auf Teilen.",
+  "shareTutorial.steps.share.subtitle.tiktok":
+    "Tippe auf das Pfeil-Symbol an der rechten Seite des Videos.",
+  "shareTutorial.steps.more.title": "Tippe auf Mehr",
+  "shareTutorial.steps.more.subtitle.instagram":
+    "Scrolle in der Teilen-Leiste nach rechts und tippe auf Mehr (•••).",
+  "shareTutorial.steps.more.subtitle.youtube":
+    "Scrolle in der Teilen-Ansicht durch die App-Leiste und tippe auf Mehr (•••).",
+  "shareTutorial.steps.more.subtitle.tiktok":
+    "Scrolle in der unteren Teilen-Leiste nach rechts und tippe auf Andere oder Mehr.",
+  "shareTutorial.steps.findTutto.title": "Finde Tutto",
+  "shareTutorial.steps.findTutto.subtitle.instagram":
+    "Scrolle in der App-Liste nach unten und tippe auf Tutto.",
+  "shareTutorial.steps.findTutto.subtitle.youtube":
+    "Scrolle nach unten und tippe in der App-Liste auf Tutto.",
+  "shareTutorial.steps.findTutto.subtitle.tiktok":
+    "Suche Tutto in der App-Liste und tippe darauf.",
+  "shareTutorial.steps.pin.title": "Halte Tutto griffbereit",
+  "shareTutorial.steps.pin.subtitle.instagram":
+    "Damit Tutto immer zuerst erscheint, tippe oben auf Bearbeiten und setze Tutto zu deinen Favoriten.",
+  "shareTutorial.steps.pin.subtitle.youtube":
+    "Tippe auf Bearbeiten und füge Tutto zu deinen Favoriten hinzu, damit es immer nur einen Tipp entfernt ist.",
+  "shareTutorial.steps.pin.subtitle.tiktok":
+    "Tippe auf Bearbeiten, um Tutto für den schnelleren Zugriff beim nächsten Mal anzuheften.",
   "storage.customLabel": "BENENNE DEINEN ORT",
   "storage.customPlaceholder": "z. B. Garagenregal, Keller",
   "storage.cta": "Diesen Ort bestucken",

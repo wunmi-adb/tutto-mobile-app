@@ -216,6 +216,56 @@ const ja = {
   "storage.onboarding.success.title.singular": "{{count}}件の食材を追加しました！",
   "storage.onboarding.success.title.plural": "{{count}}件の食材を追加しました！",
   "storage.onboarding.success.subtitle": "あとからいつでも追加できます",
+  "shareTutorial.title": "どこで見つけたレシピも保存",
+  "shareTutorial.subtitle":
+    "SNSでレシピを見つけたら、Tuttoに共有するだけで保存できます。やってみましょう。",
+  "shareTutorial.heroHint":
+    "よく使うアプリを選ぶと、どこをタップすればいいか順番に案内します。",
+  "shareTutorial.platformPrompt": "レシピはどこで見つけますか？",
+  "shareTutorial.learnHow": "共有方法を見る",
+  "shareTutorial.later": "これはあとでやります",
+  "shareTutorial.skip": "スキップ",
+  "shareTutorial.stepProgress": "ステップ {{current}} / {{total}}",
+  "shareTutorial.next": "次へ",
+  "shareTutorial.done": "よし、はじめよう！",
+  "shareTutorial.platform.instagram": "Instagram",
+  "shareTutorial.platform.youtube": "YouTube",
+  "shareTutorial.platform.tiktok": "TikTok",
+  "shareTutorial.steps.find.title": "好きなレシピを見つける",
+  "shareTutorial.steps.find.subtitle.instagram":
+    "保存したいレシピがあるリールや投稿を開きます。",
+  "shareTutorial.steps.find.subtitle.youtube":
+    "保存したいレシピのYouTube動画を開きます。",
+  "shareTutorial.steps.find.subtitle.tiktok":
+    "保存したいレシピのTikTok動画を開きます。",
+  "shareTutorial.steps.share.title": "共有をタップ",
+  "shareTutorial.steps.share.subtitle.instagram":
+    "投稿やリールの下にある紙飛行機アイコンをタップします。",
+  "shareTutorial.steps.share.subtitle.youtube":
+    "動画の下にある共有ボタンをタップします。",
+  "shareTutorial.steps.share.subtitle.tiktok":
+    "動画の右側にある矢印アイコンをタップします。",
+  "shareTutorial.steps.more.title": "その他をタップ",
+  "shareTutorial.steps.more.subtitle.instagram":
+    "共有トレイでアプリのアイコンを右にスクロールし、その他（•••）をタップします。",
+  "shareTutorial.steps.more.subtitle.youtube":
+    "共有シートでアプリ一覧をスクロールし、その他（•••）をタップします。",
+  "shareTutorial.steps.more.subtitle.tiktok":
+    "下部の共有トレイを右にスクロールして、その他をタップします。",
+  "shareTutorial.steps.findTutto.title": "Tuttoを見つける",
+  "shareTutorial.steps.findTutto.subtitle.instagram":
+    "アプリ一覧を下にスクロールして、Tuttoをタップします。",
+  "shareTutorial.steps.findTutto.subtitle.youtube":
+    "一覧を下にスクロールして、アプリ一覧からTuttoをタップします。",
+  "shareTutorial.steps.findTutto.subtitle.tiktok":
+    "アプリ一覧でTuttoを探してタップします。",
+  "shareTutorial.steps.pin.title": "すぐ使えるようにする",
+  "shareTutorial.steps.pin.subtitle.instagram":
+    "Tuttoをいつも先頭に表示するには、上部の編集をタップしてお気に入りに追加します。",
+  "shareTutorial.steps.pin.subtitle.youtube":
+    "編集をタップしてTuttoをお気に入りに追加すると、いつでも1タップで使えます。",
+  "shareTutorial.steps.pin.subtitle.tiktok":
+    "次回すぐ使えるように、編集をタップしてTuttoをお気に入りに固定します。",
   "storage.customLabel": "場所の名前",
   "storage.customPlaceholder": "例: ガレージの棚、地下室",
   "storage.cta": "この場所を登録する",

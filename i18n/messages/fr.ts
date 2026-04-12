@@ -217,6 +217,56 @@ const fr = {
   "storage.onboarding.success.title.singular": "{{count}} produit ajoute !",
   "storage.onboarding.success.title.plural": "{{count}} produits ajoutes !",
   "storage.onboarding.success.subtitle": "Vous pourrez toujours en ajouter plus tard",
+  "shareTutorial.title": "Enregistrez des recettes de partout",
+  "shareTutorial.subtitle":
+    "Vous voyez une recette sur les reseaux ? Partagez-la avec Tutto et nous l'enregistrerons pour vous. Essayons.",
+  "shareTutorial.heroHint":
+    "Choisissez l'application que vous utilisez le plus et nous vous montrerons exactement ou appuyer.",
+  "shareTutorial.platformPrompt": "Ou trouvez-vous des recettes ?",
+  "shareTutorial.learnHow": "Voir comment partager",
+  "shareTutorial.later": "Je trouverai ca plus tard",
+  "shareTutorial.skip": "Passer",
+  "shareTutorial.stepProgress": "Etape {{current}} sur {{total}}",
+  "shareTutorial.next": "Suivant",
+  "shareTutorial.done": "C'est bon, on y va !",
+  "shareTutorial.platform.instagram": "Instagram",
+  "shareTutorial.platform.youtube": "YouTube",
+  "shareTutorial.platform.tiktok": "TikTok",
+  "shareTutorial.steps.find.title": "Trouvez une recette que vous aimez",
+  "shareTutorial.steps.find.subtitle.instagram":
+    "Ouvrez un Reel ou une publication avec une recette que vous voulez enregistrer.",
+  "shareTutorial.steps.find.subtitle.youtube":
+    "Ouvrez une video YouTube avec une recette que vous voulez enregistrer.",
+  "shareTutorial.steps.find.subtitle.tiktok":
+    "Ouvrez un TikTok avec une recette que vous aimeriez enregistrer.",
+  "shareTutorial.steps.share.title": "Touchez Partager",
+  "shareTutorial.steps.share.subtitle.instagram":
+    "Touchez l'icone avion en papier sous la publication ou le Reel.",
+  "shareTutorial.steps.share.subtitle.youtube":
+    "Touchez Partager sous la video.",
+  "shareTutorial.steps.share.subtitle.tiktok":
+    "Touchez l'icone de partage a droite de la video.",
+  "shareTutorial.steps.more.title": "Touchez Plus",
+  "shareTutorial.steps.more.subtitle.instagram":
+    "Dans la barre de partage, faites defiler les applications vers la droite et touchez Plus (•••).",
+  "shareTutorial.steps.more.subtitle.youtube":
+    "Dans la feuille de partage, faites defiler la rangée d'apps et touchez Plus (•••).",
+  "shareTutorial.steps.more.subtitle.tiktok":
+    "Dans la barre de partage du bas, faites defiler vers la droite puis touchez Autres ou Plus.",
+  "shareTutorial.steps.findTutto.title": "Trouvez Tutto",
+  "shareTutorial.steps.findTutto.subtitle.instagram":
+    "Faites defiler la liste des apps et touchez Tutto.",
+  "shareTutorial.steps.findTutto.subtitle.youtube":
+    "Faites defiler puis touchez Tutto dans la liste des applications.",
+  "shareTutorial.steps.findTutto.subtitle.tiktok":
+    "Cherchez Tutto dans la liste des applications puis touchez-le.",
+  "shareTutorial.steps.pin.title": "Gardez Tutto a portee de main",
+  "shareTutorial.steps.pin.subtitle.instagram":
+    "Pour que Tutto apparaisse toujours en premier, touchez Modifier en haut puis ajoutez Tutto a vos favoris.",
+  "shareTutorial.steps.pin.subtitle.youtube":
+    "Touchez Modifier et ajoutez Tutto a vos favoris pour l'avoir toujours a portee de main.",
+  "shareTutorial.steps.pin.subtitle.tiktok":
+    "Touchez Modifier pour epingler Tutto a vos favoris et y acceder plus vite la prochaine fois.",
   "storage.customLabel": "NOMMEZ VOTRE EMPLACEMENT",
   "storage.customPlaceholder": "ex. Etagere du garage, sous-sol",
   "storage.cta": "Stocker cet espace",

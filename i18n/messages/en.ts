@@ -207,6 +207,55 @@ const en = {
   "storage.onboarding.success.title.singular": "{{count}} item added!",
   "storage.onboarding.success.title.plural": "{{count}} items added!",
   "storage.onboarding.success.subtitle": "You can always add more later",
+  "shareTutorial.title": "Save recipes from anywhere",
+  "shareTutorial.subtitle":
+    "See a recipe on social media? Share it to Tutto and we'll save it for you. Let's try it.",
+  "shareTutorial.heroHint":
+    "Pick the app you use most and we'll show you exactly where to tap.",
+  "shareTutorial.platformPrompt": "Where do you find recipes?",
+  "shareTutorial.learnHow": "Learn how to share",
+  "shareTutorial.later": "I'll figure it out later",
+  "shareTutorial.skip": "Skip",
+  "shareTutorial.stepProgress": "Step {{current}} of {{total}}",
+  "shareTutorial.next": "Next",
+  "shareTutorial.done": "Got it, let's go!",
+  "shareTutorial.platform.instagram": "Instagram",
+  "shareTutorial.platform.youtube": "YouTube",
+  "shareTutorial.platform.tiktok": "TikTok",
+  "shareTutorial.steps.find.title": "Find a recipe you love",
+  "shareTutorial.steps.find.subtitle.instagram":
+    "Open a Reel or post with a recipe you want to save.",
+  "shareTutorial.steps.find.subtitle.youtube":
+    "Open a YouTube video with a recipe you want to save.",
+  "shareTutorial.steps.find.subtitle.tiktok":
+    "Open a TikTok with a recipe you'd like to save.",
+  "shareTutorial.steps.share.title": "Tap share",
+  "shareTutorial.steps.share.subtitle.instagram":
+    "Tap the paper plane icon (↗) below the post or Reel.",
+  "shareTutorial.steps.share.subtitle.youtube": "Tap the Share button below the video.",
+  "shareTutorial.steps.share.subtitle.tiktok":
+    "Tap the arrow icon (→) on the right side of the video.",
+  "shareTutorial.steps.more.title": "Tap More",
+  "shareTutorial.steps.more.subtitle.instagram":
+    "In the share tray, scroll the app icons to the right and tap More (•••).",
+  "shareTutorial.steps.more.subtitle.youtube":
+    "In the share sheet, scroll the app row and tap More (•••).",
+  "shareTutorial.steps.more.subtitle.tiktok":
+    "In the bottom share tray, scroll right and tap Others or More.",
+  "shareTutorial.steps.findTutto.title": "Find Tutto",
+  "shareTutorial.steps.findTutto.subtitle.instagram":
+    "Scroll down in the list of apps and tap Tutto.",
+  "shareTutorial.steps.findTutto.subtitle.youtube":
+    "Scroll down and tap Tutto from the list of apps.",
+  "shareTutorial.steps.findTutto.subtitle.tiktok":
+    "Look for Tutto in the apps list and tap it.",
+  "shareTutorial.steps.pin.title": "Keep Tutto handy",
+  "shareTutorial.steps.pin.subtitle.instagram":
+    "To make Tutto always appear first, tap Edit at the top, then toggle Tutto to your favourites.",
+  "shareTutorial.steps.pin.subtitle.youtube":
+    "Tap Edit and add Tutto to your favourites so it's always one tap away.",
+  "shareTutorial.steps.pin.subtitle.tiktok":
+    "Tap Edit to pin Tutto to your favourites for quick access next time.",
   "storage.customLabel": "NAME YOUR LOCATION",
   "storage.customPlaceholder": "e.g. Garage Shelf, Basement",
   "storage.cta": "Stock this location",

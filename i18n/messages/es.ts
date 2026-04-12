@@ -217,6 +217,56 @@ const es = {
   "storage.onboarding.success.title.singular": "Se anadio {{count}} producto.",
   "storage.onboarding.success.title.plural": "Se anadieron {{count}} productos.",
   "storage.onboarding.success.subtitle": "Siempre puedes anadir mas despues",
+  "shareTutorial.title": "Guarda recetas desde cualquier lugar",
+  "shareTutorial.subtitle":
+    "Has visto una receta en redes sociales? Compartela con Tutto y la guardaremos por ti. Vamos a probarlo.",
+  "shareTutorial.heroHint":
+    "Elige la app que mas usas y te mostraremos exactamente donde tocar.",
+  "shareTutorial.platformPrompt": "Donde encuentras recetas?",
+  "shareTutorial.learnHow": "Aprender a compartir",
+  "shareTutorial.later": "Ya lo resolvere mas tarde",
+  "shareTutorial.skip": "Omitir",
+  "shareTutorial.stepProgress": "Paso {{current}} de {{total}}",
+  "shareTutorial.next": "Siguiente",
+  "shareTutorial.done": "Listo, vamos",
+  "shareTutorial.platform.instagram": "Instagram",
+  "shareTutorial.platform.youtube": "YouTube",
+  "shareTutorial.platform.tiktok": "TikTok",
+  "shareTutorial.steps.find.title": "Encuentra una receta que te guste",
+  "shareTutorial.steps.find.subtitle.instagram":
+    "Abre un Reel o una publicacion con una receta que quieras guardar.",
+  "shareTutorial.steps.find.subtitle.youtube":
+    "Abre un video de YouTube con una receta que quieras guardar.",
+  "shareTutorial.steps.find.subtitle.tiktok":
+    "Abre un TikTok con una receta que quieras guardar.",
+  "shareTutorial.steps.share.title": "Toca compartir",
+  "shareTutorial.steps.share.subtitle.instagram":
+    "Toca el icono del avion de papel debajo de la publicacion o del Reel.",
+  "shareTutorial.steps.share.subtitle.youtube":
+    "Toca Compartir debajo del video.",
+  "shareTutorial.steps.share.subtitle.tiktok":
+    "Toca el icono de flecha en el lado derecho del video.",
+  "shareTutorial.steps.more.title": "Toca Mas",
+  "shareTutorial.steps.more.subtitle.instagram":
+    "En la bandeja para compartir, desplaza los iconos de apps a la derecha y toca Mas (•••).",
+  "shareTutorial.steps.more.subtitle.youtube":
+    "En la hoja para compartir, desplaza la fila de apps y toca Mas (•••).",
+  "shareTutorial.steps.more.subtitle.tiktok":
+    "En la bandeja inferior para compartir, desplaza a la derecha y toca Otros o Mas.",
+  "shareTutorial.steps.findTutto.title": "Encuentra Tutto",
+  "shareTutorial.steps.findTutto.subtitle.instagram":
+    "Desplazate por la lista de apps y toca Tutto.",
+  "shareTutorial.steps.findTutto.subtitle.youtube":
+    "Desplazate hacia abajo y toca Tutto en la lista de aplicaciones.",
+  "shareTutorial.steps.findTutto.subtitle.tiktok":
+    "Busca Tutto en la lista de apps y tocalo.",
+  "shareTutorial.steps.pin.title": "Ten Tutto a mano",
+  "shareTutorial.steps.pin.subtitle.instagram":
+    "Para que Tutto aparezca siempre primero, toca Editar arriba y anade Tutto a tus favoritos.",
+  "shareTutorial.steps.pin.subtitle.youtube":
+    "Toca Editar y anade Tutto a tus favoritos para tenerlo siempre a un toque.",
+  "shareTutorial.steps.pin.subtitle.tiktok":
+    "Toca Editar para fijar Tutto en tus favoritos y acceder mas rapido la proxima vez.",
   "storage.customLabel": "NOMBRE DE LA UBICACIÓN",
   "storage.customPlaceholder": "p. ej. Estante del garaje, sótano",
   "storage.cta": "Abastecer esta ubicación",

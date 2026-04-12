@@ -217,6 +217,56 @@ const tr = {
   "storage.onboarding.success.title.singular": "{{count}} urun eklendi!",
   "storage.onboarding.success.title.plural": "{{count}} urun eklendi!",
   "storage.onboarding.success.subtitle": "Daha sonra her zaman daha fazla ekleyebilirsin",
+  "shareTutorial.title": "Tarifleri her yerden kaydet",
+  "shareTutorial.subtitle":
+    "Sosyal medyada bir tarif mi gordun? Tutto ile paylas, senin icin kaydedelim. Hadi deneyelim.",
+  "shareTutorial.heroHint":
+    "En cok kullandigin uygulamayi sec, nereye dokunman gerektigini tam olarak gosterelim.",
+  "shareTutorial.platformPrompt": "Tarifleri en cok nerede buluyorsun?",
+  "shareTutorial.learnHow": "Nasil paylasilacagini gor",
+  "shareTutorial.later": "Bunu sonra yaparim",
+  "shareTutorial.skip": "Gec",
+  "shareTutorial.stepProgress": "{{total}} adimin {{current}}. adimi",
+  "shareTutorial.next": "Ileri",
+  "shareTutorial.done": "Tamam, hadi gidelim!",
+  "shareTutorial.platform.instagram": "Instagram",
+  "shareTutorial.platform.youtube": "YouTube",
+  "shareTutorial.platform.tiktok": "TikTok",
+  "shareTutorial.steps.find.title": "Begendigin bir tarif bul",
+  "shareTutorial.steps.find.subtitle.instagram":
+    "Kaydetmek istedigin bir tarif iceren bir Reel ya da gonderi ac.",
+  "shareTutorial.steps.find.subtitle.youtube":
+    "Kaydetmek istedigin bir tarif iceren bir YouTube videosu ac.",
+  "shareTutorial.steps.find.subtitle.tiktok":
+    "Kaydetmek istedigin bir tarif iceren bir TikTok ac.",
+  "shareTutorial.steps.share.title": "Paylas'a dokun",
+  "shareTutorial.steps.share.subtitle.instagram":
+    "Gonderinin veya Reel'in altindaki kagit ucak simgesine dokun.",
+  "shareTutorial.steps.share.subtitle.youtube":
+    "Videonun altindaki Paylas dugmesine dokun.",
+  "shareTutorial.steps.share.subtitle.tiktok":
+    "Videonun sag tarafindaki ok simgesine dokun.",
+  "shareTutorial.steps.more.title": "Daha Fazla'ya dokun",
+  "shareTutorial.steps.more.subtitle.instagram":
+    "Paylasim tepsisinde uygulama simgelerini saga kaydir ve Daha Fazla'ya (•••) dokun.",
+  "shareTutorial.steps.more.subtitle.youtube":
+    "Paylasim sayfasinda uygulama satirini kaydir ve Daha Fazla'ya (•••) dokun.",
+  "shareTutorial.steps.more.subtitle.tiktok":
+    "Alttaki paylasim tepsisinde saga kaydirip Digerleri ya da Daha Fazla'ya dokun.",
+  "shareTutorial.steps.findTutto.title": "Tutto'yu bul",
+  "shareTutorial.steps.findTutto.subtitle.instagram":
+    "Uygulama listesinde asagi kaydir ve Tutto'ya dokun.",
+  "shareTutorial.steps.findTutto.subtitle.youtube":
+    "Asagi kaydirip uygulama listesinden Tutto'ya dokun.",
+  "shareTutorial.steps.findTutto.subtitle.tiktok":
+    "Uygulama listesinde Tutto'yu bulup dokun.",
+  "shareTutorial.steps.pin.title": "Tutto hep elinin altinda olsun",
+  "shareTutorial.steps.pin.subtitle.instagram":
+    "Tutto'nun her zaman en ustte gorunmesi icin ustteki Duzenle'ye dokun ve Tutto'yu favorilerine ekle.",
+  "shareTutorial.steps.pin.subtitle.youtube":
+    "Duzenle'ye dokunup Tutto'yu favorilerine ekle; boylece hep tek dokunus uzakta olsun.",
+  "shareTutorial.steps.pin.subtitle.tiktok":
+    "Bir dahaki sefere daha hizli erismek icin Duzenle'ye dokunup Tutto'yu favorilerine sabitle.",
   "storage.customLabel": "ALANA ISIM VER",
   "storage.customPlaceholder": "orn. Garaj rafi, bodrum",
   "storage.cta": "Bu alani doldur",

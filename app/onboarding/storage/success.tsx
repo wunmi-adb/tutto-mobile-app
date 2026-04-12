@@ -29,7 +29,7 @@ export default function OnboardingStorageSuccess() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/dashboard");
+      router.replace("/onboarding/share-tutorial");
     }, SUCCESS_REDIRECT_MS);
 
     return () => clearTimeout(timer);
