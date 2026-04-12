@@ -1,5 +1,5 @@
 import type { MealTypeId, RecipeId } from "@/components/dashboard/data";
-import type { FillLevel } from "@/components/items/add-item/types";
+import type { FillLevel } from "@/lib/inventory/types";
 
 export type CustomMealRecipe = {
   kind: "custom";

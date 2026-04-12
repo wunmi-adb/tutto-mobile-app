@@ -1,23 +1,18 @@
-import ExpiringSection from "@/components/dashboard/home/ExpiringSection";
-import HomeHeader from "@/components/dashboard/home/HomeHeader";
-import MealCard from "@/components/dashboard/home/MealCard";
-import RecentActivity from "@/components/dashboard/home/RecentActivity";
-import RecipeDetail from "@/components/dashboard/home/RecipeDetail";
-import StatsRow from "@/components/dashboard/home/StatsRow";
-import { HOME_MEAL_IDS, type RecipeId } from "@/components/dashboard/data";
+import HomeDashboardHeader from "@/components/dashboard/home/HomeDashboardHeader";
+import HomeMealSection from "@/components/dashboard/home/HomeMealSection";
+import HomeRecipeDetail from "@/components/dashboard/home/HomeRecipeDetail";
+import HomeShoppingList from "@/components/dashboard/home/HomeShoppingList";
 import { colors } from "@/constants/colors";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getMealSections, type DashboardMeal } from "@/components/dashboard/home/data";
 
 export default function HomeTab() {
-  const [nextMealId, setNextMealId] = useState<RecipeId>(HOME_MEAL_IDS[0]);
-  const [viewingRecipe, setViewingRecipe] = useState(false);
-
-  const shuffleMeal = () => {
-    const otherMealIds = HOME_MEAL_IDS.filter((mealId) => mealId !== nextMealId);
-    setNextMealId(otherMealIds[Math.floor(Math.random() * otherMealIds.length)]);
-  };
+  const router = useRouter();
+  const [sections] = useState(() => getMealSections());
+  const [selectedMeal, setSelectedMeal] = useState<DashboardMeal | null>(null);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -26,16 +21,23 @@ export default function HomeTab() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <HomeHeader />
-        <StatsRow />
-        <ExpiringSection />
-        <MealCard mealId={nextMealId} onShuffle={shuffleMeal} onViewRecipe={() => setViewingRecipe(true)} />
-        <RecentActivity />
+        <HomeDashboardHeader />
+        <View style={styles.sections}>
+          {sections.map((section, index) => (
+            <HomeMealSection
+              key={section.label}
+              section={section}
+              actionLabel={index === 0 ? "View all" : undefined}
+              onPressAction={index === 0 ? () => router.push("/dashboard/plan") : undefined}
+              onSelectMeal={setSelectedMeal}
+            />
+          ))}
+
+          <HomeShoppingList onPressAction={() => router.push("/dashboard/shopping")} />
+        </View>
       </ScrollView>
 
-      {viewingRecipe && (
-        <RecipeDetail mealId={nextMealId} onClose={() => setViewingRecipe(false)} />
-      )}
+      <HomeRecipeDetail meal={selectedMeal} onClose={() => setSelectedMeal(null)} />
     </SafeAreaView>
   );
 }
@@ -44,4 +46,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 },
+  sections: { gap: 32, marginTop: 32 },
 });

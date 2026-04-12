@@ -1,6 +1,6 @@
-import { ItemType, TrackingMode } from "@/components/items/add-item/types";
 import { apiClient } from "@/lib/api/client";
 import { ApiResponse } from "@/lib/api/types";
+import { ItemType, TrackingMode } from "@/lib/inventory/types";
 
 export type InventoryCaptureType = "image" | "audio";
 

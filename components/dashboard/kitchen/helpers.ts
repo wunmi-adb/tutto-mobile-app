@@ -1,8 +1,8 @@
 import { formatDateLabel } from "@/components/dashboard/data";
-import type { FillLevel } from "@/components/items/add-item/types";
 import type { PantryItem } from "@/components/dashboard/kitchen/types";
 import type { AppLanguage } from "@/i18n/config";
 import type { TranslationKey } from "@/i18n/messages";
+import type { FillLevel } from "@/lib/inventory/types";
 
 type Translate = (key: TranslationKey, params?: Record<string, number | string>) => string;
 

@@ -1,6 +1,6 @@
 import type { MealTypeId } from "@/components/dashboard/data";
 import CookedMealDetailScreen from "@/components/dashboard/plan/CookedMealDetailScreen";
-import type { FillLevel } from "@/components/items/add-item/types";
+import type { FillLevel } from "@/lib/inventory/types";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 

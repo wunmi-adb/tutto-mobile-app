@@ -1,5 +1,5 @@
 import type { PantryBatch, PantryItem, PantryStatusFilter } from "@/components/dashboard/kitchen/types";
-import type { FillLevel, ItemType, TrackingMode } from "@/components/items/add-item/types";
+import type { FillLevel, ItemType, TrackingMode } from "@/lib/inventory/types";
 import { apiClient } from "@/lib/api/client";
 import { ApiResponse } from "@/lib/api/types";
 import { useInfiniteQuery } from "@tanstack/react-query";

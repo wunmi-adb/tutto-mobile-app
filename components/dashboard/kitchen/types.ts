@@ -1,4 +1,4 @@
-import type { FillLevel, ItemType } from "@/components/items/add-item/types";
+import type { FillLevel, ItemType } from "@/lib/inventory/types";
 
 export type PantryStatusFilter = "expiring" | "low" | "finished";
 

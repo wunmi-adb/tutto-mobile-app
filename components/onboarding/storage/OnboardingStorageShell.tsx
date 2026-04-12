@@ -1,3 +1,4 @@
+import DetectedItemsReviewScreen from "@/components/inventory/DetectedItemsReviewScreen";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
 import BackButton from "@/components/ui/BackButton";
 import Button from "@/components/ui/Button";
@@ -124,6 +125,7 @@ export default function OnboardingStorageShell() {
   const { t } = useI18n();
   const {
     captureMode,
+    reviewItems,
     items,
     isSaving,
     isVoiceProcessing,
@@ -137,6 +139,9 @@ export default function OnboardingStorageShell() {
     handleSave,
     handleVoiceDone,
     removeItem,
+    removeReviewItem,
+    cancelReview,
+    confirmReview,
     retryVoiceCapture,
     setCaptureMode,
     setManualValue,
@@ -160,6 +165,17 @@ export default function OnboardingStorageShell() {
 
   if (showVoiceError) {
     return <StorageCaptureErrorState onTryAgain={retryVoiceCapture} />;
+  }
+
+  if (reviewItems.length > 0) {
+    return (
+      <DetectedItemsReviewScreen
+        items={reviewItems}
+        onRemoveItem={removeReviewItem}
+        onCancel={cancelReview}
+        onConfirm={confirmReview}
+      />
+    );
   }
 
   return (

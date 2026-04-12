@@ -1,19 +1,9 @@
 import { useI18n } from "@/i18n";
-import {
-  createInventoryCapture,
-  getInventoryCaptureStatus,
-  readFileAsBase64,
-} from "@/lib/api/item-capture";
+import { useInventoryVoiceCapture } from "@/hooks/useInventoryVoiceCapture";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TextInput } from "react-native";
 import {
-  getStorageCapturedItemNames,
-  isStorageCapturePending,
-  waitForNextStorageCapturePoll,
-} from "./capture";
-import {
-  CAPTURE_POLL_MAX_ATTEMPTS,
   DraftCaptureMode,
   mergeUniqueNames,
 } from "./constants";
@@ -25,20 +15,26 @@ export function useOnboardingStorage() {
   const [captureMode, setCaptureMode] = useState<DraftCaptureMode>(null);
   const [manualValue, setManualValue] = useState("");
   const [items, setItems] = useState<string[]>([]);
-  const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
-  const [showVoiceError, setShowVoiceError] = useState(false);
-  const isMountedRef = useRef(true);
+  const [reviewItems, setReviewItems] = useState<string[]>([]);
   const manualInputRef = useRef<TextInput>(null);
   const kitchenLabel = t("dashboard.tabs.kitchen");
   const isSaving = false;
+  const {
+    clearVoiceError,
+    handleVoiceDone,
+    isVoiceProcessing,
+    markMounted,
+    showVoiceError,
+  } = useInventoryVoiceCapture({
+    onCaptureStart: () => setCaptureMode(null),
+    onItemsDetected: (detectedNames) => {
+      setReviewItems(detectedNames);
+    },
+  });
 
   useEffect(() => {
-    isMountedRef.current = true;
-
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+    return markMounted();
+  }, [markMounted]);
 
   useEffect(() => {
     if (captureMode !== "manual") {
@@ -67,55 +63,18 @@ export function useOnboardingStorage() {
     setItems((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
   }, []);
 
-  const handleVoiceDone = useCallback(async (recordingUri: string) => {
-    setCaptureMode(null);
-    setShowVoiceError(false);
-    setIsVoiceProcessing(true);
-
-    try {
-      const base64Data = await readFileAsBase64(recordingUri);
-      const captureKey = await createInventoryCapture({
-        data: base64Data,
-        type: "audio",
-      });
-
-      for (let attempt = 0; attempt < CAPTURE_POLL_MAX_ATTEMPTS; attempt += 1) {
-        const status = await getInventoryCaptureStatus(captureKey);
-
-        if (!isStorageCapturePending(status)) {
-          const detectedNames = getStorageCapturedItemNames(status);
-
-          if (status.error_key || detectedNames.length === 0) {
-            if (isMountedRef.current) {
-              setShowVoiceError(true);
-            }
-            return;
-          }
-
-          if (isMountedRef.current) {
-            setItems((prev) => mergeUniqueNames(prev, detectedNames));
-          }
-          return;
-        }
-
-        await waitForNextStorageCapturePoll();
-      }
-
-      if (isMountedRef.current) {
-        setShowVoiceError(true);
-      }
-    } catch (error) {
-      console.error("Failed to process onboarding voice capture.", error);
-
-      if (isMountedRef.current) {
-        setShowVoiceError(true);
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setIsVoiceProcessing(false);
-      }
-    }
+  const removeReviewItem = useCallback((index: number) => {
+    setReviewItems((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
   }, []);
+
+  const cancelReview = useCallback(() => {
+    setReviewItems([]);
+  }, []);
+
+  const confirmReview = useCallback(() => {
+    setItems((prev) => mergeUniqueNames(prev, reviewItems));
+    setReviewItems([]);
+  }, [reviewItems]);
 
   const saveButtonTitle = useMemo(() => {
     return t(
@@ -148,12 +107,13 @@ export function useOnboardingStorage() {
   }, [captureMode, resetManualMode, router]);
 
   const retryVoiceCapture = useCallback(() => {
-    setShowVoiceError(false);
+    clearVoiceError();
     setCaptureMode("voice");
-  }, []);
+  }, [clearVoiceError]);
 
   return {
     captureMode,
+    reviewItems,
     items,
     isSaving,
     isVoiceProcessing,
@@ -167,6 +127,9 @@ export function useOnboardingStorage() {
     handleSave,
     handleVoiceDone,
     removeItem,
+    removeReviewItem,
+    cancelReview,
+    confirmReview,
     resetManualMode,
     retryVoiceCapture,
     setCaptureMode,

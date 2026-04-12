@@ -1,8 +1,8 @@
-import { ItemDraft, ItemType, TrackingMode } from "@/components/items/add-item/types";
 import { useI18n } from "@/i18n";
 import { isTranslationKey } from "@/i18n/messages";
 import { apiClient } from "@/lib/api/client";
 import { INVENTORY_QUERY_KEY } from "@/lib/api/inventory";
+import { ItemDraft, ItemType, TrackingMode } from "@/lib/inventory/types";
 import { updateCurrentUserHasItemCache } from "@/lib/api/profile";
 import { ApiResponse, getApiErrorDetails } from "@/lib/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
