@@ -78,7 +78,7 @@ export default function Cuisines() {
         love: [...selectedValues, ...customValues].join(", "),
       });
 
-      router.replace("/onboarding/meals");
+      router.replace("/onboarding/storage");
     } catch (error) {
       handleCaughtApiError(error);
     }

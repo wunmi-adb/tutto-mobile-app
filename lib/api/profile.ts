@@ -54,7 +54,6 @@ export type AppEntryRoute =
   | "/onboarding/dietary"
   | "/onboarding/allergies"
   | "/onboarding/cuisines"
-  | "/onboarding/meals"
   | "/onboarding/storage"
   | "/dashboard";
 
@@ -248,10 +247,6 @@ export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
 
   if (!hasCompletedStep(household.love)) {
     return "/onboarding/cuisines";
-  }
-
-  if (!hasCompletedStep(household.meals)) {
-    return "/onboarding/meals";
   }
 
   return "/onboarding/storage";
