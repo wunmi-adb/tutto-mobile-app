@@ -2,15 +2,15 @@ import type { TranslationMessages } from "./en";
 
 const tr = {
   "common.language": "Dil",
-  "welcome.slides.organized.title": "Mutfağın,\ndüzenli.",
-  "welcome.slides.organized.subtitle":
-    "Elindekileri tek bakışta gör. Unutulan malzemelere ve aynı şeyi iki kez almaya son.",
-  "welcome.slides.cook.title": "Elindekilerle\nyemek yap.",
-  "welcome.slides.cook.subtitle":
-    "Malzemelerine göre hazırlanan tarifleri keşfet. Daha az israf, daha çok yaratıcılık.",
-  "welcome.slides.plan.title": "Öğünlerini planla,\nzorlanmadan.",
-  "welcome.slides.plan.subtitle":
-    "Haftalık planını oluştur ve yalnızca ihtiyacın olanları satın al.",
+  "welcome.slides.tonight.title": "Bu aksam ne\npisirecegini bil.",
+  "welcome.slides.tonight.subtitle":
+    "Elinde olanlara, sevdiklerine ve hanene uygun olana gore.",
+  "welcome.slides.kitchen.title": "Mutfaginda neler\noldugunu bize soyle.",
+  "welcome.slides.kitchen.subtitle":
+    "Sadece birkac malzeme bile yeter - onlari hemen pisirebilecegin ogunlere donusturecegiz.",
+  "welcome.slides.recipe.title": "Bir tarif mi gordun?\nTutto'ya gonder.",
+  "welcome.slides.recipe.subtitle":
+    "TikTok, Instagram ya da baska bir yerden - elimdekilere gore uyarlayacagiz.",
   "welcome.auth.apple": "Apple ile devam et",
   "welcome.auth.google": "Google ile devam et",
   "welcome.session.loading": "Mutfağın hazırlanıyor...",

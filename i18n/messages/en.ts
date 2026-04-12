@@ -1,13 +1,14 @@
 const en = {
   "common.language": "Language",
-  "welcome.slides.organized.title": "Your kitchen,\norganized.",
-  "welcome.slides.organized.subtitle":
-    "See everything you have at a glance. No more forgotten ingredients or double-buying.",
-  "welcome.slides.cook.title": "Cook from what\nyou have.",
-  "welcome.slides.cook.subtitle":
-    "Browse recipes built around your ingredients. Less waste, more creativity.",
-  "welcome.slides.plan.title": "Plan your meals,\neffortlessly.",
-  "welcome.slides.plan.subtitle": "Build a weekly timetable and shop only what you need.",
+  "welcome.slides.tonight.title": "Know what to\ncook tonight.",
+  "welcome.slides.tonight.subtitle":
+    "Based on what you have, what you like, and what works for your household.",
+  "welcome.slides.kitchen.title": "Tell us what's\nin your kitchen.",
+  "welcome.slides.kitchen.subtitle":
+    "Just a few items is enough - we'll turn it into meals you can cook right away.",
+  "welcome.slides.recipe.title": "See a recipe?\nSend it to Tutto.",
+  "welcome.slides.recipe.subtitle":
+    "From TikTok, Instagram or anywhere - we'll adapt it to what you have.",
   "welcome.auth.apple": "Continue with Apple",
   "welcome.auth.google": "Continue with Google",
   "welcome.session.loading": "Setting up your kitchen...",

@@ -2,15 +2,15 @@ import type { TranslationMessages } from "./en";
 
 const de = {
   "common.language": "Sprache",
-  "welcome.slides.organized.title": "Deine Küche,\norganisiert.",
-  "welcome.slides.organized.subtitle":
-    "Behalte alles auf einen Blick im Auge. Keine vergessenen Zutaten oder Doppelkäufe mehr.",
-  "welcome.slides.cook.title": "Koche mit dem,\nwas du hast.",
-  "welcome.slides.cook.subtitle":
-    "Entdecke Rezepte, die auf deinen Zutaten basieren. Weniger Verschwendung, mehr Kreativität.",
-  "welcome.slides.plan.title": "Plane deine Mahlzeiten,\nmühelos.",
-  "welcome.slides.plan.subtitle":
-    "Erstelle einen Wochenplan und kaufe nur, was du wirklich brauchst.",
+  "welcome.slides.tonight.title": "Finde heraus,\nwas du heute kochst.",
+  "welcome.slides.tonight.subtitle":
+    "Basierend auf dem, was du hast, was du magst und was zu deinem Haushalt passt.",
+  "welcome.slides.kitchen.title": "Sag uns, was\nin deiner Kuche ist.",
+  "welcome.slides.kitchen.subtitle":
+    "Schon ein paar Zutaten reichen - wir machen daraus Mahlzeiten, die du sofort kochen kannst.",
+  "welcome.slides.recipe.title": "Ein Rezept gesehen?\nSchick es an Tutto.",
+  "welcome.slides.recipe.subtitle":
+    "Von TikTok, Instagram oder anderswo - wir passen es an das an, was du hast.",
   "welcome.auth.apple": "Mit Apple fortfahren",
   "welcome.auth.google": "Mit Google fortfahren",
   "welcome.session.loading": "Wir richten deine Küche ein...",

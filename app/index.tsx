@@ -1,4 +1,4 @@
-import homeIllustration from "@/assets/images/home-illustration.png";
+import signupIllustration from "@/assets/images/signup-illustration.png";
 import AuthButtons from "@/components/AuthButtons";
 import OnboardingTopBar from "@/components/onboarding/OnboardingTopBar";
 import SlideProgressBars from "@/components/SlideProgressBars";
@@ -41,16 +41,16 @@ export default function Welcome() {
 
   const slides = [
     {
-      title: t("welcome.slides.organized.title"),
-      subtitle: t("welcome.slides.organized.subtitle"),
+      title: t("welcome.slides.tonight.title"),
+      subtitle: t("welcome.slides.tonight.subtitle"),
     },
     {
-      title: t("welcome.slides.cook.title"),
-      subtitle: t("welcome.slides.cook.subtitle"),
+      title: t("welcome.slides.kitchen.title"),
+      subtitle: t("welcome.slides.kitchen.subtitle"),
     },
     {
-      title: t("welcome.slides.plan.title"),
-      subtitle: t("welcome.slides.plan.subtitle"),
+      title: t("welcome.slides.recipe.title"),
+      subtitle: t("welcome.slides.recipe.subtitle"),
     },
   ];
 
@@ -115,12 +115,12 @@ export default function Welcome() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.illustrationArea}>
-        <View style={styles.topBar}>
-          <OnboardingTopBar showLogo />
+        <View style={styles.illustrationArea}>
+          <View style={styles.topBar}>
+          <OnboardingTopBar />
+          </View>
+          <Image source={signupIllustration} style={styles.illustration} resizeMode="contain" />
         </View>
-        <Image source={homeIllustration} style={styles.illustration} resizeMode="contain" />
-      </View>
 
       <View style={styles.content}>
         <Text style={styles.heading}>{slides[current].title}</Text>
@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   illustration: {
-    width: "80%",
-    height: "80%",
+    width: "88%",
+    height: "88%",
   },
   content: {
     paddingHorizontal: 24,

@@ -2,15 +2,15 @@ import type { TranslationMessages } from "./en";
 
 const fr = {
   "common.language": "Langue",
-  "welcome.slides.organized.title": "Votre cuisine,\nbien organisée.",
-  "welcome.slides.organized.subtitle":
-    "Voyez tout ce que vous avez en un coup d'œil. Fini les ingrédients oubliés et les achats en double.",
-  "welcome.slides.cook.title": "Cuisinez avec ce que\nvous avez.",
-  "welcome.slides.cook.subtitle":
-    "Découvrez des recettes conçues à partir de vos ingrédients. Moins de gaspillage, plus de créativité.",
-  "welcome.slides.plan.title": "Planifiez vos repas,\nsans effort.",
-  "welcome.slides.plan.subtitle":
-    "Créez un programme hebdomadaire et n'achetez que ce dont vous avez besoin.",
+  "welcome.slides.tonight.title": "Decouvrez quoi\ncuisiner ce soir.",
+  "welcome.slides.tonight.subtitle":
+    "En fonction de ce que vous avez, de ce que vous aimez et de ce qui convient a votre foyer.",
+  "welcome.slides.kitchen.title": "Dites-nous ce qu'il y a\ndans votre cuisine.",
+  "welcome.slides.kitchen.subtitle":
+    "Quelques ingredients suffisent - nous les transformerons en repas que vous pourrez cuisiner tout de suite.",
+  "welcome.slides.recipe.title": "Une recette vous plait ?\nEnvoyez-la a Tutto.",
+  "welcome.slides.recipe.subtitle":
+    "Depuis TikTok, Instagram ou ailleurs - nous l'adapterons a ce que vous avez.",
   "welcome.auth.apple": "Continuer avec Apple",
   "welcome.auth.google": "Continuer avec Google",
   "welcome.session.loading": "Nous préparons votre cuisine...",

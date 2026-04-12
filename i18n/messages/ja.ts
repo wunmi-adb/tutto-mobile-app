@@ -2,15 +2,15 @@ import type { TranslationMessages } from "./en";
 
 const ja = {
   "common.language": "言語",
-  "welcome.slides.organized.title": "キッチンを、\nすっきり管理。",
-  "welcome.slides.organized.subtitle":
-    "食材をひと目で確認。使い忘れや買いすぎを防げます。",
-  "welcome.slides.cook.title": "あるもので、\nすぐ料理。",
-  "welcome.slides.cook.subtitle":
-    "手元の食材をもとにしたレシピをチェック。無駄を減らして、もっと自由に。",
-  "welcome.slides.plan.title": "献立づくりも、\nかんたんに。",
-  "welcome.slides.plan.subtitle":
-    "1週間の予定を立てて、本当に必要なものだけを買いましょう。",
+  "welcome.slides.tonight.title": "今夜何を作るか\nすぐわかる。",
+  "welcome.slides.tonight.subtitle":
+    "家にあるもの、好きなもの、そしてあなたの世帯に合うものをもとに提案します。",
+  "welcome.slides.kitchen.title": "キッチンにあるものを\n教えてください。",
+  "welcome.slides.kitchen.subtitle":
+    "いくつかの食材だけでも大丈夫。すぐ作れる料理に変えていきます。",
+  "welcome.slides.recipe.title": "気になるレシピを見つけたら\nTuttoへ。",
+  "welcome.slides.recipe.subtitle":
+    "TikTokやInstagramなど、どこからでも大丈夫。手元の食材に合わせて調整します。",
   "welcome.auth.apple": "Appleで続ける",
   "welcome.auth.google": "Googleで続ける",
   "welcome.session.loading": "キッチンを準備しています...",
