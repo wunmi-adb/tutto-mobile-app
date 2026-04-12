@@ -15,7 +15,6 @@ export type Household = {
   id: string;
   invite_code: string;
   is_owner: boolean;
-  kitchen_appliances: string | null;
   love: string | null;
   meals: string | null;
   name: string;
@@ -35,7 +34,6 @@ export type UpdateHouseholdInput = Partial<{
   allergies: string;
   dietary: string;
   dislike: string;
-  kitchen_appliances: string;
   love: string;
   meals: string;
   name: string;

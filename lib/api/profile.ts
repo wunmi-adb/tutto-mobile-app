@@ -15,7 +15,6 @@ export type CurrentUserHousehold = {
   id?: string | null;
   invite_code?: string | null;
   is_owner?: boolean | null;
-  kitchen_appliances?: string | null;
   love?: string | null;
   meals?: string | null;
   name?: string | null;
@@ -52,7 +51,6 @@ type PartialCurrentUserPayload = Partial<CurrentUser> & CurrentUserCore;
 
 export type AppEntryRoute =
   | "/onboarding/household"
-  | "/onboarding/appliances"
   | "/onboarding/dietary"
   | "/onboarding/allergies"
   | "/onboarding/cuisines"
@@ -238,10 +236,6 @@ export function getAppEntryRoute(user: CurrentUser): AppEntryRoute {
 
   if (household.has_item || user.has_item) {
     return "/dashboard";
-  }
-
-  if (!hasCompletedStep(household.kitchen_appliances)) {
-    return "/onboarding/appliances";
   }
 
   if (!hasCompletedStep(household.dietary)) {

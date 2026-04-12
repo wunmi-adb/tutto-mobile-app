@@ -13,7 +13,6 @@ type SettingsState = {
   email: string;
   kitchenName: string;
   inviteCode: string;
-  appliances: string[];
   dietary: string[];
   allergies: string[];
   dislikes: string[];
@@ -28,7 +27,6 @@ const INITIAL_SETTINGS_STATE: SettingsState = {
   email: "",
   kitchenName: "",
   inviteCode: "",
-  appliances: [],
   dietary: [],
   allergies: [],
   dislikes: [],
@@ -113,7 +111,6 @@ export function syncSettingsState(currentUser: CurrentUser | undefined, language
     email: currentUser.email,
     kitchenName: currentUser.household?.name ?? "",
     inviteCode: currentUser.household?.invite_code ?? "",
-    appliances: splitCommaSeparated(currentUser.household?.kitchen_appliances),
     dietary: splitCommaSeparated(currentUser.household?.dietary),
     allergies: splitCommaSeparated(currentUser.household?.allergies),
     dislikes: splitCommaSeparated(currentUser.household?.dislike),
@@ -157,8 +154,6 @@ export function useSettingsState() {
     setProfileName: (value: string) => setSettingsField("profileName", value),
     setEmail: (value: string) => setSettingsField("email", value),
     setKitchenName: (value: string) => setSettingsField("kitchenName", value),
-    setAppliances: (value: string[] | ((current: string[]) => string[])) =>
-      setSettingsField("appliances", value),
     setDietary: (value: string[] | ((current: string[]) => string[])) =>
       setSettingsField("dietary", value),
     setAllergies: (value: string[] | ((current: string[]) => string[])) =>

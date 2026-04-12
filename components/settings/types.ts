@@ -2,7 +2,6 @@ export type SettingsView =
   | "main"
   | "account"
   | "kitchen-name"
-  | "appliances"
   | "dietary"
   | "allergies"
   | "dislikes"
@@ -11,4 +10,3 @@ export type SettingsView =
   | "anything-else"
   | "support"
   | "language";
-

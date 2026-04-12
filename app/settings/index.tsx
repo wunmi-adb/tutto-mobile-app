@@ -25,7 +25,6 @@ function summariseList(values: string[]) {
 const SETTINGS_ROUTES: Record<Exclude<SettingsView, "main">, Href> = {
   account: "/settings/account",
   "kitchen-name": "/settings/kitchen-name",
-  appliances: "/settings/appliances",
   dietary: "/settings/dietary",
   allergies: "/settings/allergies",
   dislikes: "/settings/dislikes",
@@ -50,7 +49,6 @@ export default function SettingsIndexScreen() {
     email,
     kitchenName,
     inviteCode,
-    appliances,
     dietary,
     allergies,
     dislikes,
@@ -90,7 +88,6 @@ export default function SettingsIndexScreen() {
         kitchenName={kitchenName}
         inviteCode={inviteCode}
         copied={copied}
-        appliancesSummary={summariseList(appliances) || t("settings.common.notSet")}
         dietarySummary={summariseList(dietary) || t("settings.common.notSet")}
         allergiesSummary={summariseList(allergies) || t("settings.common.notSet")}
         dislikesSummary={summariseList(dislikes) || t("settings.common.notSet")}

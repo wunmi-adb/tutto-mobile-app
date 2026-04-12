@@ -24,7 +24,7 @@ export default function NotificationsScreen() {
   const [statusMessageKey, setStatusMessageKey] = useState<NotificationStatusKey | null>(null);
 
   const handleContinue = () => {
-    router.replace("/onboarding/appliances");
+    router.replace("/onboarding/dietary");
   };
 
   useEffect(() => {

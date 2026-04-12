@@ -16,7 +16,6 @@ type Props = {
   kitchenName: string;
   inviteCode: string;
   copied: boolean;
-  appliancesSummary: string;
   dietarySummary: string;
   allergiesSummary: string;
   dislikesSummary: string;
@@ -37,7 +36,6 @@ export default function SettingsMainView({
   kitchenName,
   inviteCode,
   copied,
-  appliancesSummary,
   dietarySummary,
   allergiesSummary,
   dislikesSummary,
@@ -74,12 +72,6 @@ export default function SettingsMainView({
             code={inviteCode}
             copied={copied}
             onCopy={onCopyInviteCode}
-          />
-          <SettingsRow
-            icon={<MaterialCommunityIcons name="silverware-fork-knife" size={18} color={colors.muted} />}
-            label={t("settings.main.appliances")}
-            value={appliancesSummary}
-            onPress={() => onOpenView("appliances")}
           />
           <SettingsRow
             icon={<MaterialCommunityIcons name="leaf" size={18} color={colors.muted} />}
