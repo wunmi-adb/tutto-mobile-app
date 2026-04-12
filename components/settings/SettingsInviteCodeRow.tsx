@@ -6,31 +6,40 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   code: string;
-  copied: boolean;
-  onCopy: () => void;
+  onPress: () => void;
+  disabled?: boolean;
   showDivider?: boolean;
 };
 
 export default function SettingsInviteCodeRow({
   code,
-  copied,
-  onCopy,
+  onPress,
+  disabled = false,
   showDivider = true,
 }: Props) {
   const { t } = useI18n();
 
   return (
-    <View style={[styles.row, !showDivider && styles.rowNoDivider]}>
+    <Pressable
+      style={({ pressed }) => [
+        styles.row,
+        !showDivider && styles.rowNoDivider,
+        pressed && !disabled && styles.rowPressed,
+        disabled && styles.rowDisabled,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+    >
       <View style={styles.left}>
-        <Feather name="users" size={18} color={colors.muted} />
+        <Feather name="user-plus" size={18} color={colors.muted} />
         <Text style={styles.label}>{t("settings.inviteCode.label")}</Text>
       </View>
 
-      <Pressable style={styles.codeButton} onPress={onCopy}>
-        <Text style={styles.code}>{copied ? t("settings.common.copied") : code}</Text>
-        <Feather name="copy" size={14} color={copied ? colors.brand : colors.muted} />
-      </Pressable>
-    </View>
+      <View style={styles.codeButton}>
+        <Text style={styles.code}>{code}</Text>
+        <Feather name="share-2" size={14} color={colors.muted} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -46,6 +55,12 @@ const styles = StyleSheet.create({
   },
   rowNoDivider: {
     borderBottomWidth: 0,
+  },
+  rowPressed: {
+    opacity: 0.8,
+  },
+  rowDisabled: {
+    opacity: 0.5,
   },
   left: {
     flexDirection: "row",

@@ -7,7 +7,7 @@ import { Feather } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function ShoppingTab() {
+export default function ShoppingScreen() {
   const { t } = useI18n();
   const {
     showAdding,

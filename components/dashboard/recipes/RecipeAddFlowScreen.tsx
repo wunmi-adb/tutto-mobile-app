@@ -1,4 +1,4 @@
-import RecipeSourceBadge from "@/components/dashboard/recipes/RecipeSourceBadge";
+import type { RecipeDraft, RecipeSource } from "@/components/dashboard/recipes/types";
 import HapticPressable from "@/components/ui/HapticPressable";
 import Input from "@/components/ui/Input";
 import { colors } from "@/constants/colors";
@@ -6,20 +6,16 @@ import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Animated,
+  Easing,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { RecipeDraft, RecipeSource } from "@/components/dashboard/recipes/types";
-
-type Props = {
-  visible: boolean;
-  draft: RecipeDraft;
-  onBack: () => void;
-  onChangeTitle: (value: string) => void;
-  onChangeSource: (value: RecipeSource) => void;
-  onChangeMinutes: (value: string) => void;
-  onChangeServings: (value: string) => void;
-  onSubmit: () => void;
-};
 
 type SourceOption = {
   source: RecipeSource;
@@ -31,7 +27,7 @@ const RECIPE_SOURCES: SourceOption[] = [
   { source: "document", icon: "file-text" },
   { source: "video", icon: "video" },
   { source: "ai", icon: "zap" },
-];
+] as const;
 
 const AI_WORD_KEYS = [
   "recipes.addRecipe.aiWords.1",
@@ -43,10 +39,6 @@ const AI_WORD_KEYS = [
   "recipes.addRecipe.aiWords.7",
   "recipes.addRecipe.aiWords.8",
 ] as const;
-
-function isSourceSelected(draft: RecipeDraft) {
-  return draft.source !== "manual";
-}
 
 function getSourceDescriptionKey(source: RecipeSource) {
   switch (source) {
@@ -96,39 +88,133 @@ function getPlaceholderKey(source: RecipeSource) {
   }
 }
 
-export default function RecipeAddFlowScreen({
-  visible,
+function Header({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
+
+  return (
+    <View style={styles.header}>
+      <HapticPressable style={styles.backButton} onPress={onBack} hapticType="selection" pressedOpacity={1}>
+        <Feather name="arrow-left" size={18} color={colors.text} />
+      </HapticPressable>
+      <Text style={styles.title}>{t("recipes.addRecipe.title")}</Text>
+    </View>
+  );
+}
+
+export function RecipeAddSourceScreen({
+  onBack,
+  onSelectSource,
+}: {
+  onBack: () => void;
+  onSelectSource: (source: RecipeSource) => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+      <Header onBack={onBack} />
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.optionList}>
+          <Text style={styles.helperLead}>{t("recipes.addRecipe.sourceIntro")}</Text>
+          {RECIPE_SOURCES.map((option) => (
+            <HapticPressable
+              key={option.source}
+              style={styles.optionCard}
+              onPress={() => onSelectSource(option.source)}
+              hapticType="medium"
+              pressedOpacity={1}
+              pressedStyle={styles.optionCardPressed}
+            >
+              <View style={styles.optionIconWrap}>
+                <Feather name={option.icon} size={18} color={colors.brand} />
+              </View>
+              <View style={styles.optionText}>
+                <Text style={styles.optionTitle}>{t(`recipes.source.${option.source}` as const)}</Text>
+                <Text style={styles.optionSubtitle}>{t(getSourceDescriptionKey(option.source))}</Text>
+              </View>
+              <Feather name="chevron-right" size={16} color={colors.muted} />
+            </HapticPressable>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+export function RecipeAddDetailsScreen({
+  source,
   draft,
   onBack,
   onChangeTitle,
-  onChangeSource,
-  onChangeMinutes,
-  onChangeServings,
   onSubmit,
-}: Props) {
+}: {
+  source: Exclude<RecipeSource, "manual">;
+  draft: RecipeDraft;
+  onBack: () => void;
+  onChangeTitle: (value: string) => void;
+  onSubmit: () => void;
+}) {
   const { t } = useI18n();
-  const [aiGenerating, setAiGenerating] = useState(false);
-  const [aiWordIndex, setAiWordIndex] = useState(0);
 
+  return (
+    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+      <Header onBack={onBack} />
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.form}>
+          <Text style={styles.helperLead}>{t(getInputPromptKey(draft.source))}</Text>
+
+          <Input
+            value={draft.title}
+            onChangeText={onChangeTitle}
+            placeholder={t(getPlaceholderKey(draft.source))}
+            autoCapitalize="words"
+            containerStyle={styles.primaryInput}
+          />
+
+          <HapticPressable
+            style={[styles.primaryButton, !draft.title.trim() && styles.primaryButtonDisabled]}
+            onPress={onSubmit}
+            hapticType="medium"
+            pressedOpacity={1}
+            disabled={!draft.title.trim()}
+          >
+            <Text style={styles.primaryButtonLabel}>
+              {source === "ai" ? t("recipes.addRecipe.generateAction") : t("recipes.addRecipe.saveAction")}
+            </Text>
+          </HapticPressable>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+export function RecipeAddGeneratingScreen({
+  onBack,
+  onFinish,
+}: {
+  onBack: () => void;
+  onFinish: () => void;
+}) {
+  const { t } = useI18n();
   const aiWords = useMemo(() => AI_WORD_KEYS.map((key) => t(key)), [t]);
-  const sourceSelected = isSourceSelected(draft);
+  const [aiWordIndex, setAiWordIndex] = useState(0);
+  const pulseScale = useMemo(() => new Animated.Value(1), []);
+  const pulseOpacity = useMemo(() => new Animated.Value(0.5), []);
 
   useEffect(() => {
-    if (!visible) {
-      setAiGenerating(false);
-      setAiWordIndex(0);
-    }
-  }, [visible]);
-
-  useEffect(() => {
-    if (!aiGenerating) {
-      return;
-    }
-
-    const interval = setInterval(() => {
+    const wordInterval = setInterval(() => {
       setAiWordIndex((current) => {
         if (current >= aiWords.length - 1) {
-          clearInterval(interval);
           return current;
         }
 
@@ -136,179 +222,123 @@ export default function RecipeAddFlowScreen({
       });
     }, 650);
 
-    return () => clearInterval(interval);
-  }, [aiGenerating, aiWords.length]);
+    const finishTimeout = setTimeout(() => {
+      onFinish();
+    }, 5200);
 
-  if (!visible) {
-    return null;
-  }
+    return () => {
+      clearInterval(wordInterval);
+      clearTimeout(finishTimeout);
+    };
+  }, [aiWords.length, onFinish]);
 
-  const handleSubmit = () => {
-    if (draft.source === "ai") {
-      setAiGenerating(true);
-      setAiWordIndex(0);
-      setTimeout(() => {
-        onSubmit();
-        setAiGenerating(false);
-      }, 5200);
-      return;
-    }
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(pulseScale, {
+            toValue: 1.3,
+            duration: 1200,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseScale, {
+            toValue: 1,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(pulseOpacity, {
+            toValue: 0,
+            duration: 1200,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0.5,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
+    );
 
-    onSubmit();
-  };
+    animation.start();
 
-  const showSourceOptions = !sourceSelected && !aiGenerating;
-  const showForm = sourceSelected && !aiGenerating;
+    return () => {
+      animation.stop();
+    };
+  }, [pulseOpacity, pulseScale]);
 
   return (
-    <SafeAreaView style={styles.overlay} edges={["top", "bottom"]}>
-      <View style={styles.header}>
-        <HapticPressable style={styles.backButton} onPress={onBack} hapticType="selection">
-          <Feather name="arrow-left" size={18} color={colors.text} />
-        </HapticPressable>
-        <Text style={styles.title}>{t("recipes.addRecipe.title")}</Text>
-      </View>
-
+    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+      <Header onBack={onBack} />
       <View style={styles.content}>
-        {showSourceOptions ? (
-          <View style={styles.optionList}>
-            <Text style={styles.helper}>{t("recipes.addRecipe.sourceIntro")}</Text>
-            {RECIPE_SOURCES.map((option) => (
-              <HapticPressable
-                key={option.source}
-                style={styles.optionCard}
-                onPress={() => onChangeSource(option.source)}
-                hapticType="medium"
-                pressedOpacity={0.82}
-              >
-                <View style={styles.optionIconWrap}>
-                  <Feather name={option.icon} size={18} color={colors.brand} />
-                </View>
-                <View style={styles.optionText}>
-                  <Text style={styles.optionTitle}>{t(`recipes.source.${option.source}` as const)}</Text>
-                  <Text style={styles.optionSubtitle}>
-                    {t(getSourceDescriptionKey(option.source))}
-                  </Text>
-                </View>
-                <Feather name="chevron-right" size={16} color={colors.muted} />
-              </HapticPressable>
-            ))}
-          </View>
-        ) : null}
-
-        {showForm ? (
-          <View style={styles.form}>
-            <HapticPressable
-              style={styles.inlineBack}
-              onPress={() => onChangeSource("manual")}
-              hapticType="selection"
-              pressedOpacity={0.75}
-            >
-              <Feather name="arrow-left" size={14} color={colors.brand} />
-              <Text style={styles.inlineBackLabel}>{t("recipes.addRecipe.changeSource")}</Text>
-            </HapticPressable>
-
-            <View style={styles.badgeRow}>
-              <RecipeSourceBadge source={draft.source} />
-            </View>
-
-            <Text style={styles.helper}>
-              {t(getInputPromptKey(draft.source))}
-            </Text>
-
-            <Input
-              label={t("recipes.addRecipe.nameLabel")}
-              value={draft.title}
-              onChangeText={onChangeTitle}
-              placeholder={t(getPlaceholderKey(draft.source))}
-              autoCapitalize="words"
+        <View style={styles.aiWrap}>
+          <View style={styles.aiOrbWrap}>
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.aiPulseRing,
+                {
+                  opacity: pulseOpacity,
+                  transform: [{ scale: pulseScale }],
+                },
+              ]}
             />
-
-            <View style={styles.metaRow}>
-              <Input
-                label={t("recipes.addRecipe.timeLabel")}
-                value={draft.totalMinutes}
-                onChangeText={onChangeMinutes}
-                placeholder={t("recipes.addRecipe.timePlaceholder")}
-                keyboardType="number-pad"
-                containerStyle={styles.metaField}
-              />
-              <Input
-                label={t("recipes.addRecipe.servingsLabel")}
-                value={draft.servings}
-                onChangeText={onChangeServings}
-                placeholder={t("recipes.addRecipe.servingsPlaceholder")}
-                keyboardType="number-pad"
-                containerStyle={styles.metaField}
-              />
-            </View>
-
-            <HapticPressable
-              style={[styles.primaryButton, !draft.title.trim() && styles.primaryButtonDisabled]}
-              onPress={handleSubmit}
-              hapticType="medium"
-              disabled={!draft.title.trim()}
-            >
-              <Text style={styles.primaryButtonLabel}>
-                {draft.source === "ai"
-                  ? t("recipes.addRecipe.generateAction")
-                  : t("recipes.addRecipe.saveAction")}
-              </Text>
-            </HapticPressable>
-          </View>
-        ) : null}
-
-        {aiGenerating ? (
-          <View style={styles.aiWrap}>
             <View style={styles.aiIconCircle}>
               <Feather name="zap" size={24} color={colors.brand} />
             </View>
-            <ActivityIndicator color={colors.brand} />
-            <Text style={styles.aiWord}>{aiWords[aiWordIndex] ?? aiWords[0]}</Text>
           </View>
-        ) : null}
+          <ActivityIndicator color={colors.brand} />
+          <Text style={styles.aiWord}>{aiWords[aiWordIndex] ?? aiWords[0]}</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
+  screen: {
+    flex: 1,
     backgroundColor: colors.background,
-    zIndex: 20,
+  },
+  scroll: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 12,
     paddingHorizontal: 24,
-    paddingTop: 10,
-    paddingBottom: 18,
+    paddingTop: 18,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   backButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
     fontFamily: fonts.serif,
-    fontSize: 24,
+    fontSize: 22,
+    lineHeight: 26,
     color: colors.text,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 24,
     paddingVertical: 24,
   },
   optionList: {
     gap: 12,
   },
-  helper: {
+  helperLead: {
     fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
@@ -321,9 +351,14 @@ const styles = StyleSheet.create({
     gap: 14,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 20,
+    borderRadius: 18,
+    borderCurve: "continuous",
     padding: 16,
     backgroundColor: colors.background,
+    boxShadow: "0 1px 2px rgba(26, 18, 8, 0.04)",
+  },
+  optionCardPressed: {
+    backgroundColor: colors.secondary,
   },
   optionIconWrap: {
     width: 40,
@@ -350,26 +385,8 @@ const styles = StyleSheet.create({
   form: {
     gap: 14,
   },
-  inlineBack: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    alignSelf: "flex-start",
-  },
-  inlineBackLabel: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 13,
-    color: colors.brand,
-  },
-  badgeRow: {
-    alignSelf: "flex-start",
-  },
-  metaRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  metaField: {
-    flex: 1,
+  primaryInput: {
+    marginTop: 2,
   },
   primaryButton: {
     marginTop: 10,
@@ -393,6 +410,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 18,
     paddingHorizontal: 32,
+  },
+  aiOrbWrap: {
+    width: 64,
+    height: 64,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  aiPulseRing: {
+    position: "absolute",
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: `${colors.brand}33`,
   },
   aiIconCircle: {
     width: 64,

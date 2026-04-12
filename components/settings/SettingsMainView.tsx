@@ -14,17 +14,16 @@ type Props = {
   profileName: string;
   email: string;
   kitchenName: string;
+  householdSummary: string;
   inviteCode: string;
-  copied: boolean;
   dietarySummary: string;
   allergiesSummary: string;
-  dislikesSummary: string;
   cuisinesSummary: string;
-  mealSlotsSummary: string;
   languageLabel: string;
-  anythingElseSummary: string;
+  showBackButton?: boolean;
   onBack: () => void;
-  onCopyInviteCode: () => void;
+  onShareInviteCode: () => void;
+  inviteDisabled?: boolean;
   onOpenView: (view: SettingsView) => void;
   onDeleteAccount: () => void;
   onLogOut: () => void;
@@ -34,17 +33,16 @@ export default function SettingsMainView({
   profileName,
   email,
   kitchenName,
+  householdSummary,
   inviteCode,
-  copied,
   dietarySummary,
   allergiesSummary,
-  dislikesSummary,
   cuisinesSummary,
-  mealSlotsSummary,
   languageLabel,
-  anythingElseSummary,
+  showBackButton = true,
   onBack,
-  onCopyInviteCode,
+  onShareInviteCode,
+  inviteDisabled = false,
   onOpenView,
   onDeleteAccount,
   onLogOut,
@@ -58,7 +56,12 @@ export default function SettingsMainView({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <SettingsProfileHeader name={profileName} email={email} onBack={onBack} />
+        <SettingsProfileHeader
+          name={profileName}
+          email={email}
+          onBack={onBack}
+          showBackButton={showBackButton}
+        />
         <SettingsSubscriptionCard />
 
         <SettingsSection title={t("settings.main.sections.kitchen")}>
@@ -68,10 +71,16 @@ export default function SettingsMainView({
             value={kitchenName}
             onPress={() => onOpenView("kitchen-name")}
           />
+          <SettingsRow
+            icon={<Feather name="users" size={18} color={colors.muted} />}
+            label={t("settings.main.household")}
+            value={householdSummary}
+            onPress={() => onOpenView("household")}
+          />
           <SettingsInviteCodeRow
             code={inviteCode}
-            copied={copied}
-            onCopy={onCopyInviteCode}
+            onPress={onShareInviteCode}
+            disabled={inviteDisabled}
           />
           <SettingsRow
             icon={<MaterialCommunityIcons name="leaf" size={18} color={colors.muted} />}
@@ -86,28 +95,10 @@ export default function SettingsMainView({
             onPress={() => onOpenView("allergies")}
           />
           <SettingsRow
-            icon={<Feather name="thumbs-down" size={18} color={colors.muted} />}
-            label={t("settings.main.dislikes")}
-            value={dislikesSummary}
-            onPress={() => onOpenView("dislikes")}
-          />
-          <SettingsRow
             icon={<Feather name="globe" size={18} color={colors.muted} />}
             label={t("settings.main.cuisines")}
             value={cuisinesSummary}
             onPress={() => onOpenView("cuisines")}
-          />
-          <SettingsRow
-            icon={<Feather name="clock" size={18} color={colors.muted} />}
-            label={t("settings.main.mealSlots")}
-            value={mealSlotsSummary}
-            onPress={() => onOpenView("meal-slots")}
-          />
-          <SettingsRow
-            icon={<Feather name="message-square" size={18} color={colors.muted} />}
-            label={t("settings.main.anythingElse")}
-            value={anythingElseSummary}
-            onPress={() => onOpenView("anything-else")}
             showDivider={false}
           />
         </SettingsSection>

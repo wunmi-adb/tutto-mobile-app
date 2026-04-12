@@ -1,4 +1,3 @@
-import RecipeAddFlowScreen from "@/components/dashboard/recipes/RecipeAddFlowScreen";
 import RecipeListItem from "@/components/dashboard/recipes/RecipeListItem";
 import RecipeSearchField from "@/components/dashboard/recipes/RecipeSearchField";
 import HapticPressable from "@/components/ui/HapticPressable";
@@ -19,22 +18,23 @@ export default function RecipeCollectionScreen({ collectionId }: Props) {
   const router = useRouter();
   const { t } = useI18n();
   const {
-    addRecipeVisible,
     collection,
     collectionCountLabel,
     collectionSearchQuery,
-    currentRecipeDraft,
     filteredRecipes,
     getRecipeImage,
     getRecipeMinutesLabel,
     getRecipeServingsLabel,
     getRecipeTitle,
-    openAddRecipe,
-    closeAddRecipe,
-    saveRecipe,
     setCollectionSearchQuery,
-    setRecipeDraftField,
   } = useRecipeCollectionState(collectionId);
+
+  const handleOpenAddRecipe = () => {
+    router.push({
+      pathname: "/dashboard/recipes/add",
+      params: { collectionId },
+    });
+  };
 
   const handleOpenRecipe = (recipeId: string) => {
     router.push({
@@ -68,7 +68,7 @@ export default function RecipeCollectionScreen({ collectionId }: Props) {
           <HapticPressable style={styles.headerIcon} onPress={() => router.back()} hapticType="selection">
             <Feather name="arrow-left" size={18} color={colors.text} />
           </HapticPressable>
-          <HapticPressable style={styles.headerIconPrimary} onPress={openAddRecipe} hapticType="medium">
+          <HapticPressable style={styles.headerIconPrimary} onPress={handleOpenAddRecipe} hapticType="medium">
             <Feather name="plus" size={18} color={colors.background} />
           </HapticPressable>
         </View>
@@ -108,7 +108,7 @@ export default function RecipeCollectionScreen({ collectionId }: Props) {
               {!collectionSearchQuery.trim() ? (
                 <HapticPressable
                   style={styles.emptyAction}
-                  onPress={openAddRecipe}
+                  onPress={handleOpenAddRecipe}
                   hapticType="medium"
                   pressedOpacity={1}
                 >
@@ -120,17 +120,6 @@ export default function RecipeCollectionScreen({ collectionId }: Props) {
           )}
         </View>
       </ScrollView>
-
-      <RecipeAddFlowScreen
-        visible={addRecipeVisible}
-        draft={currentRecipeDraft}
-        onBack={closeAddRecipe}
-        onChangeTitle={(value) => setRecipeDraftField("title", value)}
-        onChangeSource={(value) => setRecipeDraftField("source", value)}
-        onChangeMinutes={(value) => setRecipeDraftField("totalMinutes", value)}
-        onChangeServings={(value) => setRecipeDraftField("servings", value)}
-        onSubmit={saveRecipe}
-      />
     </SafeAreaView>
   );
 }

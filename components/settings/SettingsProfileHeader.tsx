@@ -7,9 +7,15 @@ type Props = {
   name: string;
   email: string;
   onBack: () => void;
+  showBackButton?: boolean;
 };
 
-export default function SettingsProfileHeader({ name, email, onBack }: Props) {
+export default function SettingsProfileHeader({
+  name,
+  email,
+  onBack,
+  showBackButton = true,
+}: Props) {
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -19,7 +25,7 @@ export default function SettingsProfileHeader({ name, email, onBack }: Props) {
 
   return (
     <View>
-      <BackButton style={styles.backButton} onPress={onBack} />
+      {showBackButton ? <BackButton style={styles.backButton} onPress={onBack} /> : null}
 
       <View style={styles.profileRow}>
         <View style={styles.avatar}>

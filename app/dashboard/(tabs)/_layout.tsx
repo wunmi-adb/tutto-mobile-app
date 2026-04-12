@@ -62,10 +62,10 @@ export default function DashboardTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="shopping"
+        name="settings"
         options={{
-          title: t("dashboard.tabs.shopping"),
-          tabBarIcon: ({ color }) => <Feather name="shopping-cart" size={20} color={color} />,
+          title: t("dashboard.tabs.settings"),
+          tabBarIcon: ({ color }) => <Feather name="settings" size={20} color={color} />,
         }}
       />
     </Tabs>
