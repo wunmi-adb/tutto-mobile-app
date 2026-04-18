@@ -42,6 +42,7 @@ const es = {
   "household.create.peopleLabel": "PERSONAS EN EL HOGAR",
   "household.create.cta": "Crear hogar",
   "household.create.error": "No pudimos crear tu hogar ahora mismo. Vuelve a intentarlo.",
+  "household.required": "Crea un hogar o unete a uno antes de anadir productos.",
   "household.membership.exists": "Ya perteneces a un hogar.",
   "household.preferences.invalid":
     "Una o más preferencias del hogar no son válidas. Revisa tu selección y vuelve a intentarlo.",
@@ -210,6 +211,15 @@ const es = {
   "storage.onboarding.voice.idle": "Toca para empezar a grabar",
   "storage.onboarding.voice.start": "Empezar a grabar",
   "storage.onboarding.voice.done": "Terminar grabacion",
+  "storage.onboarding.review.title": "Hemos detectado esto",
+  "storage.onboarding.review.subtitle.singular":
+    "Se detecto {{count}} producto. Quita cualquiera que no quieras conservar.",
+  "storage.onboarding.review.subtitle.plural":
+    "Se detectaron {{count}} productos. Quita cualquiera que no quieras conservar.",
+  "storage.onboarding.review.empty": "Se quitaron todos los productos",
+  "storage.onboarding.review.cancel": "Cancelar",
+  "storage.onboarding.review.confirm.singular": "Anadir {{count}} producto",
+  "storage.onboarding.review.confirm.plural": "Anadir {{count}} productos",
   "storage.onboarding.voice.errorTitle": "No se encontraron productos",
   "storage.onboarding.voice.errorSubtitle":
     "No pudimos detectar alimentos ni ingredientes en esa grabacion. Habla con claridad y enumera tus productos.",

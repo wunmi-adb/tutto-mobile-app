@@ -12,7 +12,6 @@ import { useI18n } from "@/i18n";
 import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
 import { useInfiniteInventoryItems } from "@/lib/api/inventory";
 import type { CapturedInventoryItem } from "@/lib/api/item-capture";
-import { useStorageLocations } from "@/lib/api/storage-locations";
 import { useStore } from "@nanostores/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { atom } from "nanostores";
@@ -55,7 +54,6 @@ export function useKitchenState() {
   const selectedStatus = useStore($kitchenSelectedStatus);
   const filtersOpen = useStore($kitchenFiltersOpen);
   const refreshing = useStore($kitchenRefreshing);
-  const storageLocationsQuery = useStorageLocations();
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -68,44 +66,11 @@ export function useKitchenState() {
   const inventoryQuery = useInfiniteInventoryItems({
     search: debouncedQuery,
     status: selectedStatus,
-    storageLocationKey: selectedLocation,
   });
 
   const items = useMemo(() => getKitchenItems(inventoryQuery.data), [inventoryQuery.data]);
 
-  const locationFilters = useMemo<PantryLocationFilter[]>(() => {
-    const storageLocations = storageLocationsQuery.data ?? [];
-    const usedStorageLocationKeys = new Set<string>();
-
-    const storageLocationOptions = storageLocations.map((location) => {
-      usedStorageLocationKeys.add(location.key);
-
-      return {
-        key: location.key,
-        label: location.name,
-        count: items.filter((item) => item.storageLocationKey === location.key).length,
-      };
-    });
-
-    const orphanedLocationOptions = items
-      .filter((item) => item.storageLocationKey && !usedStorageLocationKeys.has(item.storageLocationKey))
-      .reduce<PantryLocationFilter[]>((acc, item) => {
-        if (!item.storageLocationKey || acc.some((option) => option.key === item.storageLocationKey)) {
-          return acc;
-        }
-
-        acc.push({
-          key: item.storageLocationKey,
-          label: item.location,
-          count: items.filter((candidate) => candidate.storageLocationKey === item.storageLocationKey)
-            .length,
-        });
-
-        return acc;
-      }, []);
-
-    return [...storageLocationOptions, ...orphanedLocationOptions];
-  }, [items, storageLocationsQuery.data]);
+  const locationFilters = useMemo<PantryLocationFilter[]>(() => [], []);
 
   useEffect(() => {
     if (selectedLocation && !locationFilters.some((location) => location.key === selectedLocation)) {
@@ -146,25 +111,11 @@ export function useKitchenState() {
   };
 
   const handleEditItem = (item: PantryItem, prefill: CapturedInventoryItem) => {
-    const matchedLocation = (storageLocationsQuery.data ?? []).find((location) => {
-      if (item.storageLocationKey) {
-        return location.key === item.storageLocationKey;
-      }
-
-      return location.name === item.location;
-    });
-
-    if (!matchedLocation) {
-      handleAddItem();
-      return;
-    }
-
     router.push({
       pathname: "/onboarding/add-items/detail",
       params: {
         itemKey: item.id,
-        location: matchedLocation.name,
-        storageKey: matchedLocation.key,
+        location: item.location,
         items: JSON.stringify([prefill]),
         currentIndex: "0",
         completedIndices: "[]",
@@ -177,7 +128,7 @@ export function useKitchenState() {
     $kitchenRefreshing.set(true);
 
     try {
-      await Promise.all([inventoryQuery.refetch(), storageLocationsQuery.refetch()]);
+      await inventoryQuery.refetch();
     } catch (error) {
       handleCaughtApiError(error);
     } finally {
@@ -212,7 +163,6 @@ export function useKitchenState() {
     selectedStatus,
     filtersOpen,
     refreshing,
-    storageLocationsQuery,
     inventoryQuery,
     locationFilters,
     statusOptions,

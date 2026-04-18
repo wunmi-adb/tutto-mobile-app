@@ -7,15 +7,18 @@ import KitchenHeader from "@/components/dashboard/kitchen/KitchenHeader";
 import KitchenSegmentedControl from "@/components/dashboard/kitchen/KitchenSegmentedControl";
 import Input from "@/components/ui/Input";
 import { colors } from "@/constants/colors";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
+import { useCreateInventoryItems } from "@/lib/api/items";
 import { usePantryPalKitchenState } from "@/stores/pantryPalKitchenStore";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function KitchenScreen() {
   const router = useRouter();
   const { activeTab, addItem, items, setActiveTab, toggleItem } = usePantryPalKitchenState();
+  const createInventoryItemsMutation = useCreateInventoryItems();
   const [search, setSearch] = useState("");
   const [showAdding, setShowAdding] = useState(false);
   const [newItemName, setNewItemName] = useState("");
@@ -36,6 +39,26 @@ export default function KitchenScreen() {
       })).filter((group) => group.items.length > 0),
     [activeItems],
   );
+
+  const handleManualAdd = useCallback(async () => {
+    const trimmedName = newItemName.trim();
+
+    if (!trimmedName || createInventoryItemsMutation.isPending) {
+      return;
+    }
+
+    try {
+      await createInventoryItemsMutation.mutateAsync({
+        available: activeTab === "have",
+        items: [trimmedName],
+      });
+      addItem(trimmedName, activeTab);
+      setNewItemName("");
+      setShowAdding(false);
+    } catch (error) {
+      handleCaughtApiError(error);
+    }
+  }, [activeTab, addItem, createInventoryItemsMutation, newItemName]);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -69,11 +92,10 @@ export default function KitchenScreen() {
         {showAdding ? (
           <KitchenAddItemRow
             value={newItemName}
+            loading={createInventoryItemsMutation.isPending}
             onChangeText={setNewItemName}
             onSubmit={() => {
-              addItem(newItemName, activeTab);
-              setNewItemName("");
-              setShowAdding(false);
+              void handleManualAdd();
             }}
             onClose={() => {
               setShowAdding(false);

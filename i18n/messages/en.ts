@@ -37,6 +37,7 @@ const en = {
   "household.create.peopleLabel": "PEOPLE IN HOUSEHOLD",
   "household.create.cta": "Create household",
   "household.create.error": "We couldn't create your household right now. Please try again.",
+  "household.required": "Create or join a household before adding items.",
   "household.membership.exists": "You're already a member of a household.",
   "household.preferences.invalid":
     "One or more household preferences are invalid. Please review your selections and try again.",
@@ -200,6 +201,15 @@ const en = {
   "storage.onboarding.voice.idle": "Tap to start recording",
   "storage.onboarding.voice.start": "Start recording",
   "storage.onboarding.voice.done": "Done recording",
+  "storage.onboarding.review.title": "We heard these",
+  "storage.onboarding.review.subtitle.singular":
+    "{{count}} item detected. Remove any you don't want to keep.",
+  "storage.onboarding.review.subtitle.plural":
+    "{{count}} items detected. Remove any you don't want to keep.",
+  "storage.onboarding.review.empty": "All items removed",
+  "storage.onboarding.review.cancel": "Cancel",
+  "storage.onboarding.review.confirm.singular": "Add {{count}} item",
+  "storage.onboarding.review.confirm.plural": "Add {{count}} items",
   "storage.onboarding.voice.errorTitle": "No items found",
   "storage.onboarding.voice.errorSubtitle":
     "We couldn't pick up any food or ingredients from that recording. Try speaking clearly and listing your items.",

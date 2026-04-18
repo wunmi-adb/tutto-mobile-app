@@ -2,6 +2,7 @@ import Button from "@/components/ui/Button";
 import HapticPressable from "@/components/ui/HapticPressable";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
+import { useI18n } from "@/i18n";
 import { Feather } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +18,16 @@ export default function DetectedItemsReviewScreen({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useI18n();
+  const subtitleKey =
+    items.length === 1
+      ? "storage.onboarding.review.subtitle.singular"
+      : "storage.onboarding.review.subtitle.plural";
+  const confirmTitle =
+    items.length === 1
+      ? t("storage.onboarding.review.confirm.singular", { count: items.length })
+      : t("storage.onboarding.review.confirm.plural", { count: items.length });
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -25,17 +36,14 @@ export default function DetectedItemsReviewScreen({
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <Text style={styles.title}>We heard these</Text>
-          <Text style={styles.subtitle}>
-            {items.length} item{items.length !== 1 ? "s" : ""} detected. Remove any you{" don't want"}
-            to keep.
-          </Text>
+          <Text style={styles.title}>{t("storage.onboarding.review.title")}</Text>
+          <Text style={styles.subtitle}>{t(subtitleKey, { count: items.length })}</Text>
         </View>
 
         {items.length === 0 ? (
           <View style={styles.emptyState}>
             <Feather name="mic" size={32} color={`${colors.muted}33`} />
-            <Text style={styles.emptyText}>All items removed</Text>
+            <Text style={styles.emptyText}>{t("storage.onboarding.review.empty")}</Text>
           </View>
         ) : (
           <View style={styles.list}>
@@ -51,9 +59,14 @@ export default function DetectedItemsReviewScreen({
         )}
 
         <View style={styles.actions}>
-          <Button title="Cancel" variant="secondary" style={styles.actionButton} onPress={onCancel} />
           <Button
-            title={`Add ${items.length} item${items.length !== 1 ? "s" : ""}`}
+            title={t("storage.onboarding.review.cancel")}
+            variant="secondary"
+            style={styles.actionButton}
+            onPress={onCancel}
+          />
+          <Button
+            title={confirmTitle}
             style={styles.actionButton}
             disabled={items.length === 0}
             onPress={onConfirm}

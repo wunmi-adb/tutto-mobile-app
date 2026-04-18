@@ -17,7 +17,6 @@ export type PantryItem = {
   name: string;
   type: ItemType;
   location: string;
-  storageLocationKey?: string;
   countAsUnits: boolean;
   batches: PantryBatch[];
 };

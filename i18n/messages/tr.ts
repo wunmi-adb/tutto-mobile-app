@@ -42,6 +42,7 @@ const tr = {
   "household.create.peopleLabel": "HANEDEKİ KİŞİ SAYISI",
   "household.create.cta": "Hane oluştur",
   "household.create.error": "Hanen şu anda oluşturulamadı. Lütfen tekrar dene.",
+  "household.required": "Urun eklemeden once bir hane olustur veya mevcut bir haneye katil.",
   "household.membership.exists": "Zaten bir hanenin üyesisin.",
   "household.preferences.invalid":
     "Bir veya daha fazla hane tercihi geçersiz. Lütfen seçimlerini kontrol edip tekrar dene.",
@@ -210,6 +211,15 @@ const tr = {
   "storage.onboarding.voice.idle": "Kayda baslamak icin dokun",
   "storage.onboarding.voice.start": "Kaydi baslat",
   "storage.onboarding.voice.done": "Kaydi bitir",
+  "storage.onboarding.review.title": "Bunlari duyduk",
+  "storage.onboarding.review.subtitle.singular":
+    "{{count}} urun algilandi. Tutmak istemediklerini kaldir.",
+  "storage.onboarding.review.subtitle.plural":
+    "{{count}} urun algilandi. Tutmak istemediklerini kaldir.",
+  "storage.onboarding.review.empty": "Tum urunler kaldirildi",
+  "storage.onboarding.review.cancel": "Iptal",
+  "storage.onboarding.review.confirm.singular": "{{count}} urun ekle",
+  "storage.onboarding.review.confirm.plural": "{{count}} urun ekle",
   "storage.onboarding.voice.errorTitle": "Urun bulunamadi",
   "storage.onboarding.voice.errorSubtitle":
     "Bu kayitta yiyecek ya da malzeme algilayamadik. Net konus ve urunlerini tek tek soyle.",

@@ -133,7 +133,9 @@ export default function OnboardingStorageShell() {
     manualInputRef,
     manualValue,
     saveButtonTitle,
+    showVoiceEmptyState,
     showVoiceError,
+    voiceErrorKey,
     addManualItem,
     handleBack,
     handleSave,
@@ -164,7 +166,17 @@ export default function OnboardingStorageShell() {
   }
 
   if (showVoiceError) {
-    return <StorageCaptureErrorState onTryAgain={retryVoiceCapture} />;
+    return (
+      <StorageCaptureErrorState
+        variant="error"
+        errorKey={voiceErrorKey}
+        onTryAgain={retryVoiceCapture}
+      />
+    );
+  }
+
+  if (showVoiceEmptyState) {
+    return <StorageCaptureErrorState variant="empty" onTryAgain={retryVoiceCapture} />;
   }
 
   if (reviewItems.length > 0) {

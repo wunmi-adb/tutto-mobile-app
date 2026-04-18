@@ -42,6 +42,7 @@ const fr = {
   "household.create.peopleLabel": "PERSONNES DANS LE FOYER",
   "household.create.cta": "Créer le foyer",
   "household.create.error": "Nous n'avons pas pu créer votre foyer pour le moment. Veuillez réessayer.",
+  "household.required": "Creez un foyer ou rejoignez-en un avant d'ajouter des articles.",
   "household.membership.exists": "Vous faites déjà partie d'un foyer.",
   "household.preferences.invalid":
     "Une ou plusieurs préférences du foyer sont invalides. Vérifiez votre sélection et réessayez.",
@@ -210,6 +211,15 @@ const fr = {
   "storage.onboarding.voice.idle": "Touchez pour commencer l'enregistrement",
   "storage.onboarding.voice.start": "Commencer l'enregistrement",
   "storage.onboarding.voice.done": "Terminer l'enregistrement",
+  "storage.onboarding.review.title": "Voici ce que nous avons entendu",
+  "storage.onboarding.review.subtitle.singular":
+    "{{count}} produit detecte. Supprimez tout ce que vous ne voulez pas garder.",
+  "storage.onboarding.review.subtitle.plural":
+    "{{count}} produits detectes. Supprimez tout ce que vous ne voulez pas garder.",
+  "storage.onboarding.review.empty": "Tous les produits ont ete supprimes",
+  "storage.onboarding.review.cancel": "Annuler",
+  "storage.onboarding.review.confirm.singular": "Ajouter {{count}} produit",
+  "storage.onboarding.review.confirm.plural": "Ajouter {{count}} produits",
   "storage.onboarding.voice.errorTitle": "Aucun produit detecte",
   "storage.onboarding.voice.errorSubtitle":
     "Nous n'avons detecte aucun aliment dans cet enregistrement. Parlez clairement et enumerez vos produits.",

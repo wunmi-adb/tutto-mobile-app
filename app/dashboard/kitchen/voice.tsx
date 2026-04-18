@@ -16,7 +16,9 @@ export default function KitchenVoiceRoute() {
     handleVoiceDone,
     isVoiceProcessing,
     markMounted,
+    showVoiceEmptyState,
     showVoiceError,
+    voiceErrorKey,
   } = useInventoryVoiceCapture({
     onItemsDetected: (detectedNames) => {
       setReviewItems(detectedNames);
@@ -36,6 +38,19 @@ export default function KitchenVoiceRoute() {
   if (showVoiceError) {
     return (
       <StorageCaptureErrorState
+        variant="error"
+        errorKey={voiceErrorKey}
+        onTryAgain={() => {
+          clearVoiceError();
+        }}
+      />
+    );
+  }
+
+  if (showVoiceEmptyState) {
+    return (
+      <StorageCaptureErrorState
+        variant="empty"
         onTryAgain={() => {
           clearVoiceError();
         }}

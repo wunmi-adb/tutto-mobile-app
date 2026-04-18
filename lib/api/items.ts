@@ -6,6 +6,7 @@ import { ItemDraft, ItemType, TrackingMode } from "@/lib/inventory/types";
 import { updateCurrentUserHasItemCache } from "@/lib/api/profile";
 import { ApiResponse, getApiErrorDetails } from "@/lib/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { toast } from "sonner-native";
 
 export type CreateInventoryItemBatchInput = {
@@ -26,14 +27,13 @@ export type InventoryItem = {
 };
 
 export type CreateInventoryItemsInput = {
-  drafts: ItemDraft[];
-  storageLocationKey: string;
+  available?: boolean;
+  items: string[];
 };
 
 export type UpdateInventoryItemInput = {
   draft: ItemDraft;
   itemKey: string;
-  storageLocationKey: string;
 };
 
 export type DeleteInventoryItemResponse = {
@@ -70,28 +70,21 @@ export function mapItemDraftToCreateInventoryItemInput(
   };
 }
 
-export function mapItemDraftToUpdateInventoryItemInput(
-  draft: ItemDraft,
-  storageLocationKey: string,
-) {
-  return {
-    ...mapItemDraftToCreateInventoryItemInput(draft),
-    storage_location_key: storageLocationKey,
-  };
+export function mapItemDraftToUpdateInventoryItemInput(draft: ItemDraft) {
+  return mapItemDraftToCreateInventoryItemInput(draft);
 }
 
 export async function createInventoryItems({
-  drafts,
-  storageLocationKey,
+  available = true,
+  items,
 }: CreateInventoryItemsInput) {
   const payload = {
-    items: drafts.map((draft) => mapItemDraftToCreateInventoryItemInput(draft)),
+    available,
+    items: items.map((item) => item.trim()).filter(Boolean),
   };
 
-  console.log("Create inventory items payload", JSON.stringify(payload));
-
   const response = await apiClient.post<ApiResponse<InventoryItem[]>>(
-    `/api/v1/storage-locations/${storageLocationKey}/items`,
+    "/api/v1/items",
     payload,
   );
 
@@ -101,9 +94,8 @@ export async function createInventoryItems({
 export async function updateInventoryItem({
   draft,
   itemKey,
-  storageLocationKey,
 }: UpdateInventoryItemInput) {
-  const payload = mapItemDraftToUpdateInventoryItemInput(draft, storageLocationKey);
+  const payload = mapItemDraftToUpdateInventoryItemInput(draft);
 
   const response = await apiClient.put<ApiResponse<InventoryItem>>(
     `/api/v1/items/${itemKey}`,
@@ -122,16 +114,17 @@ export async function deleteInventoryItem(itemKey: string) {
 }
 
 export function useCreateInventoryItems() {
+  const router = useRouter();
   const { t } = useI18n();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: createInventoryItems,
     onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       await updateCurrentUserHasItemCache(queryClient, true);
     },
     onError: (error) => {
-      console.log("Error creating inventory items:", JSON.stringify(getApiErrorDetails(error)), JSON.stringify(error));
       const errorDetails = getApiErrorDetails(error);
       const errorMessage =
         typeof errorDetails.message === "string" && isTranslationKey(errorDetails.message)
@@ -139,6 +132,10 @@ export function useCreateInventoryItems() {
           : t("addItems.create.error");
 
       toast.error(errorMessage);
+
+      if (errorDetails.message === "household.required") {
+        router.push("/onboarding/household");
+      }
     },
   });
 }

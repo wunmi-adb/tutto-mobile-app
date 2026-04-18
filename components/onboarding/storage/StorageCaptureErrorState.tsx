@@ -2,16 +2,31 @@ import Button from "@/components/ui/Button";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { useI18n } from "@/i18n";
+import { isTranslationKey } from "@/i18n/messages";
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
+  errorKey?: string | null;
   onTryAgain: () => void;
+  variant?: "empty" | "error";
 };
 
-export default function StorageCaptureErrorState({ onTryAgain }: Props) {
+export default function StorageCaptureErrorState({
+  errorKey,
+  onTryAgain,
+  variant = "empty",
+}: Props) {
   const { t } = useI18n();
+  const resolvedErrorKey =
+    errorKey && isTranslationKey(errorKey) ? errorKey : "inventory.item_capture.failed";
+  const title =
+    variant === "error" ? t(resolvedErrorKey) : t("storage.onboarding.voice.errorTitle");
+  const subtitle =
+    variant === "error"
+      ? t("storage.errorSubtitle")
+      : t("storage.onboarding.voice.errorSubtitle");
 
   return (
     <SafeAreaView style={styles.container}>
@@ -23,8 +38,8 @@ export default function StorageCaptureErrorState({ onTryAgain }: Props) {
         </View>
 
         <View style={styles.textBlock}>
-          <Text style={styles.title}>{t("storage.onboarding.voice.errorTitle")}</Text>
-          <Text style={styles.subtitle}>{t("storage.onboarding.voice.errorSubtitle")}</Text>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
 
         <Button

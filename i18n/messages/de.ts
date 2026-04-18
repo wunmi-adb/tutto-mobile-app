@@ -42,6 +42,7 @@ const de = {
   "household.create.peopleLabel": "PERSONEN IM HAUSHALT",
   "household.create.cta": "Haushalt erstellen",
   "household.create.error": "Dein Haushalt konnte gerade nicht erstellt werden. Bitte versuche es erneut.",
+  "household.required": "Erstelle zuerst einen Haushalt oder tritt einem bei, bevor du Artikel hinzufugst.",
   "household.membership.exists": "Du bist bereits Mitglied eines Haushalts.",
   "household.preferences.invalid":
     "Eine oder mehrere Haushaltseinstellungen sind ungültig. Bitte überprüfe deine Auswahl und versuche es erneut.",
@@ -210,6 +211,15 @@ const de = {
   "storage.onboarding.voice.idle": "Tippe, um die Aufnahme zu starten",
   "storage.onboarding.voice.start": "Aufnahme starten",
   "storage.onboarding.voice.done": "Aufnahme beenden",
+  "storage.onboarding.review.title": "Das haben wir gehort",
+  "storage.onboarding.review.subtitle.singular":
+    "{{count}} Artikel erkannt. Entferne alles, was du nicht behalten mochtest.",
+  "storage.onboarding.review.subtitle.plural":
+    "{{count}} Artikel erkannt. Entferne alles, was du nicht behalten mochtest.",
+  "storage.onboarding.review.empty": "Alle Artikel entfernt",
+  "storage.onboarding.review.cancel": "Abbrechen",
+  "storage.onboarding.review.confirm.singular": "{{count}} Artikel hinzufugen",
+  "storage.onboarding.review.confirm.plural": "{{count}} Artikel hinzufugen",
   "storage.onboarding.voice.errorTitle": "Keine Artikel gefunden",
   "storage.onboarding.voice.errorSubtitle":
     "Wir konnten aus dieser Aufnahme keine Lebensmittel erkennen. Sprich klar und zahle deine Artikel auf.",

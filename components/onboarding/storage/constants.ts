@@ -7,7 +7,7 @@ export const SUGGESTED_LOCATIONS = [
 
 export type DraftCaptureMode = null | "manual" | "voice";
 
-export const CAPTURE_POLL_MAX_ATTEMPTS = 40;
+export const INVENTORY_EXTRACTION_POLL_MAX_ATTEMPTS = 40;
 
 export function mergeUniqueNames(existing: string[], next: string[]) {
   const seen = new Set(existing.map((item) => item.trim().toLowerCase()).filter(Boolean));

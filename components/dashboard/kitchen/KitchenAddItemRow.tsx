@@ -7,11 +7,13 @@ import { StyleSheet, View } from "react-native";
 
 export default function KitchenAddItemRow({
   value,
+  loading = false,
   onChangeText,
   onSubmit,
   onClose,
 }: {
   value: string;
+  loading?: boolean;
   onChangeText: (value: string) => void;
   onSubmit: () => void;
   onClose: () => void;
@@ -25,10 +27,22 @@ export default function KitchenAddItemRow({
         autoFocus
         onSubmitEditing={onSubmit}
         returnKeyType="done"
+        editable={!loading}
         containerStyle={styles.inputContainer}
       />
-      <Button title="Add" style={styles.addButton} disabled={!value.trim()} onPress={onSubmit} />
-      <HapticPressable style={styles.closeButton} pressedOpacity={0.75} onPress={onClose}>
+      <Button
+        title="Add"
+        style={styles.addButton}
+        disabled={!value.trim()}
+        loading={loading}
+        onPress={onSubmit}
+      />
+      <HapticPressable
+        style={styles.closeButton}
+        pressedOpacity={0.75}
+        onPress={onClose}
+        disabled={loading}
+      >
         <Feather name="x" size={18} color={colors.muted} />
       </HapticPressable>
     </View>

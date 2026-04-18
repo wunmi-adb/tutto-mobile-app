@@ -1,4 +1,6 @@
 import { useI18n } from "@/i18n";
+import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
+import { useCreateInventoryItems } from "@/lib/api/items";
 import { useInventoryVoiceCapture } from "@/hooks/useInventoryVoiceCapture";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -18,13 +20,16 @@ export function useOnboardingStorage() {
   const [reviewItems, setReviewItems] = useState<string[]>([]);
   const manualInputRef = useRef<TextInput>(null);
   const kitchenLabel = t("dashboard.tabs.kitchen");
-  const isSaving = false;
+  const createInventoryItemsMutation = useCreateInventoryItems();
+  const isSaving = createInventoryItemsMutation.isPending;
   const {
     clearVoiceError,
     handleVoiceDone,
     isVoiceProcessing,
     markMounted,
+    showVoiceEmptyState,
     showVoiceError,
+    voiceErrorKey,
   } = useInventoryVoiceCapture({
     onCaptureStart: () => setCaptureMode(null),
     onItemsDetected: (detectedNames) => {
@@ -89,8 +94,16 @@ export function useOnboardingStorage() {
       return;
     }
 
-    router.replace(getStorageSuccessHref(kitchenLabel, items.length));
-  }, [isSaving, items.length, kitchenLabel, router]);
+    try {
+      await createInventoryItemsMutation.mutateAsync({
+        available: true,
+        items,
+      });
+      router.replace(getStorageSuccessHref(kitchenLabel, items.length));
+    } catch (error) {
+      handleCaughtApiError(error);
+    }
+  }, [createInventoryItemsMutation, isSaving, items, kitchenLabel, router]);
 
   const resetManualMode = useCallback(() => {
     setCaptureMode(null);
@@ -121,7 +134,9 @@ export function useOnboardingStorage() {
     manualInputRef,
     manualValue,
     saveButtonTitle,
+    showVoiceEmptyState,
     showVoiceError,
+    voiceErrorKey,
     addManualItem,
     handleBack,
     handleSave,

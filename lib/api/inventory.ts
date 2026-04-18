@@ -19,12 +19,6 @@ export type InventoryItemResponse = {
   item_type?: ItemType;
   key: string;
   name: string;
-  storage_location?: {
-    created_at: string;
-    key: string;
-    name: string;
-    updated_at: string;
-  } | null;
   tracking_mode?: TrackingMode;
   updated_at: string;
 };
@@ -48,7 +42,6 @@ type InventoryListResponse =
 export type InventoryListParams = {
   search?: string;
   status?: PantryStatusFilter;
-  storageLocationKey?: string;
 };
 
 export const INVENTORY_QUERY_KEY = ["inventory-items"] as const;
@@ -106,8 +99,7 @@ export function mapInventoryItemResponseToPantryItem(
     id: item.key,
     name: item.name,
     type: item.item_type ?? "ingredient",
-    location: item.storage_location?.name ?? "",
-    storageLocationKey: item.storage_location?.key,
+    location: "",
     countAsUnits: item.tracking_mode === "quantity",
     batches: (item.batches ?? []).map((batch, index) => mapInventoryBatch(batch, index, status)),
   };
@@ -137,7 +129,6 @@ export async function getInventoryItemsPage(
   const requestParams = {
     ...(params.search?.trim() ? { search: params.search.trim() } : {}),
     ...(mapStatusFilter(params.status) ? { status: mapStatusFilter(params.status) } : {}),
-    ...(params.storageLocationKey ? { storage_location_key: params.storageLocationKey } : {}),
     page,
     per_page: perPage,
   };
@@ -176,7 +167,6 @@ export function useInfiniteInventoryItems(params: InventoryListParams = {}) {
       ...INVENTORY_QUERY_KEY,
       params.search ?? "",
       params.status ?? "all",
-      params.storageLocationKey ?? "",
     ],
     initialPageParam: 1,
     queryFn: ({ pageParam }) => getInventoryItemsPage(params, pageParam, INVENTORY_PAGE_SIZE),

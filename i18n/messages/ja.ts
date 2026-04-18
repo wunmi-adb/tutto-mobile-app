@@ -41,6 +41,7 @@ const ja = {
   "household.create.peopleLabel": "世帯の人数",
   "household.create.cta": "世帯を作成",
   "household.create.error": "現在、世帯を作成できませんでした。もう一度お試しください。",
+  "household.required": "アイテムを追加する前に、世帯を作成するか参加してください。",
   "household.membership.exists": "あなたはすでに世帯に参加しています。",
   "household.preferences.invalid":
     "世帯の設定の一部が無効です。選択内容を確認してもう一度お試しください。",
@@ -209,6 +210,15 @@ const ja = {
   "storage.onboarding.voice.idle": "タップして録音を開始",
   "storage.onboarding.voice.start": "録音を開始",
   "storage.onboarding.voice.done": "録音を完了",
+  "storage.onboarding.review.title": "この内容を聞き取りました",
+  "storage.onboarding.review.subtitle.singular":
+    "{{count}}件の食材を検出しました。残したくないものは削除してください。",
+  "storage.onboarding.review.subtitle.plural":
+    "{{count}}件の食材を検出しました。残したくないものは削除してください。",
+  "storage.onboarding.review.empty": "すべての食材を削除しました",
+  "storage.onboarding.review.cancel": "キャンセル",
+  "storage.onboarding.review.confirm.singular": "{{count}}件を追加",
+  "storage.onboarding.review.confirm.plural": "{{count}}件を追加",
   "storage.onboarding.voice.errorTitle": "食材が見つかりませんでした",
   "storage.onboarding.voice.errorSubtitle":
     "この録音から食品や食材を検出できませんでした。はっきり話して、ひとつずつ教えてください。",
