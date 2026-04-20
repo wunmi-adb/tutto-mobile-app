@@ -5,7 +5,7 @@ import { INVENTORY_QUERY_KEY } from "@/lib/api/inventory";
 import { ItemDraft, ItemType, TrackingMode } from "@/lib/inventory/types";
 import { updateCurrentUserHasItemCache } from "@/lib/api/profile";
 import { ApiResponse, getApiErrorDetails } from "@/lib/api/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { toast } from "sonner-native";
 
@@ -26,6 +26,38 @@ export type InventoryItem = {
   name: string;
 };
 
+export type KitchenItemCategory = {
+  key: string;
+  name: string;
+};
+
+export type KitchenItem = {
+  available: boolean;
+  category?: KitchenItemCategory | null;
+  created_at: string;
+  key: string;
+  name: string;
+  updated_at: string;
+};
+
+export type KitchenItemsStatus = "available" | "unavailable";
+
+export type KitchenItemsPagination = {
+  page?: number;
+  page_count?: number;
+  per_page?: number;
+  skipped?: number;
+  total?: number;
+  total_volume?: number;
+};
+
+type KitchenItemsPayload =
+  | KitchenItem[]
+  | {
+      items?: KitchenItem[] | null;
+      pagination?: KitchenItemsPagination | null;
+    };
+
 export type CreateInventoryItemsInput = {
   available?: boolean;
   items: string[];
@@ -39,6 +71,67 @@ export type UpdateInventoryItemInput = {
 export type DeleteInventoryItemResponse = {
   key: string;
 };
+
+async function fetchKitchenItemsPage(
+  page: number,
+  perPage: number,
+  status?: KitchenItemsStatus,
+) {
+  const response = await apiClient.get<ApiResponse<KitchenItemsPayload>>("/api/v1/items", {
+    params: {
+      page,
+      per_page: perPage,
+      ...(status ? { status } : {}),
+    },
+  });
+
+  return response.data.data;
+}
+
+function getKitchenItemsFromPayload(payload: KitchenItemsPayload | null | undefined): KitchenItem[] {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (Array.isArray(payload?.items)) {
+    return payload.items;
+  }
+
+  return [];
+}
+
+export async function getKitchenItems(status?: KitchenItemsStatus): Promise<KitchenItem[]> {
+  const perPage = 100;
+  const firstPagePayload = await fetchKitchenItemsPage(0, perPage, status);
+  const initialItems: KitchenItem[] = getKitchenItemsFromPayload(firstPagePayload);
+
+  if (Array.isArray(firstPagePayload)) {
+    return initialItems;
+  }
+
+  const pagination = firstPagePayload.pagination;
+  const currentPage = typeof pagination?.page === "number" ? pagination.page : 0;
+  const totalPages = typeof pagination?.page_count === "number" ? pagination.page_count : 1;
+  const isZeroBased = currentPage === 0;
+  const lastPage = isZeroBased ? totalPages - 1 : totalPages;
+
+  if (lastPage <= currentPage) {
+    return initialItems;
+  }
+
+  const remainingPages = [];
+
+  for (let page = currentPage + 1; page <= lastPage; page += 1) {
+    remainingPages.push(fetchKitchenItemsPage(page, perPage, status));
+  }
+
+  const remainingPayloads = await Promise.all(remainingPages);
+
+  return remainingPayloads.reduce<KitchenItem[]>(
+    (items, payload) => items.concat(getKitchenItemsFromPayload(payload)),
+    initialItems,
+  );
+}
 
 export function mapItemDraftToCreateInventoryItemInput(
   draft: ItemDraft,
@@ -137,6 +230,14 @@ export function useCreateInventoryItems() {
         router.push("/onboarding/household");
       }
     },
+  });
+}
+
+export function useKitchenItems(status?: KitchenItemsStatus) {
+  return useQuery({
+    queryKey: [...INVENTORY_QUERY_KEY, "kitchen-list", status ?? "all"],
+    queryFn: () => getKitchenItems(status),
+    staleTime: 30_000,
   });
 }
 

@@ -111,7 +111,6 @@ export function useUpdateHouseholdProfile() {
   return useMutation({
     mutationFn: updateHouseholdProfile,
     onSuccess: async (household) => {
-      console.log("Household updated successfully:", household);
       await updateCurrentUserHouseholdCache(queryClient, household);
     },
     onError: (error) => {

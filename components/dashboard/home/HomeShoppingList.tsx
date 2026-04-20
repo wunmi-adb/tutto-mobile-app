@@ -12,7 +12,7 @@ export default function HomeShoppingList({
   return (
     <View>
       <View style={styles.header}>
-        <Text style={styles.title}>TO BUY</Text>
+        <Text style={styles.title}>To buy</Text>
         <TouchableOpacity style={styles.actionButton} activeOpacity={0.75} onPress={onPressAction}>
           <Text style={styles.actionLabel}>View more</Text>
           <Feather name="arrow-right" size={12} color={colors.brand} />
@@ -39,13 +39,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   title: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: colors.muted,
+    fontFamily: fonts.serifItalic,
+    fontSize: 17,
+    letterSpacing: -0.2,
+    color: colors.text,
   },
   actionButton: {
     flexDirection: "row",
@@ -58,27 +58,31 @@ const styles = StyleSheet.create({
     color: colors.brand,
   },
   list: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 20,
+    backgroundColor: colors.secondary,
     overflow: "hidden",
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    elevation: 2,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
+    gap: 14,
+    paddingHorizontal: 18,
     paddingVertical: 14,
   },
   rowBorder: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: `${colors.text}0d`,
   },
   checkCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
     borderColor: colors.border,
   },
   copy: {
@@ -87,6 +91,7 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: fonts.sans,
     fontSize: 15,
+    lineHeight: 20,
     color: colors.text,
   },
   aisle: {

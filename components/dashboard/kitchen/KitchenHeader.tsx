@@ -7,36 +7,30 @@ import { StyleSheet, Text, View } from "react-native";
 export default function KitchenHeader({
   haveCount,
   needCount,
-  onPressVoice,
   onPressAdd,
 }: {
   haveCount: number;
   needCount: number;
-  onPressVoice: () => void;
   onPressAdd: () => void;
 }) {
   return (
     <View style={styles.header}>
-      <View>
+      <View style={styles.copyBlock}>
         <Text style={styles.title}>Kitchen</Text>
         <Text style={styles.subtitle}>
           {haveCount} items · {needCount} to get
         </Text>
       </View>
 
-      <View style={styles.actions}>
-        <HapticPressable style={styles.iconButton} pressedOpacity={0.8} onPress={onPressVoice}>
-          <Feather name="mic" size={16} color={colors.text} />
-        </HapticPressable>
-        <HapticPressable
-          style={styles.primaryIconButton}
-          pressedOpacity={0.8}
-          hapticType="medium"
-          onPress={onPressAdd}
-        >
-          <Feather name="plus" size={16} color={colors.background} />
-        </HapticPressable>
-      </View>
+      <HapticPressable
+        style={styles.addButton}
+        pressedOpacity={0.86}
+        hapticType="medium"
+        onPress={onPressAdd}
+      >
+        <Feather name="plus" size={15} color={colors.background} />
+        <Text style={styles.addButtonText}>Add items</Text>
+      </HapticPressable>
     </View>
   );
 }
@@ -48,39 +42,41 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 16,
   },
+  copyBlock: {
+    flex: 1,
+  },
   title: {
     fontFamily: fonts.serif,
     fontSize: 28,
     lineHeight: 32,
+    letterSpacing: -0.3,
     color: colors.text,
   },
   subtitle: {
     marginTop: 4,
     fontFamily: fonts.sans,
     fontSize: 13,
+    lineHeight: 18,
     color: colors.muted,
   },
-  actions: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  primaryIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  addButton: {
+    height: 38,
+    borderRadius: 999,
     backgroundColor: colors.brand,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    gap: 6,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 4,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  addButtonText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.background,
   },
 });

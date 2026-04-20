@@ -24,7 +24,7 @@ export default function HomeRecipeDetail({
             <TouchableOpacity style={styles.backButton} activeOpacity={0.75} onPress={onClose}>
               <Feather name="arrow-left" size={16} color={colors.text} />
             </TouchableOpacity>
-            <Text style={styles.mealType}>{meal.mealTime.toUpperCase()}</Text>
+            <Text style={styles.mealType}>{meal.mealTime}</Text>
             <View style={styles.headerSpacer} />
           </View>
 
@@ -48,19 +48,19 @@ export default function HomeRecipeDetail({
           <View style={styles.macroRow}>
             <View style={styles.macroCard}>
               <Text style={styles.macroValue}>{meal.protein}</Text>
-              <Text style={styles.macroLabel}>PROTEIN</Text>
+              <Text style={styles.macroLabel}>protein</Text>
             </View>
             <View style={styles.macroCard}>
               <Text style={styles.macroValue}>{meal.carbs}</Text>
-              <Text style={styles.macroLabel}>CARBS</Text>
+              <Text style={styles.macroLabel}>carbs</Text>
             </View>
             <View style={styles.macroCard}>
               <Text style={styles.macroValue}>{meal.fat}</Text>
-              <Text style={styles.macroLabel}>FAT</Text>
+              <Text style={styles.macroLabel}>fat</Text>
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>INGREDIENTS</Text>
+          <Text style={styles.sectionTitle}>Ingredients</Text>
           {meal.ingredients.map((ingredient) => (
             <View key={ingredient} style={styles.ingredientRow}>
               <View style={styles.ingredientDot} />
@@ -68,7 +68,7 @@ export default function HomeRecipeDetail({
             </View>
           ))}
 
-          <Text style={[styles.sectionTitle, styles.instructionsTitle]}>INSTRUCTIONS</Text>
+          <Text style={[styles.sectionTitle, styles.instructionsTitle]}>Instructions</Text>
           {meal.steps.map((step, index) => (
             <View key={`${meal.id}-step-${index + 1}`} style={styles.stepRow}>
               <View style={styles.stepCount}>
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   mealType: {
     fontFamily: fonts.sansMedium,
     fontSize: 12,
-    letterSpacing: 1,
+    letterSpacing: 0.3,
     color: colors.muted,
   },
   title: {
@@ -167,10 +167,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 12,
-    fontFamily: fonts.sansMedium,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: colors.muted,
+    fontFamily: fonts.serifItalic,
+    fontSize: 16,
+    letterSpacing: -0.1,
+    color: colors.text,
   },
   instructionsTitle: {
     marginTop: 24,

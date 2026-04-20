@@ -12,11 +12,13 @@ export default function DetectedItemsReviewScreen({
   onRemoveItem,
   onCancel,
   onConfirm,
+  isConfirming = false,
 }: {
   items: string[];
   onRemoveItem: (index: number) => void;
   onCancel: () => void;
   onConfirm: () => void;
+  isConfirming?: boolean;
 }) {
   const { t } = useI18n();
   const subtitleKey =
@@ -50,7 +52,11 @@ export default function DetectedItemsReviewScreen({
             {items.map((item, index) => (
               <View key={`${item}-${index}`} style={styles.row}>
                 <Text style={styles.itemName}>{item}</Text>
-                <HapticPressable pressedOpacity={0.75} onPress={() => onRemoveItem(index)}>
+                <HapticPressable
+                  pressedOpacity={0.75}
+                  disabled={isConfirming}
+                  onPress={() => onRemoveItem(index)}
+                >
                   <Feather name="x" size={16} color={colors.muted} />
                 </HapticPressable>
               </View>
@@ -63,12 +69,14 @@ export default function DetectedItemsReviewScreen({
             title={t("storage.onboarding.review.cancel")}
             variant="secondary"
             style={styles.actionButton}
+            disabled={isConfirming}
             onPress={onCancel}
           />
           <Button
             title={confirmTitle}
             style={styles.actionButton}
             disabled={items.length === 0}
+            loading={isConfirming}
             onPress={onConfirm}
           />
         </View>

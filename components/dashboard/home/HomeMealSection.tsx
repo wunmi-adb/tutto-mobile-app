@@ -1,7 +1,8 @@
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { Feather } from "@expo/vector-icons";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useRef } from "react";
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import {
   DashboardMeal,
   getMealAvailabilityPercent,
@@ -19,67 +20,89 @@ function HomeMealCard({
   const readiness = getMealReadiness(meal);
   const availabilityPercent = getMealAvailabilityPercent(meal);
   const isSnack = meal.mealTime === "snack";
+  const scale = useRef(new Animated.Value(1)).current;
+
+  function handlePressIn() {
+    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 2 }).start();
+  }
+
+  function handlePressOut() {
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 2 }).start();
+  }
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.82} onPress={onPress}>
-      <Text style={styles.cardTitle}>{meal.name}</Text>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={1}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <Text style={styles.cardTitle}>{meal.name}</Text>
 
-      <View style={styles.metaRow}>
-        <View style={styles.metaItem}>
-          <Feather name="clock" size={11} color={colors.muted} />
-          <Text style={styles.metaText}>{meal.time}</Text>
-        </View>
-        <View style={styles.metaItem}>
-          <Feather name="zap" size={11} color={colors.muted} />
-          <Text style={styles.metaText}>{meal.calories} cal</Text>
-        </View>
-        <View style={styles.metaItem}>
-          <Feather name="users" size={11} color={colors.muted} />
-          <Text style={styles.metaText}>{meal.servings}</Text>
-        </View>
-      </View>
-
-      {isSnack ? (
-        <View style={[styles.badge, { backgroundColor: readiness.backgroundColor }]}>
-          <View style={[styles.badgeDot, { backgroundColor: readiness.dotColor }]} />
-          <Text style={[styles.badgeText, { color: readiness.accentColor }]}>{readiness.label}</Text>
-        </View>
-      ) : (
-        <View style={styles.progressWrap}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressCopy}>
-              {meal.availableIngredients} of {meal.ingredients.length} ingredients
-            </Text>
-            <Text style={[styles.progressStatus, { color: readiness.accentColor }]}>
-              {readiness.label}
-            </Text>
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
+            <Feather name="clock" size={11} color={colors.muted} />
+            <Text style={styles.metaText}>{meal.time}</Text>
           </View>
-          <View style={styles.progressTrack}>
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  width: `${availabilityPercent}%`,
-                  backgroundColor: readiness.accentColor,
-                },
-              ]}
-            />
+          <View style={styles.metaItem}>
+            <Feather name="zap" size={11} color={colors.muted} />
+            <Text style={styles.metaText}>{meal.calories} cal</Text>
+          </View>
+          <View style={styles.metaItem}>
+            <Feather name="users" size={11} color={colors.muted} />
+            <Text style={styles.metaText}>{meal.servings} serv</Text>
           </View>
         </View>
-      )}
 
-      <View style={styles.macroRow}>
-        <View style={styles.macroPill}>
-          <Text style={styles.macroPillText}>P: {meal.protein}</Text>
+        {isSnack ? (
+          <View style={[styles.badge, { backgroundColor: readiness.backgroundColor }]}>
+            <View style={[styles.badgeDot, { backgroundColor: readiness.dotColor }]} />
+            <Text style={[styles.badgeText, { color: readiness.accentColor }]}>{readiness.label}</Text>
+          </View>
+        ) : (
+          <View style={styles.progressWrap}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressCopy}>
+                {meal.availableIngredients} of {meal.ingredients.length} ingredients
+              </Text>
+              <Text style={[styles.progressStatus, { color: readiness.accentColor }]}>
+                {readiness.label}
+              </Text>
+            </View>
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: `${availabilityPercent}%`,
+                    backgroundColor: readiness.accentColor,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        )}
+
+        <View style={styles.macroRow}>
+          <View style={styles.macroItem}>
+            <Text style={styles.macroValue}>{meal.protein}</Text>
+            <Text style={styles.macroLabel}>protein</Text>
+          </View>
+          <View style={styles.macroDivider} />
+          <View style={styles.macroItem}>
+            <Text style={styles.macroValue}>{meal.carbs}</Text>
+            <Text style={styles.macroLabel}>carbs</Text>
+          </View>
+          <View style={styles.macroDivider} />
+          <View style={styles.macroItem}>
+            <Text style={styles.macroValue}>{meal.fat}</Text>
+            <Text style={styles.macroLabel}>fat</Text>
+          </View>
         </View>
-        <View style={styles.macroPill}>
-          <Text style={styles.macroPillText}>C: {meal.carbs}</Text>
-        </View>
-        <View style={styles.macroPill}>
-          <Text style={styles.macroPillText}>F: {meal.fat}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -97,7 +120,7 @@ export default function HomeMealSection({
   return (
     <View>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{section.label.toUpperCase()}</Text>
+        <Text style={styles.sectionTitle}>{section.label}</Text>
         {actionLabel && onPressAction ? (
           <TouchableOpacity style={styles.actionButton} activeOpacity={0.75} onPress={onPressAction}>
             <Text style={styles.actionLabel}>{actionLabel}</Text>
@@ -124,13 +147,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   sectionTitle: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: colors.muted,
+    fontFamily: fonts.serifItalic,
+    fontSize: 17,
+    letterSpacing: -0.2,
+    color: colors.text,
   },
   actionButton: {
     flexDirection: "row",
@@ -147,20 +170,24 @@ const styles = StyleSheet.create({
     paddingRight: 24,
   },
   card: {
-    width: 280,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    width: 272,
+    borderRadius: 20,
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    elevation: 2,
   },
   cardTitle: {
     fontFamily: fonts.serif,
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 20,
+    lineHeight: 24,
+    letterSpacing: -0.2,
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   metaRow: {
     flexDirection: "row",
@@ -179,14 +206,14 @@ const styles = StyleSheet.create({
     color: colors.muted,
   },
   progressWrap: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   progressHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 10,
-    marginBottom: 6,
+    marginBottom: 7,
   },
   progressCopy: {
     flex: 1,
@@ -200,9 +227,9 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   progressTrack: {
-    height: 6,
+    height: 4,
     borderRadius: 999,
-    backgroundColor: colors.secondary,
+    backgroundColor: `${colors.text}18`,
     overflow: "hidden",
   },
   progressFill: {
@@ -216,12 +243,12 @@ const styles = StyleSheet.create({
     gap: 6,
     borderRadius: 999,
     paddingHorizontal: 10,
-    paddingVertical: 7,
-    marginBottom: 12,
+    paddingVertical: 6,
+    marginBottom: 14,
   },
   badgeDot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
   },
   badgeText: {
@@ -230,17 +257,27 @@ const styles = StyleSheet.create({
   },
   macroRow: {
     flexDirection: "row",
-    gap: 6,
+    alignItems: "center",
   },
-  macroPill: {
-    borderRadius: 999,
-    backgroundColor: colors.secondary,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  macroItem: {
+    flex: 1,
+    alignItems: "center",
+    gap: 2,
   },
-  macroPillText: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 10,
+  macroDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: `${colors.text}18`,
+  },
+  macroValue: {
+    fontFamily: fonts.sansBold,
+    fontSize: 13,
+    color: colors.text,
+  },
+  macroLabel: {
+    fontFamily: fonts.sans,
+    fontSize: 9,
     color: colors.muted,
+    letterSpacing: 0.2,
   },
 });
