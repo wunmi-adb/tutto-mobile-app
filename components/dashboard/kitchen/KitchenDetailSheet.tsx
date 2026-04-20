@@ -1,17 +1,20 @@
 import BottomSheet from "@/components/ui/BottomSheet";
+import Button from "@/components/ui/Button";
 import HapticPressable from "@/components/ui/HapticPressable";
+import Input from "@/components/ui/Input";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
   itemName: string;
-  onRename: (nextName: string) => void;
+  onRename: (nextName: string) => Promise<void>;
   onClose: () => void;
   onRemove: () => void;
   removing?: boolean;
+  renaming?: boolean;
   visible: boolean;
 };
 
@@ -54,6 +57,7 @@ export default function KitchenDetailSheet({
   onClose,
   onRemove,
   removing = false,
+  renaming = false,
   visible,
 }: Props) {
   const [mode, setMode] = useState<DetailMode>("actions");
@@ -86,7 +90,13 @@ export default function KitchenDetailSheet({
             <ActionRow
               icon="edit-2"
               label="Rename"
-              onPress={() => setMode("rename")}
+              onPress={() => {
+                if (removing || renaming) {
+                  return;
+                }
+
+                setMode("rename");
+              }}
             />
 
             <View style={styles.divider} />
@@ -112,52 +122,51 @@ export default function KitchenDetailSheet({
         <View style={styles.renameSheet}>
           <Text style={styles.sheetTitle}>Rename item</Text>
 
-          <TextInput
+          <Input
             value={draftName}
             onChangeText={setDraftName}
-            onSubmitEditing={() => {
+            editable={!renaming}
+            onSubmitEditing={async () => {
               const trimmed = draftName.trim();
 
-              if (!trimmed) {
+              if (!trimmed || renaming) {
                 return;
               }
 
-              onRename(trimmed);
+              await onRename(trimmed);
               onClose();
             }}
             placeholder="Item name"
-            placeholderTextColor={`${colors.muted}88`}
-            style={styles.nameInput}
+            containerStyle={styles.nameInputContainer}
             autoFocus
             returnKeyType="done"
           />
 
           <View style={styles.renameActions}>
-            <HapticPressable
+            <Button
+              title="Cancel"
+              variant="secondary"
               style={styles.secondaryButton}
-              pressedOpacity={0.92}
+              disabled={renaming}
               onPress={onClose}
-            >
-              <Text style={styles.secondaryButtonText}>Cancel</Text>
-            </HapticPressable>
+            />
 
-            <HapticPressable
-              style={[styles.primaryButton, !draftName.trim() && styles.primaryButtonDisabled]}
+            <Button
+              title="Save"
+              style={styles.primaryButton}
               disabled={!draftName.trim()}
-              pressedOpacity={0.92}
-              onPress={() => {
+              loading={renaming}
+              onPress={async () => {
                 const trimmed = draftName.trim();
 
-                if (!trimmed) {
+                if (!trimmed || renaming) {
                   return;
                 }
 
-                onRename(trimmed);
+                await onRename(trimmed);
                 onClose();
               }}
-            >
-              <Text style={styles.primaryButtonText}>Save</Text>
-            </HapticPressable>
+            />
           </View>
         </View>
       )}
@@ -225,15 +234,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
   },
-  nameInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontFamily: fonts.sans,
-    fontSize: 16,
-    color: colors.text,
+  nameInputContainer: {
+    marginTop: 0,
   },
   renameActions: {
     flexDirection: "row",
@@ -242,32 +244,10 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     flex: 1,
-    minHeight: 50,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  secondaryButtonText: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 15,
-    color: colors.text,
+    marginTop: 0,
   },
   primaryButton: {
     flex: 1,
-    minHeight: 50,
-    borderRadius: 14,
-    backgroundColor: colors.brand,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryButtonDisabled: {
-    opacity: 0.3,
-  },
-  primaryButtonText: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 15,
-    color: colors.background,
+    marginTop: 0,
   },
 });

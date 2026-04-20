@@ -68,6 +68,16 @@ export type UpdateInventoryItemInput = {
   itemKey: string;
 };
 
+export type RenameInventoryItemInput = {
+  itemKey: string;
+  name: string;
+};
+
+export type UpdateInventoryAvailabilityInput = {
+  available: boolean;
+  itemKey: string;
+};
+
 export type DeleteInventoryItemResponse = {
   key: string;
 };
@@ -198,6 +208,30 @@ export async function updateInventoryItem({
   return response.data.data;
 }
 
+export async function renameInventoryItem({
+  itemKey,
+  name,
+}: RenameInventoryItemInput) {
+  const response = await apiClient.patch<ApiResponse<InventoryItem>>(
+    `/api/v1/items/${itemKey}`,
+    { name: name.trim() },
+  );
+
+  return response.data.data;
+}
+
+export async function updateInventoryAvailability({
+  available,
+  itemKey,
+}: UpdateInventoryAvailabilityInput) {
+  const response = await apiClient.patch<ApiResponse<InventoryItem>>(
+    `/api/v1/items/${itemKey}/availability`,
+    { available },
+  );
+
+  return response.data.data;
+}
+
 export async function deleteInventoryItem(itemKey: string) {
   const response = await apiClient.delete<ApiResponse<DeleteInventoryItemResponse>>(
     `/api/v1/items/${itemKey}`,
@@ -216,6 +250,7 @@ export function useCreateInventoryItems() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       await updateCurrentUserHasItemCache(queryClient, true);
+      toast.success(t("addItems.create.success"));
     },
     onError: (error) => {
       const errorDetails = getApiErrorDetails(error);
@@ -275,6 +310,7 @@ export function useDeleteInventoryItem() {
     mutationFn: deleteInventoryItem,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+      toast.success(t("addItems.delete.success"));
     },
     onError: (error) => {
       console.log(
@@ -287,6 +323,60 @@ export function useDeleteInventoryItem() {
         typeof errorDetails.message === "string" && isTranslationKey(errorDetails.message)
           ? t(errorDetails.message)
           : t("addItems.delete.error");
+
+      toast.error(errorMessage);
+    },
+  });
+}
+
+export function useRenameInventoryItem() {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: renameInventoryItem,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+      toast.success(t("addItems.rename.success"));
+    },
+    onError: (error) => {
+      console.log(
+        "Error renaming inventory item:",
+        JSON.stringify(getApiErrorDetails(error)),
+        JSON.stringify(error),
+      );
+      const errorDetails = getApiErrorDetails(error);
+      const errorMessage =
+        typeof errorDetails.message === "string" && isTranslationKey(errorDetails.message)
+          ? t(errorDetails.message)
+          : t("addItems.create.error");
+
+      toast.error(errorMessage);
+    },
+  });
+}
+
+export function useUpdateInventoryAvailability() {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateInventoryAvailability,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+      toast.success(t("addItems.availability.updated"));
+    },
+    onError: (error) => {
+      console.log(
+        "Error updating inventory availability:",
+        JSON.stringify(getApiErrorDetails(error)),
+        JSON.stringify(error),
+      );
+      const errorDetails = getApiErrorDetails(error);
+      const errorMessage =
+        typeof errorDetails.message === "string" && isTranslationKey(errorDetails.message)
+          ? t(errorDetails.message)
+          : t("addItems.create.error");
 
       toast.error(errorMessage);
     },

@@ -7,16 +7,24 @@ import PantryEmptyState from "@/components/dashboard/kitchen/PantryEmptyState";
 import BottomSheet from "@/components/ui/BottomSheet";
 import Button from "@/components/ui/Button";
 import HapticPressable from "@/components/ui/HapticPressable";
+import Input from "@/components/ui/Input";
 import SegmentedTabs from "@/components/ui/SegmentedTabs";
 import { colors } from "@/constants/colors";
 import { fonts } from "@/constants/fonts";
 import { handleCaughtApiError } from "@/lib/api/handle-caught-api-error";
-import { type KitchenItem, useCreateInventoryItems, useDeleteInventoryItem, useKitchenItems } from "@/lib/api/items";
+import {
+  type KitchenItem,
+  useCreateInventoryItems,
+  useDeleteInventoryItem,
+  useKitchenItems,
+  useRenameInventoryItem,
+  useUpdateInventoryAvailability,
+} from "@/lib/api/items";
 import { Feather } from "@expo/vector-icons";
 import { usePantryPalKitchenState } from "@/stores/pantryPalKitchenStore";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type KitchenListItem = KitchenItem & {
@@ -74,10 +82,11 @@ export default function KitchenScreen() {
   const { activeTab, setActiveTab } = usePantryPalKitchenState();
   const createInventoryItemsMutation = useCreateInventoryItems();
   const deleteInventoryItemMutation = useDeleteInventoryItem();
+  const renameInventoryItemMutation = useRenameInventoryItem();
+  const updateInventoryAvailabilityMutation = useUpdateInventoryAvailability();
   const availableKitchenItemsQuery = useKitchenItems("available");
   const unavailableKitchenItemsQuery = useKitchenItems("unavailable");
   const [availabilityOverrides, setAvailabilityOverrides] = useState<Record<string, boolean>>({});
-  const [nameOverrides, setNameOverrides] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showAdding, setShowAdding] = useState(false);
@@ -100,13 +109,12 @@ export default function KitchenScreen() {
         ...item,
         categoryName: getCategoryName(item),
         effectiveAvailable: availabilityOverrides[item.key] ?? item.available,
-        effectiveName: nameOverrides[item.key] ?? item.name,
+        effectiveName: item.name,
       })),
     );
   }, [
     availabilityOverrides,
     availableKitchenItemsQuery.data,
-    nameOverrides,
     unavailableKitchenItemsQuery.data,
   ]);
 
@@ -192,20 +200,37 @@ export default function KitchenScreen() {
     }
   }, [activeTab, createInventoryItemsMutation, newItemName]);
 
-  const handleToggleAvailability = useCallback((itemKey: string) => {
+  const handleToggleAvailability = useCallback(async (itemKey: string) => {
     const currentItem = allItems.find((item) => item.key === itemKey);
 
-    if (!currentItem) {
+    if (!currentItem || updateInventoryAvailabilityMutation.isPending) {
       return;
     }
+
+    const nextAvailable =
+      availabilityOverrides[itemKey] == null
+        ? !currentItem.effectiveAvailable
+        : !availabilityOverrides[itemKey];
 
     setAvailabilityOverrides((current) => {
       return {
         ...current,
-        [itemKey]: current[itemKey] == null ? !currentItem.effectiveAvailable : !current[itemKey],
+        [itemKey]: nextAvailable,
       };
     });
-  }, [allItems]);
+
+    try {
+      await updateInventoryAvailabilityMutation.mutateAsync({
+        itemKey,
+        available: nextAvailable,
+      });
+    } catch {
+      setAvailabilityOverrides((current) => ({
+        ...current,
+        [itemKey]: currentItem.effectiveAvailable,
+      }));
+    }
+  }, [allItems, availabilityOverrides, updateInventoryAvailabilityMutation]);
 
   const handleRemoveSelectedItem = useCallback(async () => {
     if (!selectedItem || deleteInventoryItemMutation.isPending) {
@@ -223,20 +248,22 @@ export default function KitchenScreen() {
         delete next[selectedItem.key];
         return next;
       });
-      setNameOverrides((current) => {
-        if (!(selectedItem.key in current)) {
-          return current;
-        }
-
-        const next = { ...current };
-        delete next[selectedItem.key];
-        return next;
-      });
       setSelectedItemKey(null);
     } catch (error) {
       handleCaughtApiError(error);
     }
   }, [deleteInventoryItemMutation, selectedItem]);
+
+  const handleRenameSelectedItem = useCallback(async (nextName: string) => {
+    if (!selectedItem || renameInventoryItemMutation.isPending) {
+      return;
+    }
+
+    await renameInventoryItemMutation.mutateAsync({
+      itemKey: selectedItem.key,
+      name: nextName,
+    });
+  }, [renameInventoryItemMutation, selectedItem]);
 
   useEffect(() => {
     if (selectedItemKey && !selectedItem) {
@@ -360,14 +387,19 @@ export default function KitchenScreen() {
           indicatorStyle={styles.segmentedIndicator}
         />
 
-        <View style={[styles.searchBox, searchDisabled && styles.searchBoxDisabled]}>
-          <Feather name="search" size={16} color={searchDisabled ? `${colors.muted}66` : `${colors.muted}bb`} />
-          <TextInput
+        <View style={[styles.searchWrap, searchDisabled && styles.searchBoxDisabled]}>
+          <Feather
+            name="search"
+            size={16}
+            color={searchDisabled ? `${colors.muted}66` : `${colors.muted}bb`}
+            style={styles.searchIcon}
+          />
+          <Input
             value={search}
             onChangeText={setSearch}
             editable={!searchDisabled}
             placeholder="Search items..."
-            placeholderTextColor={searchDisabled ? `${colors.muted}66` : `${colors.muted}99`}
+            containerStyle={styles.searchInputContainer}
             style={styles.searchInput}
             returnKeyType="search"
           />
@@ -426,33 +458,24 @@ export default function KitchenScreen() {
           </View>
         </HapticPressable>
 
-        <HapticPressable
+        <Button
+          title="Cancel"
+          variant="muted"
           style={styles.sheetCancelButton}
-          pressedOpacity={0.9}
           onPress={() => setShowAddMenu(false)}
-        >
-          <Text style={styles.sheetCancelText}>Cancel</Text>
-        </HapticPressable>
+        />
       </BottomSheet>
 
       <KitchenDetailSheet
         visible={!!selectedItem}
         itemName={selectedItem?.effectiveName ?? ""}
         onClose={() => setSelectedItemKey(null)}
-        onRename={(nextName) => {
-          if (!selectedItem) {
-            return;
-          }
-
-          setNameOverrides((current) => ({
-            ...current,
-            [selectedItem.key]: nextName,
-          }));
-        }}
+        onRename={handleRenameSelectedItem}
         onRemove={() => {
           void handleRemoveSelectedItem();
         }}
         removing={deleteInventoryItemMutation.isPending}
+        renaming={renameInventoryItemMutation.isPending}
       />
     </SafeAreaView>
   );
@@ -475,26 +498,24 @@ const styles = StyleSheet.create({
   retryButton: {
     marginTop: 0,
   },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: colors.background,
+  searchWrap: {
+    position: "relative",
   },
   searchBoxDisabled: {
     opacity: 0.55,
   },
+  searchIcon: {
+    position: "absolute",
+    left: 14,
+    top: 18,
+    zIndex: 1,
+  },
+  searchInputContainer: {
+    marginTop: 0,
+  },
   searchInput: {
-    flex: 1,
-    padding: 0,
-    fontFamily: fonts.sans,
+    paddingLeft: 22,
     fontSize: 14,
-    color: colors.text,
   },
   addRowWrap: {
     marginTop: -2,
@@ -618,15 +639,5 @@ const styles = StyleSheet.create({
   sheetCancelButton: {
     marginTop: 6,
     marginBottom: 4,
-    minHeight: 48,
-    borderRadius: 14,
-    backgroundColor: colors.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sheetCancelText: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 15,
-    color: colors.text,
   },
 });
